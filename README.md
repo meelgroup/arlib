@@ -125,6 +125,70 @@ here by an elementary variational, discriminant, or adjointness argument.
 | `Chains.ProductEntropy` | Tensorization of *entropy* for a product measure at `C = 1`, and the library's first modified log-Sobolev instance, `ModLogSobolev μ (glauber …) (1/n)` — stated against `entropyProduction`, never the vacuous naive form. Includes `localEnt_le_entropyProduction`, valid for any reversible chain. |
 | `Chains.HardCore` | The monograph's two running examples. Hard-core, whose weight can vanish, with the exact `Zloc` trichotomy and the `λ/(1+λ)` update; and Ising, whose weight cannot, so `0 < Z` needs no hypothesis at all. |
 
+### `Arlib.KnowledgeCompilation` — representation languages and their limits
+
+29 modules, ~12.9k LOC, split three ways to mirror the shape of the argument:
+`Circuits/` holds the *objects*, `Communication/` the *tool*, `LowerBounds/` the
+*bridge and the argument*. Following Vinall-Smeeth, *Structured d-DNNF Is Not
+Closed Under Negation* (IJCAI 2024), in `source/kc/arXiv.tex`.
+
+Two conventions shape everything. **Circuits are DAGs, never trees** — size is
+the vertex count of a shared graph, so a tree encoding would silently prove a
+weaker theorem. And **imported results are hypotheses, never axioms**: the
+paper's headline theorems rest on results proved elsewhere, and those enter as
+explicit parameters of the theorems that consume them, so what a statement is
+conditional on is visible in the statement.
+
+| Module | Content |
+| --- | --- |
+| `Circuits.NNF` | The DAG encoding: node values `valAt`, computed function `eval`, syntactic variables `varsAt`, the locality lemma `valAt_congr`, reachability, and `Decomposable` / `Deterministic` / `IsDNNF` / `IsdDNNF` — each relativized to the nodes reachable from the source, as the paper defines them. |
+| `Circuits.VTree` | V-trees, well-formedness, the subtree relation, `NNF.Respects`, and the structured classes `IsSDNNF`/`IsdSDNNF`. Includes `Respects.decomposable`: respecting a well-formed v-tree already forces decomposability. |
+| `Circuits.SDD` | `XDecomposition`, the fan-in-2 chain relation, `IsSDDAt` by recursion on the v-tree, and the containment SDD ⊆ d-SDNNF — unconditional, because the conditions are relativized to reachable nodes. |
+| `Circuits.Figure1` | The paper's Figure 1, built by hand and checked against the formula its caption states independently. The one place the *encoding* is checked rather than the reasoning about it. |
+| `Circuits.DNF`, `DNFMap`, `DNFSubst`, `DNFMux` | Terms as finite sets of literals, width, `IsKDNF`, `Unambiguous` in counting form — the shape every imported hardness result arrives in. Then renaming, minterm expansion and substitution (with width, term count and, the hard part, unambiguity of the result), and the mux `(x ∧ ψ) ∨ (¬x ∧ φ)` over a fresh variable with the identity `∃x f_C ≡ f ∨ g`. |
+| `Circuits.DNFtoCircuit` | The upper-bound half of `thm: main`: an unambiguous `k`-DNF with `ℓ` terms admits a d-SDNNF respecting *any* given v-tree, of size `≤ ℓ·(2k+2) + 1`. Determinism comes exactly from unambiguity. |
+| `Circuits.Arithmetic` | Arithmetic circuits and the relabelling `φ` sending an AC to an NNF on the same graph. `supp(C) = sat(φ(C))` proved twice — once from monotonicity (the paper's hypothesis), once from *determinism*, which is the version Part D uses and the reason Part D imports nothing. |
+| `Communication.Rectangle` | `VarPartition` and balancedness, Π-rectangles as pairs of predicates each local to its side, and the closure property `mem_cross` that every rectangle argument runs on. |
+| `Communication.Measures` | `fixedCov`/`fixedPar` and their best-partition counterparts, with the per-partition unfolded form in which a lower bound is actually consumed. |
+| `Communication.NonnegRank` | Nonnegative rank and `Par₁(F) ≥ rk⁺(F)`: a rectangular *partition* of `F⁻¹(1)` is a decomposition into that many rank-one non-negative pieces. Both halves of `Partitions` are needed — which is why this is about `Par₁`, not `Cov₁`. |
+| `Communication.ConicalJunta` | The one *new* theorem in the chain behind `UnionHard`, proved rather than cited: Göös–Kiefer–Yuan's Lemma 14, that `∨` is at least as hard as `¬` for approximate conical juntas. Conical juntas, dual certificates, **weak duality**, the negated tensor product, and the powering trick — the last with the source's logarithmic parameters replaced by the three inequalities its proof actually uses. |
+| `Communication.Gadget` | Composing a Boolean function with a two-party gadget, and the exactly-balanced partition it induces. Stated for a general variable type, so `ι ⊕ ι` gives the composition of the doubled function `f^∨` for free — which is how the union argument's four-block bookkeeping disappears. |
+| `LowerBounds.RectangleLemma` | The bridge, and the reason a communication lower bound is a circuit lower bound: a structured d-DNNF of size `s` yields a rectangular *partition* of `f⁻¹(1)` into `s` pieces, so `Par₁(f) ≤ \|C\|`. **Discharges** import I2. |
+| `LowerBounds.BalancedCut` | Every v-tree on ≥ 2 variables has a node carrying between a third and two thirds of them, so cutting there induces a *balanced* partition — the partition a best-partition measure is minimised over. |
+| `LowerBounds.Copies`, `Pullback`, `Lifting` | The copy-and-permute lifting from fixed to best partition: the derived terms and the one-hot region where the construction is faithful; protocol simulation expressed on rectangles, with no protocol ever appearing; and `thm: fixed_to_best`. |
+| `LowerBounds.ClaimPerm`, `AffinePerms` | The probabilistic heart of the lifting, which the paper proves only by citation: some affine permutation places, for every variable and every side of the partition, at least one copy on that side — done by counting, not by building a probability space. `AffinePerms` **discharges** import I3: the Wegman–Carter family `x ↦ ax+b` and its pairwise independence. |
+| `LowerBounds.Instance` | A concrete witness for every parameter `thm: main` takes, so the headline theorems are not conditionals with unexhibited hypotheses. The field is `GaloisField 2 t` with `t` *logarithmic* in `n`, which matters: a linear `t` satisfies every hypothesis and still destroys the size comparison the theorem exists to make. |
+| `LowerBounds.Separation` | `thm: main` and `thm: sep`, assembled, with fully explicit bounds and conditional only on the imported hardness. The lower-bound halves hold for *any* v-tree the circuit respects, not only one spanning every variable — omitted variables are grafted on. |
+| `LowerBounds.Union` | `thm: union` and `thm: ex`: d-SDNNF is closed under neither disjunction nor existential quantification. The same composition as `thm: main`, run at the *partition* half of each component rather than the *cover* half. Determinism turns from a non-hypothesis into a hypothesis — the paper's own footnote: unambiguous communication needs disjoint rectangles, and only determinism supplies them. |
+| `LowerBounds.Arithmetic` | `cor: add`: dSD-`AC` is not closed under addition. `thm: union` read through `φ`, with the paper's sixth imported result shown to be *unnecessary* — its only job is to make `supp = sat` available, and determinism already does that. So Part D is conditional on `UnionHard` alone. |
+| `LowerBounds.Imported`, `UnionDerived` | The results the paper genuinely imports, as named bundles of data and hypotheses rather than axioms — every downstream theorem takes one as a parameter. `UnionDerived` then *derives* `UnionHard` from the two results Göös–Kiefer–Yuan themselves import, rather than assuming it. |
+
+### `Arlib.Algorithms` — analyses of specific algorithms
+
+Randomised algorithms and estimators. Each entry carries only the *generic* half
+of its analysis — the law of a counter, the arithmetic of a run-count schedule,
+a termination argument. The *problem-specific* half — exhibiting the structure
+the algorithm needs for one particular counting or sampling problem — stays in
+the project that uses it. An entry that cannot be stated without naming a
+problem is a sign the split has not been found yet.
+
+Unlike `MarkovChains`, whose subdirectories are organisational and share one
+namespace, each algorithm gets its own directory *and* namespace
+`Arlib.Algorithms.<Name>`: the entries are independent, and their names would
+otherwise collide.
+
+| Module | Content |
+| --- | --- |
+| `TPA.Count` | The Tootsie Pop Algorithm (Huber, 2010). The closed form `tpaTail` for `P(U₁ ⋯ U_m > c)`, its one-dimensional integral recursion, the resulting Poisson law for the number of contractions, and almost-sure termination. |
+| `TPA.UniformProduct` | The identification of `tpaTail` with the probability it is named for: on the product of `m` copies of `Uniform(0,1)` the event `{U₁ ⋯ U_m > c}` really does have measure `tpaTail m c` (for `0 < c < 1`), and consecutive differences are the Poisson masses `poissonPMF (ln(1/c))`. |
+| `TPA.TwoPhase` | The arithmetic of the two-phase run-count schedule: the exact phase-one threshold, the phase-two budget inequalities (which force `1 ≤ A`), and the passage from additive log accuracy to relative accuracy. |
+
+TPA estimates a ratio `μ(B)/μ(B')` for a centre `B'` inside a shell `B`, given a
+nested family interpolating between them. It replaces the classical
+self-reducibility product estimator, whose output is a product of scaled
+binomials, by a single Poisson random variable — which is why its analysis is
+sharp, and why it is worth having as reusable infrastructure.
+
 ### `Arlib.Prelude`
 
 Small shared notation, currently the multiplicative **relative-error interval**
@@ -180,6 +244,11 @@ arlib/                    # repo folder (Lake package name stays lowercase)
     MarkovChains/
       Techniques/*.lean   # machinery valid for any finite chain
       Chains/*.lean       # analysis of specific chains
+    KnowledgeCompilation.lean   # area root
+    KnowledgeCompilation/
+      Circuits/*.lean       # the representation languages themselves
+      Communication/*.lean  # rectangles and the complexity measures
+      LowerBounds/*.lean    # the bridge, the lifting, the separations
 ```
 
 ## License

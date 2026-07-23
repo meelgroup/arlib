@@ -60,3 +60,5 @@ import Arlib.Probability.SequentialCond
 import Arlib.Probability.FailureAmplification
 import Arlib.Probability.IIDProduct
 import Arlib.Probability.EmpiricalFrequency
+import Arlib.Probability.SequentialDominate
+import Arlib.Probability.Poisson
