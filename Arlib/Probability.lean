@@ -85,6 +85,8 @@ import Arlib.Probability.IIDProduct
 import Arlib.Probability.EmpiricalFrequency
 import Arlib.Probability.SequentialDominate
 import Arlib.Probability.Poisson
+import Arlib.Probability.PoissonEntropy
+import Arlib.Probability.TVDistance
 import Arlib.Probability.Chernoff
 import Arlib.Probability.Freedman
 import Arlib.Probability.RobbinsMonro

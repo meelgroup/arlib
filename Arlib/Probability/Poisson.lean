@@ -28,9 +28,36 @@ which Poisson estimates are consumed by randomized-algorithm analyses.
   Banks–Garrabrant–Huber–Perizzolo, *Using TPA to count linear extensions*,
   Lemma 2: for `0 < a ≤ μ`,
   `Pr[X ≥ μ + a] ≤ exp(-a²/(2μ) + a³/(2μ²))` and `Pr[X ≤ μ - a] ≤ exp(-a²/(2μ))`.
+* `poisson_two_sided_tail` — the two-sided combination
+  `Pr[|X - μ| ≥ a] ≤ exp(-a²/(2μ) + a³/(2μ²)) + exp(-a²/(2μ))`, via
+  `ite_abs_le_add_ite`.
+* `poisson_upper_tail_tilt` — the **raw Chernoff step at an arbitrary tilt**,
+  `Pr[X ≥ μ + a] ≤ exp(μ(e^s - 1) - s(μ + a))`, before any optimization.
 * `tsum_poissonPMF_mul_sqrt_le` — Jensen for the square root (their Lemma 3),
   `∑ₖ pₖ √k ≤ √μ`.
 * `poissonPMF_conv` — the convolution identity `Poisson μ ⋆ Poisson ν = Poisson (μ+ν)`.
+
+## Which tail bound to reach for: `poisson_tail_upper` is vacuous for small `μ`
+
+`poisson_tail_upper` and `poisson_tail_lower` are the *packaged* tails, with the
+tilt already optimized and the exponent relaxed to Gaussian-plus-cubic shape.
+That relaxation costs real strength, and in the moderate-deviation regime
+`a ≍ √μ` at small `μ` it costs everything:
+
+* `poisson_tail_upper`'s exponent `-a²/(2μ) + a³/(2μ²)` is **positive** — so the
+  bound is worse than the trivial `≤ 1` — at, for instance, `μ = 10` with
+  `a = 9√μ + 2`.  It first drops below `-18` only around `μ ≈ 259`.  The exponent
+  is useful only for `a ≲ μ^{2/3}`.
+* `poisson_tail_lower`'s hypothesis `a ≤ μ` simply *fails* for `a = 9√μ + 2` on
+  the whole range `10 ≤ μ < 85` (and for `a = 8√μ` on `10 ≤ μ < 64`); there the
+  left tail event is empty and must be handled separately.
+
+`poisson_two_sided_tail` inherits both defects, since it is their sum.  If you
+need a sharp tail at small `μ`, do **not** reach for those: use
+`poisson_upper_tail_tilt` (or `tsum_ite_poissonPMF_le` directly) and pick the
+tilt `s` by hand — e.g. `s = c/√μ` with `e^s` controlled by `exp_le_cubic` — and
+dispose of the lower tail by emptiness when `a > μ`.  This was discovered the
+hard way while proving a `2e^{-18}` truncation bound uniformly for `μ ≥ 10`.
 
 ## A correction to the source
 
@@ -403,6 +430,102 @@ theorem poisson_tail_lower {mu a : ℝ} (hmu : 0 < mu) (ha : 0 < a) (hamu : a �
     have hval : -a ^ 2 / (2 * mu) = -(a ^ 2 / (2 * mu)) := by ring
     rw [hval]
     linarith
+
+/-! ## Tier 3½: two-sided tails, and the raw Chernoff step at an explicit tilt -/
+
+/-- The indicator of any predicate against the Poisson mass function is summable,
+being dominated termwise by the mass function itself.  (The specialization of
+`Arlib.summable_ite_of_nonneg`, repeated here so that this module stays
+independent of `Arlib.Probability.TVDistance`.) -/
+theorem summable_ite_poissonPMF {mu : ℝ} (hmu : 0 ≤ mu) (P : ℕ → Prop) [DecidablePred P] :
+    Summable (fun k : ℕ => if P k then poissonPMF mu k else 0) := by
+  apply Summable.of_nonneg_of_le _ _ (summable_poissonPMF mu) <;> intro k <;>
+    by_cases h : P k <;> simp [h, poissonPMF_nonneg hmu k]
+
+/-- Termwise, the two-sided event `{a ≤ |k - mu|}` is contained in the union of
+the two one-sided events `{mu + a ≤ k}` and `{k ≤ mu - a}`; against a
+nonnegative weight this gives a pointwise inequality between indicators.
+
+Nothing here is Poisson-specific — `p` is an arbitrary nonnegative weight on `ℕ`
+— but this is the only place the bound is used, so it is kept next to its
+consumer `poisson_two_sided_tail`. -/
+theorem ite_abs_le_add_ite {p : ℕ → ℝ} (hp : ∀ k, 0 ≤ p k) (mu a : ℝ) (k : ℕ) :
+    (if a ≤ |(k : ℝ) - mu| then p k else 0)
+      ≤ (if mu + a ≤ (k : ℝ) then p k else 0) + (if (k : ℝ) ≤ mu - a then p k else 0) := by
+  have hnn₁ : (0 : ℝ) ≤ if mu + a ≤ (k : ℝ) then p k else 0 := by
+    by_cases h : mu + a ≤ (k : ℝ) <;> simp [h, hp k]
+  have hnn₂ : (0 : ℝ) ≤ if (k : ℝ) ≤ mu - a then p k else 0 := by
+    by_cases h : (k : ℝ) ≤ mu - a <;> simp [h, hp k]
+  by_cases h : a ≤ |(k : ℝ) - mu|
+  · rw [if_pos h]
+    rcases abs_cases ((k : ℝ) - mu) with ⟨heq, _⟩ | ⟨heq, _⟩
+    · rw [heq] at h
+      rw [if_pos (by linarith : mu + a ≤ (k : ℝ))]
+      linarith
+    · rw [heq] at h
+      rw [if_pos (by linarith : (k : ℝ) ≤ mu - a)]
+      linarith
+  · rw [if_neg h]; linarith
+
+/-- **Two-sided Poisson tail bound**, obtained by splitting `{a ≤ |k - mu|}` into
+the two one-sided events and applying `poisson_tail_upper` and
+`poisson_tail_lower`:
+
+  `Pr[|X - mu| ≥ a] ≤ exp(-a²/(2mu) + a³/(2mu²)) + exp(-a²/(2mu))`.
+
+It inherits the hypothesis `a ≤ mu` from `poisson_tail_lower` and the weakness of
+the upper factor, which is only useful when `a ≲ mu^{2/3}`.  See the module
+docstring's note on the small-`mu` regime, and `poisson_upper_tail_tilt` for the
+route that stays sharp there. -/
+theorem poisson_two_sided_tail {mu a : ℝ} (hmu : 0 < mu) (ha : 0 < a) (hamu : a ≤ mu) :
+    ∑' k : ℕ, (if a ≤ |(k : ℝ) - mu| then poissonPMF mu k else 0)
+      ≤ Real.exp (-(1/2) * a^2 / mu + (1/2) * a^3 / mu^2) + Real.exp (-a^2 / (2*mu)) := by
+  have hp : ∀ k, 0 ≤ poissonPMF mu k := poissonPMF_nonneg hmu.le
+  have hsu : Summable (fun k : ℕ => if mu + a ≤ (k : ℝ) then poissonPMF mu k else 0) :=
+    summable_ite_poissonPMF hmu.le _
+  have hsl : Summable (fun k : ℕ => if (k : ℝ) ≤ mu - a then poissonPMF mu k else 0) :=
+    summable_ite_poissonPMF hmu.le _
+  have hsa : Summable (fun k : ℕ => if a ≤ |(k : ℝ) - mu| then poissonPMF mu k else 0) :=
+    summable_ite_poissonPMF hmu.le _
+  calc ∑' k : ℕ, (if a ≤ |(k : ℝ) - mu| then poissonPMF mu k else 0)
+      ≤ ∑' k : ℕ, ((if mu + a ≤ (k : ℝ) then poissonPMF mu k else 0)
+          + (if (k : ℝ) ≤ mu - a then poissonPMF mu k else 0)) :=
+        tsum_le_tsum (fun k => ite_abs_le_add_ite hp mu a k) hsa (hsu.add hsl)
+    _ = (∑' k : ℕ, (if mu + a ≤ (k : ℝ) then poissonPMF mu k else 0))
+          + ∑' k : ℕ, (if (k : ℝ) ≤ mu - a then poissonPMF mu k else 0) :=
+        tsum_add hsu hsl
+    _ ≤ _ := add_le_add (poisson_tail_upper hmu ha hamu) (poisson_tail_lower hmu ha hamu)
+
+/-- **Poisson upper tail at an arbitrary positive tilt** `s`:
+
+  `Pr[X ≥ mu + a] ≤ exp(mu(e^s - 1) - s(mu + a))`.
+
+Immediate from `tsum_ite_poissonPMF_le` with `c = s(mu+a)`.  This is the raw
+Chernoff step *before* the tilt is optimized and the exponent relaxed — which is
+what `poisson_tail_upper` does, at the cost of being vacuous for small `mu` (see
+the module docstring).  Choosing `s` by hand here recovers a sharp bound in that
+regime. -/
+theorem poisson_upper_tail_tilt {mu a s : ℝ} (hmu : 0 ≤ mu) (hs : 0 < s) :
+    ∑' k : ℕ, (if mu + a ≤ (k : ℝ) then poissonPMF mu k else 0)
+      ≤ Real.exp (mu * (Real.exp s - 1) - s * (mu + a)) := by
+  have h := tsum_ite_poissonPMF_le hmu s (s * (mu + a)) (fun k : ℕ => mu + a ≤ (k : ℝ))
+    (fun k hk => mul_le_mul_of_nonneg_left hk hs.le)
+  refine h.trans (le_of_eq ?_)
+  rw [← Real.exp_add]
+  congr 1
+  ring
+
+/-- The cubic Taylor bound `e^x ≤ 1 + x + x²/2 + (2/9)x³` on `[0,1]`, which is
+`Real.exp_bound'` at `n = 3` with the constant `(n+1)/(n!·n) = 4/18` evaluated.
+
+Pure real analysis with no Poisson content; it lives here because its only use is
+to control `e^s - 1` in the tilted bound `poisson_upper_tail_tilt`. -/
+theorem exp_le_cubic {x : ℝ} (h0 : 0 ≤ x) (h1 : x ≤ 1) :
+    Real.exp x ≤ 1 + x + x ^ 2 / 2 + (2 / 9) * x ^ 3 := by
+  have h := Real.exp_bound' h0 h1 (n := 3) (by norm_num)
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero] at h
+  norm_num [Nat.factorial] at h ⊢
+  linarith
 
 /-! ## Tier 4: Jensen for the square root -/
 

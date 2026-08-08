@@ -62,8 +62,15 @@ arlib/                    # repo folder (Lake package name stays lowercase)
       LowerBounds/*.lean    # the bridge, the lifting, the separations
       BranchingPrograms/*.lean  # NROBP size lower bounds via matching width
       Forgetting/*.lean     # compiling DNNF by forgetting auxiliary variables
+      Tseitin/*.lean        # DNNF lower bounds for Tseitin formulas
     Automata.lean         # area root
     Automata/*.lean       # NFA/DFA/UFA, and state lower bounds via communication
+    Algorithms.lean       # area root
+    Algorithms/TPA/*.lean # the Tootsie Pop Algorithm
+    InformationTheory.lean    # area root
+    InformationTheory/*.lean  # entropy, chain rule, Fano, query lower bounds
+    GameTheory.lean       # area root
+    GameTheory/*.lean     # Yao's minimax principle
     MDP.lean              # area root
     MDP/*.lean            # finite MDPs with reachability objectives
 ```
