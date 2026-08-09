@@ -67,6 +67,31 @@ real-symmetric-diagonalization machinery that would otherwise be needed.
 * `Techniques.Comparison` — transfer of a Poincaré inequality along a comparison
   of Dirichlet forms.
 * `Techniques.Conductance` — the easy direction of Cheeger's inequality.
+* `Continuous.Flow` — flow, cut, conductance and reversibility for a Markov *kernel* on
+  an arbitrary measurable space, i.e. the general-state-space analogue of
+  `Techniques.Conductance`'s definitions. For geometric random walks (ball walk,
+  hit-and-run), whose state space is a convex body rather than a `Fintype`.
+* `Continuous.Dirichlet` — the Dirichlet form for a kernel, in pair form, and
+  `dirichlet_indicator`: the Dirichlet form of `1_A` is the cut across `A`. This is the
+  identity Cheeger's inequality turns on.
+* `Continuous.SpectralGap` — the Poincaré inequality for a kernel, variance in pair form,
+  and the easy direction of Cheeger: a bottleneck caps the spectral gap.
+* `Continuous.TotalVariation` — total variation distance between measures, in bounded form
+  (`TVLe`), with the transfer lemmas a sampler analysis needs. Note the convention: this
+  bounds `sup_S |μ S − ν S|`, matching `Techniques/TotalVariation.lean`'s `d_TV`, i.e. half
+  the L¹ distance.
+* `Continuous.TVKernel` — the data-processing inequality for a Markov kernel: one step of
+  the same kernel cannot increase total variation distance.
+* `Continuous.TVBridge` — the finite theory embeds in the measure-theoretic one. Confirms
+  that `Techniques.tvDist` (half the L¹ distance) and `TVLe` measure the *same* quantity —
+  the relating factor is **1**, not 2 — and proves it as an `iff` so neither side is
+  silently weaker.
+* `Continuous.Mixing` — the iterated kernel and `MixesWithin`, the frame a mixing-time
+  theorem would land in. **No such theorem is proved**: conductance is not connected to
+  mixing anywhere.
+* `Continuous.Lazy` — the lazy (holding) kernel `½(I + κ)`. Laziness exactly halves the
+  cut, the conductance, the Dirichlet form and the spectral gap. It is what removes
+  periodicity, so every ball-walk analysis runs on the lazy chain.
 * `Techniques.PotentialDecay` — the Lyapunov/supermartingale route to a
   *hitting-time* bound rather than a mixing bound: a drift condition
   `K Φ ≤ λ·Φ` self-improves to `K^t Φ ≤ λ^t·Φ`, and a finite Markov inequality
@@ -264,6 +289,14 @@ import Arlib.MarkovChains.Techniques.LocalWalk
 import Arlib.MarkovChains.Techniques.Entropy
 import Arlib.MarkovChains.Techniques.Comparison
 import Arlib.MarkovChains.Techniques.Conductance
+import Arlib.MarkovChains.Continuous.Flow
+import Arlib.MarkovChains.Continuous.Dirichlet
+import Arlib.MarkovChains.Continuous.SpectralGap
+import Arlib.MarkovChains.Continuous.TotalVariation
+import Arlib.MarkovChains.Continuous.TVKernel
+import Arlib.MarkovChains.Continuous.TVBridge
+import Arlib.MarkovChains.Continuous.Mixing
+import Arlib.MarkovChains.Continuous.Lazy
 import Arlib.MarkovChains.Techniques.Coupling
 import Arlib.MarkovChains.Techniques.MixingTime
 import Arlib.MarkovChains.Techniques.PotentialDecay

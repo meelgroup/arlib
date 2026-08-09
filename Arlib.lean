@@ -18,6 +18,9 @@ aggregation of area roots — put content in the area modules, not here.
 ## Areas
 
 * `Arlib.Prelude` — small shared notation (e.g. the relative-error interval).
+* `Arlib.Convexity` — log-concave functions on `ℝ`, and isoperimetry: the
+  product-to-minimum conversion for partition expansion bounds, with the
+  Kannan–Lovász–Simonovits one-dimensional inequality as an interface.
 * `Arlib.Probability` — finite/discrete probability: finite probability spaces,
   product/coin spaces, independence, conditional expectation, Markov and
   median-of-means tail bounds.
@@ -60,3 +63,4 @@ import Arlib.MarkovChains
 import Arlib.KnowledgeCompilation
 import Arlib.Automata
 import Arlib.MDP
+import Arlib.Convexity

@@ -39,6 +39,7 @@ This is the area root; it re-exports the individual modules below. Import it to
 get the whole probability toolkit, or import a single module for just one piece.
 -/
 
+import Arlib.Probability.ApproxIndep
 import Arlib.Probability.FinProb
 import Arlib.Probability.CondEvent
 import Arlib.Probability.CouplingFinProb
