@@ -87,8 +87,6 @@ example (P : FinProb) (s : Finset ℕ) (E : ℕ → P.Event) :
   P.Pr_biUnion_le s E
 ```
 
-More examples are in `ArlibTest/` (five areas so far). They are compiled by
-CI, so unlike a README snippet they cannot silently rot.
 
 ## Documentation
 
