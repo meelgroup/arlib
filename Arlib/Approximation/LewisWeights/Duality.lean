@@ -23,7 +23,7 @@ No `sorry`.
 -/
 import Arlib.Approximation.LewisWeights.HighProb
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset
@@ -98,4 +98,4 @@ theorem dot_pow_le_sum_abs_pow [Nonempty ι] (c y : ι → ℝ) (hy : ∑ i, |y 
         pow_le_pow_left₀ (abs_nonneg _) habs (2 * k)
     _ ≤ ∑ i, |c i| ^ (2 * k) := max_abs_pow_le_sum_pow c (2 * k)
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

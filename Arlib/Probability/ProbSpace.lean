@@ -43,7 +43,7 @@ Everything here is proved with no `sorry`.
 -/
 import Arlib.Probability.Markov
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators Classical
 open Finset
@@ -335,4 +335,4 @@ def HasCondExp.toProbSpace {P : FinProb} (ce : HasCondExp P) :
   tower := fun F₁ F₂ X _ hsub => ce.tower F₁ F₂ X hsub
   cond_Ex := fun F X _ => ce.cond_Ex F X
 
-end Arlib
+end Arlib.Probability

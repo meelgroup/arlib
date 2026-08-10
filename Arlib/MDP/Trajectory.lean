@@ -188,7 +188,8 @@ theorem hitsTarget_cons (s s' : S) {k : ℕ} (ω : Fin k → S) :
   simp only [HitsTarget, Fin.exists_fin_succ, Fin.cons_zero, Fin.cons_succ, or_assoc]
 
 /-- **`reachProbSem M π k s = P^π(τ ⊨ S_T within k steps ∣ s₀ = s)`** — the
-paper's the optimal reachability value at a finite horizon: the `P^π`-probability of the set of
+source paper's optimal reachability value at a finite horizon: the
+`P^π`-probability of the set of
 length-`k` paths from `s` that visit a target state.  Nothing here is a dynamic
 program: it is a sum of products of kernel entries over an explicit event. -/
 noncomputable def reachProbSem (M : MDP S A) (π : ℕ → S → A) (k : ℕ) (s : S) : ℝ :=

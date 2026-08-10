@@ -30,7 +30,7 @@ bound is on the literal count.
 ## Why DNFs are lists, not finite sets
 
 A DNF is a `List` of terms, and this is deliberate.  The construction in §4
-(`ROADMAP.md`, T4/T6) *produces terms with multiplicity*: expanding
+(`docs/dev/KnowledgeCompilation-ROADMAP.md`, T4/T6) *produces terms with multiplicity*: expanding
 `⋀ᵢ ⋁ⱼ y_{i,j}` by distributivity generates one term per choice function, and
 distinct choice functions can perfectly well give the same literal set.  The term
 *count* is the thing being bounded (`O(ℓ · n^{k+4})`), so collapsing duplicates

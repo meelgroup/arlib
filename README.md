@@ -1,84 +1,177 @@
-# Arlib
+# arlib
 
-A curated, **mathlib-style** library of reusable Lean 4 + Mathlib results,
-distilled from the meelgroup formalization projects. The goal is a single,
-clean, `sorry`-free library that others can `import` and build on — rather than
-re-proving the same infrastructure in every new project.
+A Lean 4 + Mathlib library of reusable results in **randomised algorithms and
+their analysis**: finite probability and concentration, approximate counting and
+sampling, Markov chain mixing, knowledge compilation and circuit size lower
+bounds, communication complexity, automata state lower bounds, information
+theory, finite MDPs, and coresets. It is written the way Mathlib is written —
+general statements, one namespace per module path, a docstring on every
+declaration. 
 
+Currently 310 modules and roughly 115,000 lines, `sorry`-free, and dependent on
+no axiom beyond the three Mathlib itself uses.
 
-## Design philosophy
+## What's inside
 
-Emulating Mathlib: general, reusable content lives here under a single root
-namespace (`Arlib`), organized by mathematical area, with docstrings and a root
-module that re-exports everything. Project-specific *capstone* theorems (the
-correctness proof of a particular algorithm) stay in their own repositories;
-Arlib holds the **general lemmas underneath them** that are worth sharing.
+Twelve areas, in dependency order: `Prelude`, `Combinatorics`, `Communication`,
+`Probability`, `InformationTheory`, `MarkovChains`, `Approximation`, `MDP`,
+`GameTheory`, `Algorithms`, `KnowledgeCompilation`, `Automata`.
 
-Each area is a directory `Arlib/<Area>/` with an area root `Arlib/<Area>.lean`
-that re-exports the area's modules. The library root `Arlib.lean` re-exports all
-area roots, so `import Arlib` gives you everything and `import Arlib.Probability`
-gives you one area.
+Each is a directory `Arlib/<Area>/` with an area root `Arlib/<Area>.lean` that
+re-exports it. `import Arlib` gives you everything; `import Arlib.MarkovChains`
+gives you one area; importing a single module gives you one piece.
 
+**[ARCHITECTURE.md § 1](ARCHITECTURE.md#1-the-shape-of-the-library) has the table:
+what each area contains and how large it is**, with § 3 expanding every area into a
+module-by-module map. The area roots themselves carry the real documentation — each
+is a long docstring on what its subject is for and how it is organised.
 
-## Build
+## Getting started
 
-Pinned to **Lean `v4.15.0`** and **Mathlib `v4.15.0`** (same as the source
-projects, so material migrates with zero porting).
+arlib is pinned to Lean `v4.15.0` and Mathlib `v4.15.0`. Your project must use
+the same toolchain, so its `lean-toolchain` must read:
+
+```
+leanprover/lean4:v4.15.0
+```
+
+Add arlib to your `lakefile.toml`:
+
+```toml
+[[require]]
+name = "arlib"
+git = "https://github.com/meelgroup/arlib.git"
+rev = "main"
+```
+
+If you prefer SSH, use `git = "git@github.com:meelgroup/arlib.git"` instead.
+arlib requires Mathlib itself, so you do not need to require Mathlib separately
+unless you want to pin it yourself — if you do, pin it to `v4.15.0`.
+
+Then:
 
 ```bash
-lake exe cache get   # fetch prebuilt Mathlib oleans (don't compile Mathlib from source)
-lake build           # builds everything; the root re-exports every area
+lake exe cache get   # fetch prebuilt Mathlib oleans
+lake build
 ```
 
-`import Arlib` in your own file to use the library.
+Always run `lake exe cache get` first. Without it, Lake will compile Mathlib from
+source, which takes hours.
 
+### A worked example
 
+Finite probability in arlib is deliberately elementary: a `FinProb` is a finite
+outcome type with an explicit mass function, events are `Finset`s, probabilities
+are real sums, and everything is decidable. That is what lets combinatorial
+arguments go through with no measure theory.
 
-## Layout
+```lean
+import Arlib.Probability
 
+open Arlib.Probability Arlib.Probability.FinProb
+
+/-- A fair coin. This is the whole interface: a finite outcome type `Ω`, and a
+law on it — a nonnegative mass function summing to one. -/
+noncomputable def fairCoin : FinProb where
+  Ω := Bool
+  μ :=
+    { p := fun _ => 1 / 2
+      p_nonneg := by intro _; norm_num
+      p_sum := by simp }
+
+example : fairCoin.Pr {true} = 1 / 2 := by simp [FinProb.Pr, FinProb.mass, fairCoin]
+
+/-- The union bound over a `Finset` of events — the workhorse of the area. -/
+example (P : FinProb) (s : Finset ℕ) (E : ℕ → P.Event) :
+    P.Pr (s.biUnion E) ≤ ∑ i ∈ s, P.Pr (E i) :=
+  P.Pr_biUnion_le s E
 ```
-arlib/                    # repo folder (Lake package name stays lowercase)
-  lean-toolchain          # leanprover/lean4:v4.15.0
-  lakefile.toml           # requires mathlib @ v4.15.0
-  Arlib.lean              # library root — re-exports every area
-  Arlib/
-    Prelude.lean
-    Probability.lean      # area root — re-exports the modules below
-    Probability/*.lean
-    Combinatorics.lean    # area root
-    Combinatorics/*.lean  # Finset, BigOperators, ListFold
-    Approximation.lean            # area root
-    Approximation/MulError.lean   # multiplicative error windows
-    Approximation/Coresets/*.lean # Basic, Embedding, Tensor, Linear, RegionTree
-    Approximation/StructuredCircuit.lean # v-trees and structured circuits
-    MarkovChains.lean     # area root
-    MarkovChains/
-      Techniques/*.lean   # machinery valid for any finite chain
-      Chains/*.lean       # analysis of specific chains
-    KnowledgeCompilation.lean   # area root
-    KnowledgeCompilation/
-      Circuits/*.lean       # the representation languages themselves
-      Communication/*.lean  # rectangles and the complexity measures
-      LowerBounds/*.lean    # the bridge, the lifting, the separations
-      BranchingPrograms/*.lean  # NROBP size lower bounds via matching width
-      Forgetting/*.lean     # compiling DNNF by forgetting auxiliary variables
-      Tseitin/*.lean        # DNNF lower bounds for Tseitin formulas
-    Automata.lean         # area root
-    Automata/*.lean       # NFA/DFA/UFA, and state lower bounds via communication
-    Algorithms.lean       # area root
-    Algorithms/TPA/*.lean # the Tootsie Pop Algorithm
-    InformationTheory.lean    # area root
-    InformationTheory/*.lean  # entropy, chain rule, Fano, query lower bounds
-    GameTheory.lean       # area root
-    GameTheory/*.lean     # Yao's minimax principle
-    MDP.lean              # area root
-    MDP/*.lean            # finite MDPs with reachability objectives
+
+More examples are in `ArlibTest/` (five areas so far). They are compiled by
+CI, so unlike a README snippet they cannot silently rot.
+
+## Guarantees
+
+**No `sorry`.** Nothing in the library is admitted.
+
+**Axiom-clean.** No declaration under the `Arlib` namespace depends on any axiom
+beyond the three Mathlib itself is built on: `propext`, `Classical.choice` and
+`Quot.sound`. In particular nothing depends on `sorryAx`, so "no `sorry`" is
+checked semantically rather than by grepping for the token. The library defines
+no `axiom` of its own, and `native_decide` is not used.
+
+**CI enforces both.** Every push and pull request runs `lake build`, then the
+axiom audit `scripts/AxiomAudit.lean`, then the smoke tests in `ArlibTest/`. The
+audit walks everything reachable from every `Arlib.*` declaration and fails the
+build if it finds a disallowed axiom; on the most recent run it reported 8718
+declarations clean.
+
+**"Curated" means general.** What lives here is the reusable lemma, not the
+project capstone. The correctness proof of one particular algorithm belongs in
+the repository of that algorithm; the probability, communication-complexity,
+circuit and Markov chain machinery underneath it belongs here. Where an
+algorithm's analysis splits into a problem-independent half and a
+problem-specific half, only the first half is admitted — see `Arlib.Algorithms`,
+whose organising principle is exactly that split.
+
+## Documentation
+
+- `ARCHITECTURE.md` — the structure of the library: every area, every directory,
+  and § 5 on the results imported from the literature as explicit hypotheses
+  rather than proved here, with the theorems that take each one.
+- `CONVENTIONS.md` — the house style: naming, namespacing, statement shape,
+  docstrings, and the standing design commitments.
+- `CONTRIBUTING.md` — how to build, test, audit and submit.
+- `CONTRIBUTORS.md` — who wrote what, and how authorship is recorded.
+- `REFERENCES.md` — every paper the library formalizes or cites, with the short
+  key used in the docstrings. Its last section, **Known gaps**, lists the places
+  where a result is stated without its source; those are outstanding defects, and
+  one of them covers a whole area.
+- The **area roots** (`Arlib/Probability.lean`, `Arlib/MarkovChains.lean`, and so
+  on) are the real reference. Each carries a substantial docstring explaining
+  what the area is for, how it is organised, and what its conventions are, with a
+  module-by-module table. Working notes and statement-by-statement paper
+  inventories live under `docs/dev/`.
+- API documentation is generated by doc-gen4 in CI from the default branch.
+
+## Versioning and stability
+
+arlib is pre-1.0 and there is no stable API. Names move, namespaces are
+normalized, and lemmas are hoisted between modules as the library is
+consolidated. If you depend on it, pin a specific commit.
+
+Every rename is recorded in `MIGRATION.md`, old name to new name, so an upgrade
+is a mechanical edit rather than a search.
+
+## Citing
+
+```bibtex
+@software{meel2026arlib,
+  author = {Meel, Kuldeep S.},
+  title  = {arlib: a Lean 4 library for randomised algorithms and their analysis},
+  year   = {2026},
+  url    = {https://github.com/meelgroup/arlib}
+}
 ```
 
 ## License
 
-Released under the [Apache License 2.0](LICENSE), following Mathlib. Copyright ©
-2026 Kuldeep S. Meel.
+Released under the [Apache License 2.0](LICENSE), following Mathlib.
+
+Copyright © 2026 the arlib contributors. The per-file headers are authoritative
+for who holds copyright in which module.
+
+## Origins
+
+arlib was started by Kuldeep Meel, and has since evolved with contributions from
+Suguman Bansal and Uddalok Sarkar. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for who
+wrote what.
+
+It was distilled from formalization projects in author's works, where the same
+probability and combinatorics infrastructure had been copy-pasted, with drift,
+across several developments. Those copies were deduplicated, re-namespaced and
+generalised into what is here. 
+
 
 ## Acknowledgements
 

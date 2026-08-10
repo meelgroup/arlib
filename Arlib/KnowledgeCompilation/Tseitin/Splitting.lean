@@ -8,7 +8,7 @@ Authors: Kuldeep S. Meel
 
 Second module of `KnowledgeCompilation.Tseitin`, following §5 of Florent
 de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas with short regular
-resolution refutations* (`source/kc/decolnet/main.tex:534`).  A rectangle for an
+resolution refutations* ([dCM21, §5]).  A rectangle for an
 edge-partition *splits* a parity constraint `χ_v` into two sub-constraints in
 disjoint variables, and this splitting is mirrored in the graph by *vertex
 splitting*.  The pay-off is a count of the models a sub-constraint removes, which
@@ -16,23 +16,23 @@ feeds the adversarial-rectangle DNNF lower bound of §6.
 
 ## What is proved here, and what is imported
 
-* **Sub-constraint** (`chiSub`, `IsSubConstraintIndex`, `:542`) and **Lemma 15**
-  (`rectangle_induces_subConstraint`, `lemma:rectangle_sub_constraints`, `:546`)
+* **Sub-constraint** (`chiSub`, `IsSubConstraintIndex`, [dCM21, §5.1]) and **Lemma 15**
+  (`rectangle_induces_subConstraint`, `lemma:rectangle_sub_constraints`)
   are **proved in full**.  Lemma 15 is a clean rectangle argument: a rectangle
   contained in `sat(T(G,c))` whose partition cuts a vertex `v` forces every
   member to share the parity of the `E₁`-incident edges at `v`.
 
-* **Vertex splitting** (`NeighborPartition`, `splitGraph`, `splitCharge`, `:558`)
+* **Vertex splitting** (`NeighborPartition`, `splitGraph`, `splitCharge`, [dCM21, §5.2])
   is **defined**: splitting `v` along a proper neighbour-partition `(N₁, N₂)` is
   modelled on `V ⊕ Unit`, keeping `v` as `v¹` (now adjacent only to `N₁`) and
   adding `v² = Sum.inr ()` adjacent to `N₂`, so `|V'| = |V| + 1`.
 
 * **Lemmas 16, 17, 18, 19** rest on the graph surgery of vertex splitting (an
-  edge-variable renaming bijection across two different edge types, `:568`), a
-  GF(2)-rank/model-count fact (`:578`, `:586`), and a spanning-tree + handshaking
-  argument in `3`-connected graphs (`:600`).  None is provable in Mathlib v4.15
+  edge-variable renaming bijection across two different edge types, [dCM21, `lemma:graph_splitting_equals_subconstraint`]), a
+  GF(2)-rank/model-count fact ([dCM21, `lemma:graph_splitting_to_connected_equals_half_models`], [dCM21, `lemma:graph_splitting_a_lot_to_connected_equals_far_less_models`]), and a spanning-tree + handshaking
+  argument in `3`-connected graphs ([dCM21, `lemma:choose_vertices_from_3-connected_graph`]).  None is provable in Mathlib v4.15
   without machinery the area does not build (the incidence-matrix rank, a finite
-  spanning tree with a leaf).  Following `ROADMAP.md` §1.3 each is carried as a
+  spanning tree with a leaf).  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 each is carried as a
   named `structure` with **explicit counts** and threaded, and each is inhabited
   by a concrete witness at the foot of the file so the conditionals are not
   vacuous.  See the docstring of each bundle for its exact obstruction.
@@ -46,33 +46,33 @@ open Finset
 variable {V : Type*} [Fintype V] [DecidableEq V]
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
 
-/-! ## Sub-constraints (`source/kc/decolnet/main.tex:543`) -/
+/-! ## Sub-constraints ([dCM21, §5.1]) -/
 
 /-- **A sub-constraint of `χ_v`** as a predicate: the parity of the edge variables
 in a set `S` equals `c₁`.  A genuine *sub-constraint* additionally requires `S` to
 be a non-empty proper subset of the edges incident to `v` (`IsSubConstraintIndex`).
-(`source/kc/decolnet/main.tex:543`.) -/
+([dCM21, §5.1].) -/
 def chiSub (S : Finset {e // e ∈ G.edgeSet}) (c₁ : ZMod 2) (α : Assignment G) : Prop :=
   (∑ e ∈ S, α e) = c₁
 
 /-- **The index set of a sub-constraint of `χ_v`** is a non-empty *proper* subset
-of `E(v)`, the edges incident to `v` (`source/kc/decolnet/main.tex:543`). -/
+of `E(v)`, the edges incident to `v` ([dCM21, §5.1]). -/
 def IsSubConstraintIndex (v : V) (S : Finset {e // e ∈ G.edgeSet}) : Prop :=
   S.Nonempty ∧ S ⊂ incEdges G v
 
-/-! ## Rectangles induce sub-constraints (`source/kc/decolnet/main.tex:538`) -/
+/-! ## Rectangles induce sub-constraints ([dCM21, §5.1]) -/
 
 /-- **A (combinatorial) rectangle** for the edge-partition `(E₁, E₂ = E₁ᶜ)`: a set
 of assignments closed under exchanging the `E₁`-part between two members.  The
 hybrid `fun e => if e ∈ E₁ then α e else β e` takes its `E₁` values from `α` and
 its `E₂` values from `β`; membership is closed under forming it
-(`source/kc/decolnet/main.tex:540`). -/
+([dCM21, §5.1]). -/
 def IsEdgeRectangle (E₁ : Finset {e // e ∈ G.edgeSet})
     (R : Assignment G → Prop) : Prop :=
   ∀ α β, R α → R β → R (fun e => if e ∈ E₁ then α e else β e)
 
 /-- **`lemma:rectangle_sub_constraints`**
-(`source/kc/decolnet/main.tex:546`).  Let `T(G,c)` be satisfiable and let `R` be a
+([dCM21, `lemma:rectangle_sub_constraints`]).  Let `T(G,c)` be satisfiable and let `R` be a
 rectangle for the edge-partition `(E₁, E₂)` with `R ⊆ sat(T(G,c))`.  If a vertex
 `v` is incident both to edges in `E₁` and to edges in `E₂`, then `E₁(v) := E(v) ∩ E₁`
 is the index of a genuine sub-constraint of `χ_v`, and there is a charge `c₁` such
@@ -125,7 +125,7 @@ theorem rectangle_induces_subConstraint
   · push_neg at hR
     exact ⟨0, fun α hα => absurd hα (hR α)⟩
 
-/-! ## Vertex splitting (`source/kc/decolnet/main.tex:558`)
+/-! ## Vertex splitting ([dCM21, §5.2])
 
 Splitting `v` along a proper partition `(N₁, N₂)` of its neighbourhood: delete
 `v`, add `v¹, v²`, join `v¹` to `N₁` and `v²` to `N₂`.  We model this on
@@ -134,7 +134,7 @@ Splitting `v` along a proper partition `(N₁, N₂)` of its neighbourhood: dele
 faithful (`|V'| = |V| + 1`, matching delete-one-add-two) and avoids re-indexing
 the whole vertex type. -/
 
-/-- **A proper partition of the neighbourhood of `v`** (`source/kc/decolnet/main.tex:558`):
+/-- **A proper partition of the neighbourhood of `v`** ([dCM21, §5.2]):
 `N₁, N₂` are disjoint, non-empty, and together are exactly `N(v)`. -/
 structure NeighborPartition (G : SimpleGraph V) (v : V) where
   /-- The first part. -/
@@ -150,7 +150,7 @@ structure NeighborPartition (G : SimpleGraph V) (v : V) where
   /-- `N₂` is non-empty (proper partition). -/
   ne₂ : N₂.Nonempty
 
-/-- **Adjacency of the split graph** (`source/kc/decolnet/main.tex:558`).  Between
+/-- **Adjacency of the split graph** ([dCM21, §5.2]).  Between
 old vertices it is the old adjacency with the edges from `v` to `N₂` deleted;
 `v² = Sum.inr ()` is adjacent exactly to `N₂`. -/
 def SplitAdj (G : SimpleGraph V) (v : V) (N₂ : Finset V) :
@@ -161,7 +161,7 @@ def SplitAdj (G : SimpleGraph V) (v : V) (N₂ : Finset V) :
   | Sum.inr _, Sum.inr _ => False
 
 /-- **The graph obtained by splitting `v` along a partition with second part `N₂`**
-(`source/kc/decolnet/main.tex:558`), on the vertex type `V ⊕ Unit`. -/
+([dCM21, §5.2]), on the vertex type `V ⊕ Unit`. -/
 def splitGraph (G : SimpleGraph V) (v : V) (N₂ : Finset V) : SimpleGraph (V ⊕ Unit) where
   Adj := SplitAdj G v N₂
   symm := by
@@ -182,7 +182,7 @@ instance splitGraph_decidableRel (G : SimpleGraph V) [DecidableRel G.Adj] (v : V
   · exact (inferInstance : Decidable (b ∈ N₂))
   · exact (inferInstance : Decidable False)
 
-/-- **The charge function of the split graph** (`source/kc/decolnet/main.tex:561`):
+/-- **The charge function of the split graph** ([dCM21, `lemma:graph_splitting_equals_subconstraint`]):
 `v¹ = Sum.inl v` gets `c₁`, `v² = Sum.inr ()` gets `c₂` (with `c₁ + c₂ = c(v)`),
 every other old vertex keeps its charge. -/
 def splitCharge (v : V) (c : V → ZMod 2) (c₁ c₂ : ZMod 2) : (V ⊕ Unit) → ZMod 2
@@ -191,15 +191,15 @@ def splitCharge (v : V) (c : V → ZMod 2) (c₁ c₂ : ZMod 2) : (V ⊕ Unit) �
 
 /-! ### Local graph vocabulary
 
-Mathlib v4.15 has no `Finset`-level independent-set API (area `ROADMAP.md` §8.3),
+Mathlib v4.15 has no `Finset`-level independent-set API (area `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §8.3),
 so both notions are defined locally. -/
 
 /-- **An independent set**: no two of its vertices are adjacent
-(`source/kc/decolnet/main.tex:586`). -/
+([dCM21, `lemma:graph_splitting_a_lot_to_connected_equals_far_less_models`]). -/
 def IsIndependentSet (G : SimpleGraph V) (S : Finset V) : Prop :=
   ∀ ⦃u⦄, u ∈ S → ∀ ⦃w⦄, w ∈ S → ¬ G.Adj u w
 
-/-- **A `3`-connected graph** (`source/kc/decolnet/main.tex:331`): at least four
+/-- **A `3`-connected graph** ([dCM21, §2]): at least four
 vertices, and deleting any at most two vertices leaves a connected graph. -/
 def IsThreeConnected (G : SimpleGraph V) : Prop :=
   4 ≤ Fintype.card V ∧ ∀ S : Finset V, S.card ≤ 2 → (G.induce (↑(Sᶜ) : Set V)).Connected
@@ -208,13 +208,16 @@ def IsThreeConnected (G : SimpleGraph V) : Prop :=
 
 Lemmas 16–19 rest on graph surgery, a GF(2)-rank/model-count fact, and a
 spanning-tree argument that Mathlib v4.15 does not support cheaply.  Following
-`ROADMAP.md` §1.3 they are carried as named `structure`s with **explicit counts**,
-and (where a witness is cheaper than the imported theorem) inhabited below. -/
+`docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 they are carried as named `structure`s in the area's `Imported`
+namespace with **explicit counts**, and (where a witness is cheaper than the
+imported theorem) inhabited below. -/
 
 variable (G)
 
+namespace Imported
+
 /-- **`lemma:graph_splitting_equals_subconstraint`**
-(`source/kc/decolnet/main.tex:560`), as an imported hypothesis:
+([dCM21, `lemma:graph_splitting_equals_subconstraint`]), as an imported hypothesis:
 splitting `v` along `(N₁, N₂)` with charges `c₁ + c₂ = c(v)` produces `T(G', c')`
 whose models are in bijection — via the edge-variable renaming `ρ` of the
 paper — with the models of `T(G, c) ∧ χ¹_v`, where `χ¹_v` is the sub-constraint on
@@ -225,8 +228,9 @@ counts these renamings identify.
 *different* edge-variable types (`E(G')` and `E(G)`), and exhibiting it together
 with the per-vertex constraint matching *is* the imported content; a non-vacuity
 witness would have to construct the same bijection.  This is the deliberate
-exception `ROADMAP.md` §1.3 allows (cf. `Imported.SDDComplementation`): the
-obstruction is stated, not hidden behind an `axiom`. -/
+exception `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 allows (cf.
+`KnowledgeCompilation.Imported.SDDComplementation`): the obstruction is stated,
+not hidden behind an `axiom`. -/
 structure VertexSplitEquiv (v : V) (N₂ : Finset V) (c : V → ZMod 2)
     (c₁ c₂ : ZMod 2) (S : Finset {e // e ∈ G.edgeSet}) : Prop where
   /-- The charges of `v¹` and `v²` add up to the charge of `v`. -/
@@ -239,7 +243,7 @@ structure VertexSplitEquiv (v : V) (N₂ : Finset V) (c : V → ZMod 2)
         Formula (splitGraph G v N₂) (splitCharge v c c₁ c₂) β}
       = Nat.card {α : Assignment G // Formula G c α ∧ chiSub S c₁ α}
 
-/-- **Lemmas 17 and 18** (`source/kc/decolnet/main.tex:577`, `:585`,
+/-- **Lemmas 17 and 18** ([dCM21, `lemma:graph_splitting_to_connected_equals_half_models`], [dCM21, `lemma:graph_splitting_a_lot_to_connected_equals_far_less_models`],
 `lemma:graph_splitting_to_connected_equals_half_models` and its `k`-fold
 generalization `..._far_less_models`), as an imported hypothesis with an explicit
 count.
@@ -254,8 +258,9 @@ stated multiplicatively as `2^{|E| + 1} = #models · 2^{|V| + k}` to avoid
 truncated subtraction.  Lemma 17 is the case `k = 1`.
 
 The obstruction is the same GF(2)-incidence-rank fact behind Proposition 4
-(`Basic.TseitinModelCount`): the `k` sub-constraints are linearly independent from
-the vertex constraints exactly when the split stays connected.  Inhabited at
+(`Imported.TseitinModelCount` in `Basic.lean`): the `k` sub-constraints are
+linearly independent from the vertex constraints exactly when the split stays
+connected.  Inhabited at
 `k = 0`, where the statement is Proposition 4 for a connected graph. -/
 structure IndepSplitModelCount (c : V → ZMod 2) (k : ℕ) (verts : Fin k → V)
     (Ssub : Fin k → Finset {e // e ∈ G.edgeSet}) (charges : Fin k → ZMod 2)
@@ -271,7 +276,7 @@ structure IndepSplitModelCount (c : V → ZMod 2) (k : ℕ) (verts : Fin k → V
         * 2 ^ (Fintype.card V + k)
 
 /-- **`lemma:choose_vertices_from_3-connected_graph`**
-(`source/kc/decolnet/main.tex:599`), as an imported hypothesis.  If `G`
+([dCM21, `lemma:choose_vertices_from_3-connected_graph`]), as an imported hypothesis.  If `G`
 is `3`-connected and `{v₁, …, v_k}` is an independent set with a proper
 neighbour-partition at each `v_i`, then some subset `S` of the indices with
 `k ≤ 3·|S|` (i.e. `|S| ≥ k/3`) can be split while keeping `G` connected.
@@ -280,10 +285,10 @@ The predicate `KeepsConnected : Finset (Fin k) → Prop` abstracts "the graph
 obtained by splitting exactly the `v_i` for `i ∈ ·` is connected"; the downstream
 caller instantiates it with the iterated split graph.
 
-The obstruction is the paper's spanning-tree + handshaking argument (`:603`–`:617`)
+The obstruction is the paper's spanning-tree + handshaking argument ([dCM21, §5.3])
 over the contraction `G₃` of the split components: it needs a finite spanning tree
 with `r − 1` edges, which rests on the "a finite tree has a leaf" induction absent
-from Mathlib v4.15 (area `ROADMAP.md` §9.3).  Inhabited at `k = 0` (`S = ∅`). -/
+from Mathlib v4.15 (area `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §9.3).  Inhabited at `k = 0` (`S = ∅`). -/
 structure ThreeConnectedSplitChoice (k : ℕ) (verts : Fin k → V)
     (KeepsConnected : Finset (Fin k) → Prop) : Prop where
   /-- A large connected-preserving subset exists. -/
@@ -292,13 +297,15 @@ structure ThreeConnectedSplitChoice (k : ℕ) (verts : Fin k → V)
     IsIndependentSet G (Finset.image verts Finset.univ) →
     (∃ S : Finset (Fin k), k ≤ 3 * S.card ∧ KeepsConnected S)
 
+end Imported
+
 /-! ## Non-vacuity witnesses -/
 
-/-- **`IndepSplitModelCount` is inhabited** (at `k = 0`): on the single-vertex
-graph with zero charge and no sub-constraints, the count is Proposition 4 for a
-connected graph, `2^{0+1} = 1 · 2^{1+0}`. -/
+/-- **`Imported.IndepSplitModelCount` is inhabited** (at `k = 0`): on the
+single-vertex graph with zero charge and no sub-constraints, the count is
+Proposition 4 for a connected graph, `2^{0+1} = 1 · 2^{1+0}`. -/
 def indepSplitModelCount_zero :
-    IndepSplitModelCount (⊥ : SimpleGraph (Fin 1)) 0 0 Fin.elim0 Fin.elim0
+    Imported.IndepSplitModelCount (⊥ : SimpleGraph (Fin 1)) 0 0 Fin.elim0 Fin.elim0
       Fin.elim0 True where
   count _ _ _ _ _ := by
     simp only [IsEmpty.forall_iff, and_true]
@@ -314,10 +321,10 @@ def indepSplitModelCount_zero :
     rw [hcard]
     simp [SimpleGraph.edgeFinset_bot, Fintype.card_fin]
 
-/-- **`ThreeConnectedSplitChoice` is inhabited** (at `k = 0`): the empty subset
-has size `0 ≥ 0/3` and splits nothing. -/
+/-- **`Imported.ThreeConnectedSplitChoice` is inhabited** (at `k = 0`): the empty
+subset has size `0 ≥ 0/3` and splits nothing. -/
 def threeConnectedSplitChoice_zero :
-    ThreeConnectedSplitChoice (⊥ : SimpleGraph (Fin 1)) 0 Fin.elim0
+    Imported.ThreeConnectedSplitChoice (⊥ : SimpleGraph (Fin 1)) 0 Fin.elim0
       (fun _ => True) where
   choose _ _ := ⟨∅, Nat.zero_le _, trivial⟩
 

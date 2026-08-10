@@ -71,7 +71,7 @@ proof of it would consume (`sep_gen`, `Ex_centre_sum_pow_insert`,
 No `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -514,7 +514,12 @@ indicators, with `A = ∑_{i∈s} Wᵢ` the centred partial sum and `V = varSum 
 All four are proved simultaneously by induction on `s`: adjoining a fresh index
 `a` with `v = Ex[W_a²]` turns each into a polynomial inequality in `V` and `v`,
 via the recursion `Ex_centre_sum_pow_insert` and the uniform per-index estimate
-`abs_Ex_centre_pow_le` (`|Ex[W_aʲ]| ≤ v` for `j ≥ 2`). -/
+`abs_Ex_centre_pow_le` (`|Ex[W_aʲ]| ≤ v` for `j ≥ 2`).  The simultaneity is
+essential — the `insert` step consumes all four induction hypotheses at once —
+so the conjunction cannot be split at the proof level.  Consumers should not
+index into it: use the four named projections `Ex_centre_sum_sq_eq_varSum`,
+`abs_Ex_centre_sum_cube_le`, `Ex_centre_sum_pow_four_le` and
+`Ex_centre_sum_pow_six_le` below. -/
 theorem moment_bounds (hind : KWiseIndep P 6 Z) (hZ : IsIndicatorFamily Z)
     (s : Finset ι) :
     P.Ex (fun ω => (∑ i ∈ s, centre Z i ω) ^ 2) = varSum P Z s
@@ -559,6 +564,48 @@ theorem moment_bounds (hind : KWiseIndep P 6 Z) (hZ : IsIndicatorFamily Z)
     · rw [r6, varSum_insert P Z ha, ih2]
       exact sixth_moment_step hV0 hv0 ih3 ih4 ih6 hm3 hm4 hm6
 
+/-! ### Named projections of the moment ladder
+
+`moment_bounds` has to be stated as one four-fold conjunction because its four
+components are proved by a single simultaneous induction.  These four lemmas
+expose the components individually, so that no consumer has to write `.2.2.2`.
+Each is definitionally the corresponding projection and carries no extra
+content. -/
+
+/-- **The second central moment is exactly the total variance.**
+`Ex[(∑_{i∈s} Wᵢ)²] = V`, the first component of `moment_bounds`. -/
+theorem Ex_centre_sum_sq_eq_varSum (hind : KWiseIndep P 6 Z)
+    (hZ : IsIndicatorFamily Z) (s : Finset ι) :
+    P.Ex (fun ω => (∑ i ∈ s, centre Z i ω) ^ 2) = varSum P Z s :=
+  (moment_bounds hind hZ s).1
+
+/-- **The third central moment is bounded in absolute value by the variance.**
+`|Ex[(∑_{i∈s} Wᵢ)³]| ≤ V`, the second component of `moment_bounds`.  The
+absolute value is needed because the odd moment need not be nonnegative. -/
+theorem abs_Ex_centre_sum_cube_le (hind : KWiseIndep P 6 Z)
+    (hZ : IsIndicatorFamily Z) (s : Finset ι) :
+    |P.Ex (fun ω => (∑ i ∈ s, centre Z i ω) ^ 3)| ≤ varSum P Z s :=
+  (moment_bounds hind hZ s).2.1
+
+/-- **The fourth central moment bound.**  `Ex[(∑_{i∈s} Wᵢ)⁴] ≤ 3V² + V`, the
+third component of `moment_bounds`.  The leading constant `3 = 3‼` is the
+Gaussian one. -/
+theorem Ex_centre_sum_pow_four_le (hind : KWiseIndep P 6 Z)
+    (hZ : IsIndicatorFamily Z) (s : Finset ι) :
+    P.Ex (fun ω => (∑ i ∈ s, centre Z i ω) ^ 4)
+      ≤ 3 * varSum P Z s ^ 2 + varSum P Z s :=
+  (moment_bounds hind hZ s).2.2.1
+
+/-- **The sixth central moment bound, in terms of the variance.**
+`Ex[(∑_{i∈s} Wᵢ)⁶] ≤ 15V³ + 25V² + V`, the fourth component of `moment_bounds`
+and the one `sixth_moment_le` consumes (there `V` is relaxed to the mean `μ`).
+The leading constant `15 = 5‼` is the Gaussian one. -/
+theorem Ex_centre_sum_pow_six_le (hind : KWiseIndep P 6 Z)
+    (hZ : IsIndicatorFamily Z) (s : Finset ι) :
+    P.Ex (fun ω => (∑ i ∈ s, centre Z i ω) ^ 6)
+      ≤ 15 * varSum P Z s ^ 3 + 25 * varSum P Z s ^ 2 + varSum P Z s :=
+  (moment_bounds hind hZ s).2.2.2
+
 /-- **The sixth central moment bound.**  For a `6`-wise independent family of
 `{0,1}`-indicators with `μ = Ex[∑_{i∈s} Zᵢ]`,
 
@@ -581,7 +628,7 @@ theorem sixth_moment_le (hind : KWiseIndep P 6 Z) (hZ : IsIndicatorFamily Z)
     rw [hmu, ← Finset.sum_sub_distrib]
     exact Finset.sum_congr rfl fun i _ => rfl
   rw [hpt]
-  have hbound := (moment_bounds hind hZ s).2.2.2
+  have hbound := Ex_centre_sum_pow_six_le hind hZ s
   have hVle : varSum P Z s ≤ P.Ex (fun ω' => ∑ i ∈ s, Z i ω') := varSum_le_mean hZ s
   have hV0 : 0 ≤ varSum P Z s := varSum_nonneg P Z s
   have h2 : varSum P Z s ^ 2 ≤ (P.Ex (fun ω' => ∑ i ∈ s, Z i ω')) ^ 2 :=
@@ -632,4 +679,4 @@ theorem sixth_moment_relative_tail (hind : KWiseIndep P 6 Z) (hZ : IsIndicatorFa
 
 end Sixth
 
-end Arlib
+end Arlib.Probability

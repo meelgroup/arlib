@@ -6,7 +6,7 @@ Authors: Kuldeep S. Meel
 /-
 # The Wegman–Carter family of affine permutations
 
-Import **I3** of the area (`lem: indperm`, `source/kc/arXiv.tex:423`), attributed
+Import **I3** of the area (`lem: indperm`, [VS24]), attributed
 to Wegman–Carter — and, unlike the fixed-partition hardness, entirely within
 reach.  This file discharges it, so it is no longer an import.
 
@@ -48,7 +48,7 @@ def toFun (p : F × F) : F → F := fun x => p.1 * x + p.2
 
 @[simp] lemma toFun_apply (p : F × F) (x : F) : toFun p x = p.1 * x + p.2 := rfl
 
-/-- **The family `𝒫`** (paper `lem: indperm`, `source/kc/arXiv.tex:423`): the
+/-- **The family `𝒫`** (paper `lem: indperm`, [VS24]): the
 coefficient pairs `(a, b)` with `a ≠ 0`, i.e. the affine maps that are actually
 permutations. -/
 def maps (F : Type*) [Field F] [Fintype F] [DecidableEq F] : Finset (F × F) :=

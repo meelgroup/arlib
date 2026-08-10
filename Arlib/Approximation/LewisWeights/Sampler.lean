@@ -33,10 +33,11 @@ import Arlib.Probability.Markov
 import Arlib.Approximation.Coresets.Basic
 import Mathlib.Data.Matrix.Mul
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 
@@ -46,12 +47,13 @@ variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 with probability `mass i = wᵢ / (∑ⱼ wⱼ) ∝ wᵢ`. -/
 noncomputable def drawSpace (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i) : FinProb where
   Ω := ι
-  mass := fun i => w i / (∑ j, w j)
-  mass_nonneg := fun i =>
-    div_nonneg (hw i).le (Finset.sum_nonneg fun j _ => (hw j).le)
-  mass_sum := by
-    rw [← Finset.sum_div]
-    exact div_self (Finset.sum_pos (fun i _ => hw i) Finset.univ_nonempty).ne'
+  μ :=
+    { p := fun i => w i / (∑ j, w j)
+      p_nonneg := fun i =>
+        div_nonneg (hw i).le (Finset.sum_nonneg fun j _ => (hw j).le)
+      p_sum := by
+        rw [← Finset.sum_div]
+        exact div_self (Finset.sum_pos (fun i _ => hw i) Finset.univ_nonempty).ne' }
 
 omit [DecidableEq d] in
 /-- **Per-query unbiasedness of a single draw.**  Reweighting the drawn row `i` by
@@ -182,4 +184,4 @@ theorem estimator_unbiased (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i)
         rw [← mul_assoc, mul_one_div, div_self hm', one_mul]
     _ = (WPS.exact ι a).E y := (WPS.E_exact ι a y).symm
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

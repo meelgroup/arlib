@@ -33,7 +33,7 @@ only extra input over the finite model is the **measurability of the events**
 import Arlib.Probability.MixedRunProduct
 import Arlib.Probability.Independence
 
-namespace Arlib
+namespace Arlib.Probability
 
 open MeasureTheory
 open scoped BigOperators Classical
@@ -229,4 +229,4 @@ theorem indepEvents_of_disjoint {B : ℕ}
         ih, Finset.prod_insert hi₀]
 
 end MixedCoinSpace
-end Arlib
+end Arlib.Probability

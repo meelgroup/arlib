@@ -638,7 +638,8 @@ theorem isFPAUS_of_binary
 
 /-- **The reduction from `#TA` to `#BTA` as a bundle.**  Packaging the
 construction as a `ParsimoniousReduction` makes both transfers available at once
-through `ParsimoniousReduction.fpras` and `ParsimoniousReduction.fpaus`, and
+through `ParsimoniousReduction.isFPRAS_comp` and
+`ParsimoniousReduction.isFPAUS_comp`, and
 records in one place what is proved (the parsimony equation and the decoding
 bijection) and what is assumed (the two polynomial bounds). -/
 noncomputable def binarizeReduction

@@ -70,7 +70,7 @@ Both `0 < c` and `c < 1` are therefore assumed throughout.
 
 `prob_exactly_eq_poissonPMF`: the probability that a run needs *exactly* `m`
 contractions — the difference of two consecutive tails — is the Poisson mass
-`Arlib.poissonPMF (ln(1/c)) m`.  This is `Arlib.Algorithms.TPA.tpaTail_sub` transported
+`Arlib.Probability.poissonPMF (ln(1/c)) m`.  This is `Arlib.Algorithms.TPA.tpaTail_sub` transported
 along the identification, and it is the statement the TPA analysis actually uses.
 -/
 import Arlib.Algorithms.TPA.Count
@@ -102,7 +102,7 @@ theorem tpaTail_nonneg (m : ℕ) {c : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) :
     intro j
     positivity
   have hpart : ∑ j ∈ Finset.range m, A ^ j / (Nat.factorial j : ℝ) ≤ Real.exp A :=
-    sum_le_hasSum _ (fun j _ => hterm j) (Arlib.hasSum_exp_series A)
+    sum_le_hasSum _ (fun j _ => hterm j) (Arlib.Probability.hasSum_exp_series A)
   have hexp : Real.exp A = c⁻¹ := by
     rw [hA, Real.exp_neg, Real.exp_log hc]
   have hmul : c * ∑ j ∈ Finset.range m, A ^ j / (Nat.factorial j : ℝ) ≤ c * c⁻¹ := by
@@ -343,8 +343,8 @@ theorem prob_exactly_eq_poissonPMF (m : ℕ) {c : ℝ} (hc : 0 < c) (hc1 : c < 1
         {u : Fin m → ℝ | c < ∏ i, u i}).toReal
       - ((MeasureTheory.Measure.pi (fun _ : Fin (m + 1) => unifUnit))
         {u : Fin (m + 1) → ℝ | c < ∏ i, u i}).toReal
-      = Arlib.poissonPMF (-Real.log c) m := by
+      = Arlib.Probability.poissonPMF (-Real.log c) m := by
   rw [volume_prod_gt_toReal m hc hc1, volume_prod_gt_toReal (m + 1) hc hc1, tpaTail_sub m c,
-    Arlib.poissonPMF, neg_neg, Real.exp_log hc]
+    Arlib.Probability.poissonPMF, neg_neg, Real.exp_log hc]
 
 end Arlib.Algorithms.TPA

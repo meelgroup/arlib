@@ -23,7 +23,7 @@ so that downstream results can be developed against the two facts alone.
 -/
 import Arlib.Probability.FinProb
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -100,4 +100,4 @@ mass)` — and proves `fixed_rule`, `tower` and `cond_Ex` from first principles.
 So the two facts above are theorems about a concrete object.
 -/
 
-end Arlib
+end Arlib.Probability

@@ -7,17 +7,17 @@ Authors: Kuldeep S. Meel
 # Jointrees, primal treewidth, and the effect of BVA (`thm:width`, `thm:bva`)
 
 Umut Oztok and Adnan Darwiche, *On Compiling DNNFs without Determinism*
-(Appendix A, `source/kc/darwiche/draft.tex:785`).  The paper's last theoretical
+(Appendix A, [OD17, §A]).  The paper's last theoretical
 contribution: bounded variable addition (BVA) raises the primal treewidth of a
-CNF by at most the number of applications (`thm:width`, `:593`), and can drop it
-from unbounded to bounded (`thm:bva`, `:603`).
+CNF by at most the number of applications (`thm:width`), and can drop it
+from unbounded to bounded (`thm:bva`).
 
 ## How a CNF is represented, and why
 
 There is **no CNF datatype** in this repository, and this file deliberately does
 not add one.  Everything the two theorems say about a CNF is mediated by its
 *jointree*, and a jointree sees a CNF only through the **variable sets of its
-clauses** (`:796`: "there is a vertex whose labels contain the variables of `γ`").
+clauses** ([OD17, §A]: "there is a vertex whose labels contain the variables of `γ`").
 Literals, polarities, repeated clauses — none of it is visible to treewidth.  So a
 CNF is represented here as its list of clause variable-sets,
 
@@ -30,7 +30,7 @@ depend on the multiset-vs-set distinction).
 
 ## Jointrees as genuine trees, and the relation to `TreewidthLe`
 
-A `Jointree Δ` (`:792`) is a finite **tree** — connected and acyclic,
+A `Jointree Δ` ([OD17, §A]) is a finite **tree** — connected and acyclic,
 `SimpleGraph.IsTree` — with a `cluster : ι → Finset V` at each vertex, such that
 (covers) every clause's variable set sits in some cluster, and (running
 intersection) for each variable the vertices whose cluster contains it induce a
@@ -59,9 +59,9 @@ quantity.
 
 ## What the paper leaves implicit about BVA, and how it is captured
 
-The BVA transformation itself (`:509`–`:531`) is defined on clauses via resolution:
+The BVA transformation itself ([OD17, §5.3]) is defined on clauses via resolution:
 it replaces a block of resolvents `C_X ⋈ C_{¬X}` by the two smaller blocks `C_X`,
-`C_{¬X}` around a fresh variable.  But the proof of `thm:width` (`:811`) uses BVA
+`C_{¬X}` around a fresh variable.  But the proof of `thm:width` ([OD17, §A]) uses BVA
 only through **one** consequence: every clause of the transformed CNF `Sig` has its
 variable set contained in *some clause of the original `Δ` together with the added
 auxiliary variables*.  (The unchanged clauses map to themselves; a clause
@@ -81,10 +81,10 @@ the aux sets unioning (`BVAExpansion.trans`).  So "`Sig` obtained by applying BV
 * **`thm:width`** — `jointreeWidthLe_bvaExpansion`, proved in full: adding the `k`
   auxiliaries to every cluster of the best jointree of `Δ` is a jointree of `Sig` of
   width `w + k`.
-* **`thm:bva`** — the concrete classes `deltaA n` (`Δⁿₐ`, `:619`) and `deltaB n`
-  (`Δⁿᵦ`, `:626`) are defined explicitly.  Clause (ii), `treewidth(Δⁿᵦ) ≤ 2`
+* **`thm:bva`** — the concrete classes `deltaA n` (`Δⁿₐ`, [OD17, §5.3.1]) and `deltaB n`
+  (`Δⁿᵦ`, [OD17, §5.3.1]) are defined explicitly.  Clause (ii), `treewidth(Δⁿᵦ) ≤ 2`
   (`jointreeWidthLe_deltaB_two`), is proved by exhibiting the paper's width-2
-  **star** jointree (`:808`), and `Δⁿᵦ` is shown to be a genuine two-variable
+  **star** jointree ([OD17, §A]), and `Δⁿᵦ` is shown to be a genuine two-variable
   `BVAExpansion` of `Δⁿₐ` (`bvaExpansion_deltaB`).  Clause (i), the *unbounded*
   treewidth of `Δⁿₐ` (`treewidth(Δⁿₐ) ≥ n`), is **now proved** in the companion
   module `Forgetting/MinDegree.lean` (`jointreeWidthLe_deltaA_ge`); see the note at
@@ -103,7 +103,7 @@ variable {V : Type*}
 /-! ## CNFs as lists of clause variable-sets -/
 
 /-- **A CNF, as seen by treewidth**: the list of the variable sets of its clauses
-(Appendix A, `source/kc/darwiche/draft.tex:796`).  See the module docstring for why
+(Appendix A, [OD17, §A]).  See the module docstring for why
 this — and not literals — is the right encoding here. -/
 abbrev CNF (V : Type*) := List (Finset V)
 
@@ -138,7 +138,7 @@ lemma clause_subset_cnfVars [DecidableEq V] {Δ : CNF V} {c : Finset V} (hc : c 
 
 open SimpleGraph
 
-/-- **A jointree for a CNF `Δ`** (Appendix A, `source/kc/darwiche/draft.tex:792`).
+/-- **A jointree for a CNF `Δ`** (Appendix A, [OD17, §A]).
 
 A finite tree (`isTree`) with a variable-set *cluster* at each vertex such that
 
@@ -169,7 +169,7 @@ structure Jointree [DecidableEq V] (Δ : CNF V) where
 
 attribute [instance] Jointree.fin Jointree.dec
 
-/-- **`Δ` has a jointree of width at most `w`** (Appendix A, `:806`): some jointree
+/-- **`Δ` has a jointree of width at most `w`** (Appendix A, [OD17, §A]): some jointree
 has every cluster of size at most `w + 1`.  The primal treewidth of `Δ` is the
 least such `w`; this predicate, mirroring the repository's `TreewidthLe`, is what
 every statement here is phrased with. -/
@@ -178,8 +178,8 @@ def JointreeWidthLe [DecidableEq V] (Δ : CNF V) (w : ℕ) : Prop :=
 
 /-! ## The BVA transformation, abstracted to what treewidth sees -/
 
-/-- **A BVA expansion by a set of auxiliary variables** (§5.3, `:509`, as consumed
-by the proof of `thm:width` at `:811`).
+/-- **A BVA expansion by a set of auxiliary variables** (§5.3, as consumed
+by the proof of `thm:width` at [OD17, §A]).
 
 `BVAExpansion Δ Sig aux` holds when the `aux` variables are fresh for `Δ` and every
 clause of `Sig` has its variable set contained in *some clause of `Δ` together with*
@@ -194,7 +194,7 @@ def BVAStep [DecidableEq V] (Δ Sig : CNF V) (x : V) : Prop := BVAExpansion Δ S
 
 /-! ## `thm:width`: BVA raises treewidth by at most the number of auxiliaries -/
 
-/-- **`thm:width`** (§5.3, `source/kc/darwiche/draft.tex:593`; proof `:811`).
+/-- **`thm:width`** ([OD17, `thm:width`]; proof in [OD17, §A]).
 
 If `Δ` has a jointree of width `w` and `Sig` is a BVA expansion of `Δ` by `aux`, then
 `Sig` has a jointree of width `w + |aux|`.
@@ -245,13 +245,13 @@ The two classes are defined explicitly; `Δⁿᵦ` is shown to be a genuine
 bounds `treewidth(Δⁿᵦ) ≤ treewidth(Δⁿₐ) + 2` (`jointreeWidthLe_deltaB`); and the
 *absolute* bound `treewidth(Δⁿᵦ) ≤ 2` — clause (ii) of `thm:bva` — is proved
 outright (`jointreeWidthLe_deltaB_two`) by building the paper's width-2 star
-jointree (`:808`), for which the star graph is shown to be a `SimpleGraph.IsTree`
+jointree ([OD17, §A]), for which the star graph is shown to be a `SimpleGraph.IsTree`
 from scratch (`starGraph_isTree`), Mathlib v4.15.0 having no such instance.
 
 **Clause (i), and where it lives.**  Clause (i) of `thm:bva` — that
 `treewidth(Δⁿₐ) ≥ n`, the *unbounded* side — is **proved**, in the companion module
 `Forgetting/MinDegree.lean` (`jointreeWidthLe_deltaA_ge`; the proof in fact
-establishes `2n ≤ w`).  It is the paper's argument (`:821`) verbatim: the general
+establishes `2n ≤ w`).  It is the paper's argument ([OD17, §A]) verbatim: the general
 `min-degree ≤ treewidth` bound applied to the primal graph of `Δⁿₐ`, whose every
 vertex has degree `2n`.  The two pieces Mathlib v4.15.0 lacks — a
 finite-tree-has-a-leaf lemma and the confined-vertex (leaf-pruning) form of
@@ -277,14 +277,14 @@ def bvaA (n : ℕ) : BVAVar n := Sum.inr false
 /-- The auxiliary variable `B`. -/
 def bvaB (n : ℕ) : BVAVar n := Sum.inr true
 
-/-- **`Δⁿₐ = ⋀_{i,j,k} (Xᵢ ∨ Yⱼ ∨ Zₖ)`** (§5.3, `source/kc/darwiche/draft.tex:619`),
+/-- **`Δⁿₐ = ⋀_{i,j,k} (Xᵢ ∨ Yⱼ ∨ Zₖ)`** ([OD17, §5.3.1]),
 as the list of clause variable-sets `{Xᵢ, Yⱼ, Zₖ}`. -/
 def deltaA (n : ℕ) : CNF (BVAVar n) :=
   (List.finRange n).flatMap fun i =>
     (List.finRange n).flatMap fun j =>
       (List.finRange n).map fun k => ({bvaX n i, bvaY n j, bvaZ n k} : Finset (BVAVar n))
 
-/-- **`Δⁿᵦ`** (§5.3, `:626`): the BVA transform, with clauses `A ∨ Xᵢ`,
+/-- **`Δⁿᵦ`** ([OD17, §5.3.1]): the BVA transform, with clauses `A ∨ Xᵢ`,
 `¬A ∨ B ∨ Yⱼ`, `¬B ∨ Zₖ`, i.e. variable-sets `{A,Xᵢ}`, `{A,B,Yⱼ}`, `{B,Zₖ}`. -/
 def deltaB (n : ℕ) : CNF (BVAVar n) :=
   ((List.finRange n).map fun i => ({bvaA n, bvaX n i} : Finset (BVAVar n))) ++
@@ -314,7 +314,7 @@ lemma deltaA_clause_inl (n : ℕ) {c : Finset (BVAVar n)} (hc : c ∈ deltaA n)
 @[simp] lemma card_auxAB (n : ℕ) : ({bvaA n, bvaB n} : Finset (BVAVar n)).card = 2 := by
   rw [Finset.card_insert_of_not_mem (by simp [bvaA, bvaB]), Finset.card_singleton]
 
-/-- **`Δⁿᵦ` is a two-application BVA expansion of `Δⁿₐ`** (§5.3, `:631`: "we added
+/-- **`Δⁿᵦ` is a two-application BVA expansion of `Δⁿₐ`** ([OD17, §5.3.1]: "we added
 two auxiliary variables `A, B` … and reduced the number of clauses from `n³` to
 `3n`").
 
@@ -361,7 +361,7 @@ theorem jointreeWidthLe_deltaB (n w : ℕ) (h : JointreeWidthLe (deltaA n) w) :
 
 /-! ## The star graph, and that it is a tree
 
-The width-2 jointree of `Δⁿᵦ` (`source/kc/darwiche/draft.tex:808`) is a **star**:
+The width-2 jointree of `Δⁿᵦ` ([OD17, §A]) is a **star**:
 a central vertex carrying `{A, B}` with one leaf per clause.  Mathlib v4.15.0 has
 no `SimpleGraph.IsTree` instance to reuse, so the star graph and its tree property
 are built here from scratch. -/
@@ -440,7 +440,7 @@ lemma star_walk_to_center {τ : Type*} (o : Option τ) :
 
 /-! ## The width-2 star jointree for `Δⁿᵦ` -/
 
-/-- **The clusters of the width-2 star jointree of `Δⁿᵦ`** (`:808`): the centre
+/-- **The clusters of the width-2 star jointree of `Δⁿᵦ`** ([OD17, §A]): the centre
 carries `{A, B}`, and the leaf for each clause carries exactly that clause. -/
 def clusterDeltaB (n : ℕ) : Option (Fin 3 × Fin n) → Finset (BVAVar n)
   | none => {bvaA n, bvaB n}
@@ -501,7 +501,7 @@ lemma leaf_unique_of_mem {n : ℕ} {t' : Fin 3} {i' : Fin n} {t : Fin 3} {i : Fi
   · exact absurd h hne'
   · exact (Sum.inl.injEq _ _ ▸ h).symm
 
-/-- **The width-2 jointree of `Δⁿᵦ`** (`source/kc/darwiche/draft.tex:808`): the
+/-- **The width-2 jointree of `Δⁿᵦ`** ([OD17, §A]): the
 star with centre `{A, B}` and one leaf per clause. -/
 def jointreeDeltaB (n : ℕ) : Jointree (deltaB n) where
   ι := Option (Fin 3 × Fin n)
@@ -560,7 +560,7 @@ def jointreeDeltaB (n : ℕ) : Jointree (deltaB n) where
         simp only [Walk.support_nil, List.mem_singleton] at hk
         subst hk; exact hxi⟩
 
-/-- **`thm:bva`, clause (ii)** (§5.3, `source/kc/darwiche/draft.tex:603`, `:826`):
+/-- **`thm:bva`, clause (ii)** ([OD17, `thm:bva`]; proof in [OD17, §A]):
 the primal treewidth of `Δⁿᵦ` is at most `2`, witnessed by the star jointree. -/
 theorem jointreeWidthLe_deltaB_two (n : ℕ) : JointreeWidthLe (deltaB n) 2 :=
   ⟨jointreeDeltaB n, fun i => card_clusterDeltaB_le n i⟩

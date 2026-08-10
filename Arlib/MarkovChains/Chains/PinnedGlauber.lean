@@ -15,13 +15,16 @@ First it *states* the instantiations.  Each is a one-liner, and that is exactly
 the point: the pinned single-site update and the pinned Glauber dynamics are
 reversible with respect to the conditional Gibbs measure and positive
 semidefinite, with no new proof, and pinning twice is pinning once
-(`gibbsPin_pinWeight_union`).  The local-to-global induction of the monograph's
-§6 runs over *all* pinnings simultaneously, so having these available uniformly
-in `Λ` and `η` is what makes that induction expressible at all.
+(`gibbsPin_pinWeight_union`).  The local-to-global induction of §6 of the
+monograph — Zongchen Chen, Daniel Štefankovič, Eric Vigoda, *Spectral
+Independence and Local-to-Global Techniques for Optimal Mixing of Markov
+Chains*, arXiv:2307.13826 (2023), cited below as [CSV23] — runs over *all*
+pinnings simultaneously, so having these available uniformly in `Λ` and `η` is
+what makes that induction expressible at all.
 
 Second it builds the two objects the induction actually consumes, the
-monograph's `π_{η,1}` (`main.tex` ~line 1645) and the local walk `Q_η`
-(`main.tex` ~line 1443).  Both are carried on (site, spin) pairs `V × S`, which
+monograph's `π_{η,1}` and the local walk `Q_η` (both [CSV23]).  Both are
+carried on (site, spin) pairs `V × S`, which
 is the spin-system counterpart of the ground set of `Techniques.LocalWalk`, and
 they are built here from *masses* rather than from conditional probabilities:
 `siteMass w v s` is the total weight of the configurations with `σ v = s` and
@@ -462,7 +465,7 @@ end Marginal
 
 /-! ## The distribution one site above a pinning
 
-This is the monograph's `π_{η,1}` (`main.tex` ~line 1645): from the pinning `η`
+This is the monograph's `π_{η,1}` ([CSV23]): from the pinning `η`
 on `Λ`, choose a free site `v ∉ Λ` uniformly at random and then a spin `s` from
 the conditional marginal at `v`.  Only `j = 1` is ever used in the monograph and
 only `j = 1` is built here.
@@ -541,7 +544,7 @@ end OneSiteAbove
 
 /-! ## The local walk `Q_η`
 
-The monograph's local walk (`main.tex` ~line 1443) at the pinning `η` on `Λ`:
+The monograph's local walk ([CSV23]) at the pinning `η` on `Λ`:
 from a free (site, spin) pair `(i, a)` it jumps to a *different* free site `j`
 with a spin `b` drawn from the conditional law of `σ(j)` given `σ(i) = a`,
 divided by the number `n - |Λ| - 1` of admissible sites.  It is

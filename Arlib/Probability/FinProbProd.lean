@@ -39,26 +39,23 @@ coordinates of a product are independent**:
 
 ## Implementation notes
 
-The `dist` lemmas (`Arlib.dist_prodFinProb_fst` and friends) mention
-`Arlib.InformationTheory.dist`, so this file imports
-`Arlib.InformationTheory.Uniform`.  That is *not* a layering inversion and
-creates no import cycle: the whole transitive closure of
-`Arlib.InformationTheory.Uniform` is `{Basic, Defs, Entropy, Uniform}` together
-with `Arlib.Probability.FinProb` and Mathlib, none of which reaches this file.
+The `dist` lemmas (`Arlib.Probability.dist_prodFinProb_fst` and friends) mention
+`Arlib.Probability.dist` and `Arlib.Probability.unifDist`, so this file imports
+`Arlib.Probability.Law`.  Those are law/distribution primitives and live in this
+area; nothing here depends on `Arlib.InformationTheory`.
 
 Everything here is proved from first principles with no `sorry`.
 -/
 import Arlib.Probability.KWiseIndependent
-import Arlib.InformationTheory.Uniform
+import Arlib.Probability.Law
 import Mathlib.Data.Fintype.Prod
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Finset.Sum
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
-open InformationTheory
 
 /-! ## The binary product of two finite probability spaces -/
 
@@ -67,14 +64,15 @@ mass of a pair is the product of the two masses.  This is the formal content of
 "draw `ω₁ ∼ P`, then draw `ω₂ ∼ Q` independently". -/
 noncomputable def prodFinProb (P Q : FinProb) : FinProb where
   Ω := P.Ω × Q.Ω
-  mass := fun ω => P.mass ω.1 * Q.mass ω.2
-  mass_nonneg := fun ω => mul_nonneg (P.mass_nonneg ω.1) (Q.mass_nonneg ω.2)
-  mass_sum := by
-    rw [Fintype.sum_prod_type]
-    calc ∑ a : P.Ω, ∑ b : Q.Ω, P.mass a * Q.mass b
-        = ∑ a : P.Ω, P.mass a * ∑ b : Q.Ω, Q.mass b :=
-          Finset.sum_congr rfl fun a _ => by rw [Finset.mul_sum]
-      _ = 1 := by rw [Q.mass_sum]; simpa using P.mass_sum
+  μ :=
+    { p := fun ω => P.mass ω.1 * Q.mass ω.2
+      p_nonneg := fun ω => mul_nonneg (P.mass_nonneg ω.1) (Q.mass_nonneg ω.2)
+      p_sum := by
+        rw [Fintype.sum_prod_type]
+        calc ∑ a : P.Ω, ∑ b : Q.Ω, P.mass a * Q.mass b
+            = ∑ a : P.Ω, P.mass a * ∑ b : Q.Ω, Q.mass b :=
+              Finset.sum_congr rfl fun a _ => by rw [Finset.mul_sum]
+          _ = 1 := by rw [Q.mass_sum]; simpa using P.mass_sum }
 
 /-- The outcome type of a product space is the product of the outcome types. -/
 @[simp] theorem prodFinProb_Ω (P Q : FinProb) : (prodFinProb P Q).Ω = (P.Ω × Q.Ω) := rfl
@@ -164,7 +162,7 @@ theorem Pr_prodFinProb_inter (P Q : FinProb) (A : FinProb.Event P) (B : FinProb.
 
 /-! ### Laws of coordinate random variables
 
-`InformationTheory.dist P X` is the law of `X`.  Writing it as an expectation of
+`Arlib.Probability.dist P X` is the law of `X`.  Writing it as an expectation of
 an indicator lets the product lemmas above be reused verbatim. -/
 
 /-- The law of `X` at `a` is the expectation of the indicator of `{X = a}`. -/
@@ -197,11 +195,12 @@ has mass `1 / |α|`.  This is the formal content of "pick `ℓ` uniformly at
 random". -/
 noncomputable def unifFinProb (α : Type) [Fintype α] [DecidableEq α] [Nonempty α] : FinProb where
   Ω := α
-  mass := fun _ => ((Fintype.card α : ℝ))⁻¹
-  mass_nonneg := fun _ => by positivity
-  mass_sum := by
-    rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-    exact mul_inv_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero)
+  μ :=
+    { p := fun _ => ((Fintype.card α : ℝ))⁻¹
+      p_nonneg := fun _ => by positivity
+      p_sum := by
+        rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+        exact mul_inv_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero) }
 
 /-- The outcome type of the uniform space is the type itself. -/
 @[simp] theorem unifFinProb_Ω (α : Type) [Fintype α] [DecidableEq α] [Nonempty α] :
@@ -256,7 +255,7 @@ theorem dist_unifFinProb_of_bijective {α β : Type} [Fintype α] [DecidableEq �
   rw [Fintype.card_of_bijective hf]
 
 /-- The identity random variable on `unifFinProb α` has the uniform law, in the
-exact shape `Arlib.InformationTheory.unifDist` demanded by e.g. Fano's
+exact shape `Arlib.Probability.unifDist` demanded by e.g. Fano's
 inequality. -/
 theorem dist_unifFinProb_id (α : Type) [Fintype α] [DecidableEq α] [Nonempty α] :
     dist (unifFinProb α) (fun ω => ω) = unifDist α :=
@@ -358,4 +357,4 @@ theorem kwiseIndep_prodFinProb_sum {ι κ : Type} [Fintype ι] [DecidableEq ι]
     _ = ∏ i ∈ s, (prodFinProb P Q).Ex
           (Sum.elim (fun i ω => X i ω.1) (fun j ω => Y j ω.2) i) := hR.symm
 
-end Arlib
+end Arlib.Probability

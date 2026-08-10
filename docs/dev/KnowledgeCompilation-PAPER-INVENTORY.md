@@ -11,11 +11,11 @@ should not need to reopen the paper except to check a proof detail.
 - Everything is finite. Variable sets are `Finset V`; no measure theory is needed anywhere
   except inside the probabilistic Claim `perm`, and there only over a finite family.
 - `f⁻¹(b)` is written as the set of assignments on which the function takes value `b`.
-- Sizes are **DAG vertex counts**, never tree sizes. See `ROADMAP.md` §1.1.
+- Sizes are **DAG vertex counts**, never tree sizes. See `KnowledgeCompilation-ROADMAP.md` §1.1.
 - The paper writes `Õ`/`Ω̃` for bounds suppressing polylogarithmic factors. Its proofs
-  produce explicit bounds; record those, and see `ROADMAP.md` §5.
+  produce explicit bounds; record those, and see `KnowledgeCompilation-ROADMAP.md` §5.
 - **Imported**, below, means the paper uses the result without proving it. Four such
-  results exist (I1–I4 in `ROADMAP.md` §3); each is flagged at its entry.
+  results exist (I1–I4 in `KnowledgeCompilation-ROADMAP.md` §3); each is flagged at its entry.
 
 **Existing Lean (do not redo).**
 `Circuits/NNF.lean`: `Gate`, `Gate.children`, `NNF` (with `size`, `gate`, `child_lt`,
@@ -29,12 +29,12 @@ should not need to reopen the paper except to check a proof detail.
 `NNF.Respects`, `NNF.Respects.decomposable`, `NNF.IsSDNNF`, `NNF.IsdSDNNF` and their
 projections.
 
-`Communication/Rectangle.lean`: `VarPartition` (+ `Balanced`, `balanced_iff_left`, `cross`),
+`Arlib/Communication/Rectangle.lean`: `VarPartition` (+ `Balanced`, `balanced_iff_left`, `cross`),
 `Rectangle` (with the locality fields), `Rectangle.mem_cross` (the closure property that
 every lower-bound argument consumes), `Covers`, `Partitions`, and padding via
 `extendFamily`.
 
-`Communication/Measures.lean`: `fiber`, `DependsOn`, `HasCoverOfSize`, `HasPartitionOfSize`,
+`Arlib/Communication/Measures.lean`: `fiber`, `DependsOn`, `HasCoverOfSize`, `HasPartitionOfSize`,
 `fixedCov`, `fixedPar`, `bestCov`, `bestPar`, `forall_not_hasCover_of_lt_bestCov`,
 `fixedCov_le_fixedPar`, `bestCov_le_bestPar`, `hasPartitionOfSize_two_pow`.
 
@@ -85,7 +85,7 @@ node a fan-in-two `∧`- or `∨`-node, every leaf labelled `0`, `1`, `x` or `¬
 **In Lean** as `NNF`.
 
 **D5. Size.** (line 144) `|C|` is the number of vertices. **In Lean** as `NNF.size`.
-*Critical:* vertex count of the shared DAG. See `ROADMAP.md` §1.1.
+*Critical:* vertex count of the shared DAG. See `KnowledgeCompilation-ROADMAP.md` §1.1.
 
 **D6. `⟨C⟩`, `var(C)`, `dom(C)`, `f_C`, equivalence, "admits".** (line 144)
 `⟨C⟩` is the formula obtained by expanding `C` out; `var(C)` the variables occurring;
@@ -107,7 +107,7 @@ the choice of total assignments; `⟨C⟩` is not needed and is not formalized.
 The conditions are relativized to the nodes reachable from the source
 (`NNF.DecomposableFrom`/`DeterministicFrom`/`RespectsFrom`, with the absolute forms
 *definitionally* these at `C.root`), which is what the paper imposes. Gap G1, now closed —
-see `ROADMAP.md` §6 for what that cost and for two corrections to how the gap was
+see `KnowledgeCompilation-ROADMAP.md` §6 for what that cost and for two corrections to how the gap was
 originally described.
 
 **D10. v-tree.** (`def: vtree`, line 150) A **full**, rooted, binary tree whose leaves are
@@ -324,7 +324,7 @@ an SDNNF of size `s`, then `Cov₁(f) ≤ s`.*
 *Deps:* D12, D19, D21. Attributed to Pipatsrisawat–Darwiche and Bova et al.
 **In Lean** as `bestPar_le_size_of_respects` and `bestCov_le_size_of_respects` (the latter
 without `Deterministic`), via `VTree.vars_laminar`, `NNF.Respects.conjSplit`, `NNF.descend`,
-`NNF.rect`, `NNF.covers_rect`, `NNF.partitions_rect`. See `ROADMAP.md` §4.
+`NNF.rect`, `NNF.covers_rect`, `NNF.partitions_rect`. See `KnowledgeCompilation-ROADMAP.md` §4.
 
 > **A hypothesis is missing from the paper's statement, and is carried explicitly here:
 > `var(C) ⊆ var(T)`.** `Respects` constrains only `∧`-nodes, so the bare circuit `x` respects
@@ -333,7 +333,7 @@ without `Deterministic`), via `VTree.vars_laminar`, `NNF.Respects.conjSplit`, `N
 > silently by taking the v-tree to be over `var(C)`; we state it. `2 ≤ |var(T)|` is likewise
 > needed, since a singleton has no balanced partition.
 
-*Note:* certificates/proof trees turn out **not** to be needed for this — see `ROADMAP.md`
+*Note:* certificates/proof trees turn out **not** to be needed for this — see `KnowledgeCompilation-ROADMAP.md`
 §4, "Corrections".
 
 *Lean note, learned while writing half 1:* `VTree.WellFormed` is a recursive `def` into
@@ -366,7 +366,7 @@ unambiguous `O(n²)`-variable `O(kn)`-DNF `ψ'` with `O(ℓ n^{k+4})` terms such
 target of Part C. **In Lean** as `Lifting.exists_partitionMap_permDNF` and its corollaries;
 see T7. Note the direction: the *best-partition* complexity of `ψ'` dominates the
 *fixed-partition* complexity of `ψ` — that is what makes the lifting useful.
-*Lean note:* state the term count explicitly (`ROADMAP.md` §5), and state the conclusion
+*Lean note:* state the term count explicitly (`KnowledgeCompilation-ROADMAP.md` §5), and state the conclusion
 with `Cov` rather than `NCC` (D20).
 
 **T4. Step 1 — making copies.** (unnamed lemma, line 391; proof lines 395–416)
@@ -458,7 +458,7 @@ in `Copies.lean`), by a second-moment argument done purely by counting.
 > gives only `3|Γ_k ∩ V| ≥ |V| − 2|Z|`, not `≥ |V|`, so the `3`-form does not apply; callers
 > must use the general form with `A := Γ₀ ∩ V`, `B := Γ₁ ∩ V`. It goes through because the
 > argument in fact needs only `|F| ≤ 4|S|`, strictly weaker than balancedness — see
-> `ROADMAP.md` §6, G2, where three further corrections are recorded (the indicators are
+> `KnowledgeCompilation-ROADMAP.md` §6, G2, where three further corrections are recorded (the indicators are
 > *negatively* correlated, not independent; the copies must be assumed distinct).
 
 *The constant the paper leaves unspecified:* it says `m = cn` for "some sufficiently large
@@ -495,17 +495,17 @@ v-tree `T`; disjoining them gives a d-DNNF for `ψ'` respecting `T` of size
 `2^{Õ(k)} =: n`, deterministic because `ψ'` is unambiguous. For the lower bound,
 `NCC₀(f) ≥ NCC₀^Π(g) = Ω̃(k²)`, so `Cov₀(f) = 2^{Ω̃(k²)}`, and T1 applied to `¬f` gives the
 bound `2^{Ω̃(k²)} = n^{Ω̃(log n)}`.
-**In Lean** as `Separation.thm_main`, with both bounds explicit and no `Õ`/`Ω̃`: a d-SDNNF for
+**In Lean** as `Separation.exists_dSDNNF_hard_negation`, with both bounds explicit and no `Õ`/`Ω̃`: a d-SDNNF for
 `ψ'` of size `≤ |𝒫|·(termBound·m^k)·(2(|Zι| + k·m) + 2) + 1` respecting any prescribed v-tree,
 and `coverBound ≤ |C|` for every structured DNNF computing `¬ψ'`. The lower half is
 `Separation.coverBound_le_size_of_computes_not`; the best-partition statement it factors
 through is `Separation.coverBound_le_bestCov_permDNF`. **The parameters are instantiated** in
 `LowerBounds/Instance.lean`: `Instance.params_satisfiable` exhibits `F = GaloisField 2 t`,
 `|Zι| = 2t`, `m = 6n + 1` with `t = 7 + ⌈log₂(n(6n+1))⌉` satisfying all four hypotheses, and
-`Instance.thm_main_instance` restates `thm: main` over them with `Imported.FixedPartitionHard`
+`Instance.exists_dSDNNF_hard_negation` restates `thm: main` over them with `Imported.FixedPartitionHard`
 as the sole hypothesis. The last step of the paper's argument — turning those two numbers into
 `n^{Ω̃(log n)}` — is still *not* done; it now needs a `k`-indexed family version of
-`Imported.FixedPartitionHard` carrying the `Õ`/`Ω̃` bounds (`ROADMAP.md` §6, G6).
+`Imported.FixedPartitionHard` carrying the `Õ`/`Ω̃` bounds (`KnowledgeCompilation-ROADMAP.md` §6, G6).
 *One hypothesis that is not in the paper:* the lower bound quantifies over v-trees `T` with
 `var(T) = var(ψ')`. The paper's `def: vtree` builds this in, but here it must be said; see
 gap G5.
@@ -536,8 +536,8 @@ That is impossible — it needs `VTree`, which `Circuits/DNF` does not import.
 *Deps:* T8, plus the imported fact that SDD supports polynomial-time complementation
 (Darwiche). Proof: complement an SDD for `f` to get one for `¬f` of polynomial size; SDD ⊆
 d-SDNNF, so T8 applies.
-**In Lean** as `Separation.thm_sep`, with SDD-complementation recorded as the fifth imported
-result `Imported.SDDComplementation` (`ROADMAP.md` §3, I5) — its polynomial explicit as
+**In Lean** as `Separation.exists_dSDNNF_hard_sdd`, with SDD-complementation recorded as the fifth imported
+result `Imported.SDDComplementation` (`KnowledgeCompilation-ROADMAP.md` §3, I5) — its polynomial explicit as
 `c·|C|^d`, its v-tree preserved, its output free of unreachable nodes (gap G1). The conclusion
 is stated as `coverBound ≤ c·|C|^d` rather than as a bound on `|C|`, since extracting `|C|`
 would mean a `d`-th root in `ℕ` and a rounding convention chosen for no reason.
@@ -554,8 +554,8 @@ their Theorem 2 rather than stated as one (line 669).
 > Theorem 2 is unwound in `LowerBounds/UnionDerived.lean`. `unionHard_of_imports` produces
 > this bundle from the two results Göös–Kiefer–Yuan themselves import — GJPW18 Lemma 8 and
 > the GLMWZ16/Kothari lifting theorem — with everything between them proved, including their
-> own Lemma 14 and the strong-duality step that composes its two halves. See `ROADMAP.md` §3,
-> "Unwinding I1′", for the link-by-link status, and `thm_union_of_primitive_imports` for the
+> own Lemma 14 and the strong-duality step that composes its two halves. See `KnowledgeCompilation-ROADMAP.md` §3,
+> "Unwinding I1′", for the link-by-link status, and `UnionDerived.exists_dSDNNF_pair_hard_disjunction_of_imports` for the
 > end-to-end statement with the composed bounds written out. **In Lean** as `Imported.UnionHard`, with
 clause (2) on `Par₁^Π` directly, and `UnionHard.not_hasPartition` the consumable form.
 
@@ -566,8 +566,8 @@ equivalent to `f ∨ g` has size `n^{Ω̃(log n)}`.*
 *Deps:* T1, T3, T10. Note that `f` and `g` must respect a **common** `T` — that is what
 makes the statement about the disjunction operation rather than about two unrelated
 circuits.
-**In Lean** as `Separation.thm_union` (`LowerBounds/Union.lean`), instantiated as
-`Instance.thm_union_instance`. Clause (1) is proved in the stronger form *every*
+**In Lean** as `Separation.exists_dSDNNF_pair_hard_disjunction` (`LowerBounds/Union.lean`),
+instantiated as `Instance.exists_dSDNNF_pair_hard_disjunction`. Clause (1) is proved in the stronger form *every*
 well-formed spanning v-tree works for both, which subsumes "some common `T`".
 Clause (2) carries a `Deterministic` hypothesis — see the file docstring: the import is
 about unambiguous protocols, hence rectangular *partitions*, and only determinism makes
@@ -591,7 +591,7 @@ target once `Circuits/VTree` exists, and it exercises the v-tree machinery prope
 clause 2 and `existsFresh_eval_muxDNF` is `∃x f_C ≡ f ∨ g`. Gluing two circuit DAGs would
 need index-shifting machinery nothing else in the area uses; that deviation and its
 justification are recorded in the module docstring.
-The two halves are assembled as `Separation.thm_ex` (`LowerBounds/Union.lean`). Clause (2)
+The two halves are assembled as `Separation.exists_dSDNNF_hard_existsFresh` (`LowerBounds/Union.lean`). Clause (2)
 is *literally* T11's clause (2): `existsFresh` sends a function of `(F ⊕ Zι) ⊕ Unit` to a
 function of `F ⊕ Zι`, so quantification lands back in the original variable type and no
 partition has to be transported between types. That is why the fresh variable is a
@@ -609,7 +609,7 @@ is no bundle for it in `Imported.lean`. Adding one would assert that something i
 imported when nothing is being proved from it. **Read the paper's footnote at line 119**: the
 cited source states this as an iff, but only one direction holds.
 
-**T14. dSD-`AC_m` `<` PSDD. NOT FORMALIZED — a judgement, see `ROADMAP.md` §7.5.**
+**T14. dSD-`AC_m` `<` PSDD. NOT FORMALIZED — a judgement, see `KnowledgeCompilation-ROADMAP.md` §7.5.**
 (`cor: ACsep`, line 632; proof line 636)
 *Deps:* T9, T13, D26, D28. Proof: `φ(dSD-AC_m) = d-SDNNF`; `φ(PSDD) ≥ SDD` (propagating
 away parameter constants from `φ(C)` yields an equivalent, smaller SDD); chain with T9.
@@ -624,9 +624,10 @@ shows `φ(dSD-AC_m) < φ(PSDD)` and concludes by `lem: AC`; `dSD-AC_m ≤ PSDD` 
 **T15. Addition. IN LEAN.** (`cor: add`, line 642; proof line 646)
 *For every `n` there are positive polynomials `f, g` each admitting a dSD-`AC_m` of size
 `n` such that any dSD-`AC_p` equivalent to `f + g` has size `n^{Ω̃(log n)}`.*
-*Deps:* T11 and **nothing else**. **In Lean** as `Separation.cor_add` and
-`Separation.cor_add_positive`, with `Instance.cor_add_instance` discharging the parameters.
-`n^{Ω̃(log n)}` is `partBound`, as everywhere; see `ROADMAP.md` §5.
+*Deps:* T11 and **nothing else**. **In Lean** as `Separation.exists_dSDAC_pair_hard_sum` and
+`Separation.exists_dSDACp_pair_hard_sum`, with `Instance.exists_dSDACp_pair_hard_sum`
+discharging the parameters.
+`n^{Ω̃(log n)}` is `partBound`, as everywhere; see `KnowledgeCompilation-ROADMAP.md` §5.
 
 > **The sixth imported result is not needed.** The paper's proof cites de Colnet–Mengel
 > Lemma 10 (flipping the sign of every negative constant in a positive AC yields an equivalent
@@ -635,11 +636,12 @@ shows `φ(dSD-AC_m) < φ(PSDD)` and concludes by `lem: AC`; `dSD-AC_m ≤ PSDD` 
 > dSD-`AC_p` has by definition — at a `+`-node of a deterministic AC at most one child is
 > non-zero, so the cancellation non-negativity was ruling out cannot occur. So `φ` applies to
 > the original circuit and the conversion step disappears. See `LowerBounds/Arithmetic.lean`
-> and `ROADMAP.md` §3, I6.
+> and `KnowledgeCompilation-ROADMAP.md` §3, I6.
 >
 > Consequently Part D is conditional on `UnionHard` alone, and the lower bound is **stronger
 > than the paper's**: it holds for every deterministic structured decomposable AC, with no
-> fragment condition. `cor_add_positive` specializes back to the paper's dSD-`AC_p` so the two
+> fragment condition. `Separation.exists_dSDACp_pair_hard_sum` specializes back to the
+> paper's dSD-`AC_p` so the two
 > can be read side by side.
 
 *Two further deviations, both in the direction of strength.* Clause (1) gives a dSD-`AC_m`
@@ -662,10 +664,10 @@ For the record, so that nobody re-derives these decisions:
 3. **`⟨C⟩`, the expansion of a circuit to a formula.** Used only for exposition; every
    statement about it is a statement about `f_C`. See D6.
 4. **The genuinely external theorems.** T2/T10 (Göös et al.) and the SDD complementation
-   fact (Darwiche) are hypotheses, never axioms; see `ROADMAP.md` §1.3. T5 in its published
+   fact (Darwiche) are hypotheses, never axioms; see `KnowledgeCompilation-ROADMAP.md` §1.3. T5 in its published
    form (Wegman–Carter) turned out to be within reach and is **proved** (I3). T13 is neither:
    it has no consumer here, since T14 is not formalized, so it is recorded and not bundled.
    The AC-monotonization fact (de Colnet–Mengel Lemma 10) is not needed at all — see T15.
 5. **PSDD, `X` p-decomposition, and succinctness `≤`/`<`** (D15, D27, D28). Needed only to
-   *state* T14, which is not formalized; see `ROADMAP.md` §7.5 for the three obstacles and
+   *state* T14, which is not formalized; see `KnowledgeCompilation-ROADMAP.md` §7.5 for the three obstacles and
    why the third of them is the same one blocking the asymptotic form of `thm: main`.

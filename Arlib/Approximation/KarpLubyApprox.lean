@@ -19,7 +19,10 @@ redoes the analysis with
 * samplers with `D j(x) ∈ [(1-δ₀)/|A j|, (1+δ₀)/|A j|]` in place of uniform ones,
 
 keeping the membership tests exact.  That is the strengthening attributed to
-Gore et al. in `CQCount/Union/Fpras.lean`.
+"Gore et al." in a sibling repository (`CQCount/Union/Fpras.lean`), which is not
+distributed with this library.  **The attribution could not be resolved to a
+publication from anything in this repository**, so no reference is given here;
+nothing below depends on it, since every statement is proved from scratch.
 
 ## 1. The perturbed acceptance probability, and the explicit `η`
 
@@ -110,8 +113,8 @@ index distribution is built from per-set size estimates (`indexPMF`).
 
 ## 4. Alignment with `CQCount.Union.UnionEstimator`, and what is *not* done
 
-The consumer's bundle (`CQCount/Union/Fpras.lean`) has six fields.  Field by
-field:
+The consumer's bundle (`CQCount/Union/Fpras.lean`, in a sibling repository not
+distributed with this library) has six fields.  Field by field:
 
 * `memCost`, `memCost_poly` — subsumed by the single per-trial cost bound `hc`,
   which charges one trial (index draw, sample draw, and the membership tests

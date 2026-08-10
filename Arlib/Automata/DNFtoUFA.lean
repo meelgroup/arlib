@@ -12,7 +12,7 @@ import Mathlib.Data.Fintype.Prod
 
 The one construction the complementation lower bound needs on the *upper* side.
 Göös–Kiefer–Yuan spend a single paragraph on it
-(`source/kc/goos/parts/complementation.tex:87`):
+([GKY22, §2.2]):
 
 > From `D` we obtain a UFA `A` that recognizes `F⁻¹(1) ⊆ {0,1}^{2bn}`, as
 > follows.  Each initial state of `A` corresponds to a conjunction in `D`.  When
@@ -167,7 +167,7 @@ end DNFtoUFA
 
 /-! ## The automaton -/
 
-/-- **The UFA of an unambiguous DNF** (paper, `complementation.tex:87`).
+/-- **The UFA of an unambiguous DNF** ([GKY22, §2.2]).
 
 State `(t, j)` means "checking term number `t`, `j` letters read so far".  A
 letter is consumed only if it is consistent with the term
@@ -378,7 +378,7 @@ end DNFtoUFA
 /-! ## The three theorems -/
 
 /-- **`dnfUFA ψ` recognises exactly the satisfying assignments of `ψ`**, presented
-as words of length `n` (paper, `complementation.tex:87`: "a UFA `A` that
+as words of length `n` ([GKY22, §2.2]: "a UFA `A` that
 recognizes `F⁻¹(1)`").
 
 Words of length other than `n` are rejected; no explicit length check is needed,
@@ -415,7 +415,7 @@ theorem dnfUFA_accepts_iff (ψ : DNF (Fin n)) (w : List Bool) :
     simpa using hn
 
 /-- **`dnfUFA ψ` is unambiguous when `ψ` is** — the whole point of the
-construction (paper, `complementation.tex:87`).
+construction ([GKY22, §2.2]).
 
 The proof: a run is forced by its starting state (`DNFtoUFA.isRun_forced`), so
 two accepting runs on the same word differ only in the term index they start at,
@@ -455,7 +455,7 @@ theorem dnfUFA_unambiguous {ψ : DNF (Fin n)} (h : ψ.Unambiguous) :
 variables — one state per (term, position) pair, and no sink.
 
 The paper says "`O(bn)` states for each initial state"
-(`complementation.tex:90`); here the constant is `1` and the per-term cost is
+([GKY22, §2.2]); here the constant is `1` and the per-term cost is
 `n + 1`. -/
 theorem dnfUFA_card_state (ψ : DNF (Fin n)) :
     Fintype.card (DNFtoUFA.State ψ) = ψ.length * (n + 1) := by

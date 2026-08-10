@@ -26,7 +26,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Data.Real.Sqrt
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -323,4 +323,4 @@ theorem exists_isLewis (a : ι → d → ℝ)
     _ = Real.exp (2 * u₀ i) := by rw [hlog]
     _ = (Real.exp (u₀ i)) ^ 2 := by rw [two_mul, Real.exp_add, sq]
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

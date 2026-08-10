@@ -12,15 +12,15 @@ import Mathlib.Data.List.Nodup
 
 The one ingredient that turns d-DNNF into structured d-DNNF.  A *v-tree* over a
 set of variables `X` is a full, rooted, binary tree whose leaves are in 1-1
-correspondence with `X` (paper `def: vtree`, `source/kc/arXiv.tex:150`), and a
+correspondence with `X` (paper `def: vtree`, [VS24]), and a
 DNNF *respects* a v-tree when every `∧`-node of the circuit splits its variables
-along some node of the tree (`source/kc/arXiv.tex:154`).  Structured (d-)DNNF is
+along some node of the tree ([VS24, §2]).  Structured (d-)DNNF is
 then (d-)DNNF that respects *some* v-tree (`def: structure`,
-`source/kc/arXiv.tex:156`).
+[VS24, `def: structure`]).
 
 ## Trees here, DAGs there
 
-`ROADMAP.md` §1.1 forbids the inductive-tree encoding for *circuits*, and that
+`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.1 forbids the inductive-tree encoding for *circuits*, and that
 prohibition is not weakened by anything in this file: a v-tree genuinely is a
 tree, so the inductive encoding is the honest one for it.  The size of a v-tree
 is never measured — only its shape and the variable sets hanging below its nodes
@@ -61,7 +61,7 @@ its two children — is a property of that subtree.
 
 ## Respecting: `∀ g, ∃ t`, and not the other way round
 
-The definition at `source/kc/arXiv.tex:154` gives, *for each* `∧`-node `g` of
+The definition at [VS24, §2] gives, *for each* `∧`-node `g` of
 `C`, *some* node `t` of `T` with `var(gₗ) ⊆ var(t_ℓ)` and `var(gᵣ) ⊆ var(t_ᵣ)`.
 The v-tree node may — and in every interesting circuit does — depend on `g`; the
 common misreading, a single `t` serving all of `C`, would collapse the class to
@@ -96,7 +96,7 @@ records that the redundancy is real.
 namespace Arlib.KnowledgeCompilation
 
 /-- **A v-tree** over variables `V`: a full, rooted, binary tree whose leaves are
-labelled by variables (paper `def: vtree`, `source/kc/arXiv.tex:150`).
+labelled by variables (paper `def: vtree`, [VS24]).
 
 "Full" — every internal node has exactly two children — is automatic for this
 inductive, since `node` takes two subtrees and there is no unary constructor.
@@ -135,7 +135,7 @@ section Vars
 variable [DecidableEq V]
 
 /-- The set of variables labelling the leaves below `T`; the paper's `var(t)`
-for a v-tree node `t` (`source/kc/arXiv.tex:154`).
+for a v-tree node `t` ([VS24, §2]).
 
 Note the deliberate name clash with `NNF.vars`: both are the paper's `var(·)`,
 and `Respects` compares one with the other. -/
@@ -170,7 +170,7 @@ disjoint sets of variables.
 
 This is the paper's requirement that the leaves of a v-tree be in 1-1
 correspondence with its variable set (`def: vtree`,
-`source/kc/arXiv.tex:150`), stated in the form that is actually consumed; see
+[VS24, `def: vtree`]), stated in the form that is actually consumed; see
 `wellFormed_iff_nodup_leaves` for the equivalence with the literal reading, and
 the module docstring for why this form is preferred. -/
 def WellFormed : VTree V → Prop
@@ -186,7 +186,7 @@ def WellFormed : VTree V → Prop
 /-- **The disjointness form of well-formedness is the paper's 1-1
 correspondence.**  A `VTree` has pairwise-disjoint sibling variable sets exactly
 when no variable labels two of its leaves, i.e. when the leaves are in bijection
-with `vars` (`def: vtree`, `source/kc/arXiv.tex:150`). -/
+with `vars` (`def: vtree`, [VS24]). -/
 theorem wellFormed_iff_nodup_leaves (T : VTree V) : T.WellFormed ↔ T.leaves.Nodup := by
   induction T with
   | leaf x => simp
@@ -238,7 +238,7 @@ theorem IsSubtree.vars_subset [DecidableEq V] {s T : VTree V} (h : IsSubtree s T
 
 /-- **Well-formedness is inherited by nodes.**  Every node of a v-tree is itself
 a v-tree, which is what makes the recursive definition of SDD (`def: SDD`,
-`source/kc/arXiv.tex:254`) descend into the tree without extra hypotheses. -/
+[VS24, `def: SDD`]) descend into the tree without extra hypotheses. -/
 theorem IsSubtree.wellFormed [DecidableEq V] {s T : VTree V} (h : IsSubtree s T)
     (hT : T.WellFormed) : s.WellFormed := by
   induction h with
@@ -362,7 +362,7 @@ def RespectsFrom (T : VTree V) (r : Fin C.size) : Prop :=
     ∃ tl tr : VTree V, VTree.IsSubtree (.node tl tr) T ∧
       C.varsAt j ⊆ tl.vars ∧ C.varsAt k ⊆ tr.vars
 
-/-- **`C` respects the v-tree `T`** (paper `source/kc/arXiv.tex:154`): for every
+/-- **`C` respects the v-tree `T`** ([VS24, §2]): for every
 `∧`-node `g` of `C` there is a node `t` of `T` with `var(gₗ) ⊆ var(t_ℓ)` and
 `var(gᵣ) ⊆ var(t_ᵣ)`.
 
@@ -384,7 +384,7 @@ children have disjoint variable sets.
 
 This is why the paper can define structuredness on top of DNNF without further
 compatibility conditions, and it is the form in which structuredness is first
-used in the rectangle lemma (`lem: rectangle`, `source/kc/arXiv.tex:299`). -/
+used in the rectangle lemma (`lem: rectangle`, [VS24]). -/
 theorem RespectsFrom.decomposableFrom {C : NNF V} {T : VTree V} {r : Fin C.size}
     (hT : T.WellFormed) (h : C.RespectsFrom T r) : C.DecomposableFrom r := by
   intro i j k hr hg
@@ -399,7 +399,7 @@ theorem Respects.decomposable {C : NNF V} {T : VTree V} (hT : T.WellFormed)
   RespectsFrom.decomposableFrom hT h
 
 /-- **A structured DNNF (SDNNF)** (paper `def: structure`,
-`source/kc/arXiv.tex:156`): a DNNF that respects some v-tree.
+[VS24, `def: structure`]): a DNNF that respects some v-tree.
 
 The existential over v-trees is genuine and load-bearing.  In an upper-bound
 proof it is data to supply; in a lower-bound proof it is hypothesis data to
@@ -413,7 +413,7 @@ def IsSDNNF : Prop :=
   C.Decomposable ∧ ∃ T : VTree V, T.WellFormed ∧ C.Respects T
 
 /-- **A structured d-DNNF (d-SDNNF)** (paper `def: structure`,
-`source/kc/arXiv.tex:156`): a deterministic structured DNNF.  This is the class
+[VS24, `def: structure`]): a deterministic structured DNNF.  This is the class
 the paper's main theorem is about. -/
 def IsdSDNNF : Prop := C.Deterministic ∧ C.IsSDNNF
 
@@ -453,7 +453,7 @@ end NNF
 
 Everything above takes the v-tree as given.  The lower bounds need the converse
 — a v-tree *over* a prescribed finite set of variables — because the paper's
-`def: vtree` (`source/kc/arXiv.tex:150`) makes a v-tree a v-tree *for the
+`def: vtree` ([VS24]) makes a v-tree a v-tree *for the
 variable set of the function*, while `Respects` here relates a circuit to an
 arbitrary tree.  The two are reconciled by *grafting*: any well-formed `T` sits
 inside a well-formed `T'` spanning whatever extra variables one wants, and
@@ -497,7 +497,7 @@ lemma wellFormed_ofList [DecidableEq V] {x : V} {l : List V} (h : (x :: l).Nodup
 
 /-- **Every nonempty finite set of variables carries a v-tree**, i.e. the
 paper's "v-tree over `X`" exists for every `X ≠ ∅` (`def: vtree`,
-`source/kc/arXiv.tex:150`).
+[VS24, `def: vtree`]).
 
 Nonemptiness is necessary and not a technicality: `vars_nonempty` says every
 v-tree has at least one variable, so `∅` carries none. -/
@@ -564,7 +564,7 @@ prescribed variables.**
 
 `VTree.exists_wellFormed_isSubtree` and `Respects.mono` in one step.  With
 `s = univ` this says that the paper's convention — a v-tree is a v-tree *for the
-variable set of the function* (`def: vtree`, `source/kc/arXiv.tex:150`) — costs
+variable set of the function* (`def: vtree`, [VS24]) — costs
 nothing here: a circuit respecting a v-tree that omits variables respects one
 that omits none, of the same circuit and with the old tree still inside.  That
 is what lets the lower bounds of `LowerBounds/Separation.lean` drop the

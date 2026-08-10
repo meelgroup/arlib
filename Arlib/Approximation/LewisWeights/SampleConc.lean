@@ -29,7 +29,7 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Bernstein
 import Arlib.Approximation.LewisWeights.EmbedAux
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset Arlib

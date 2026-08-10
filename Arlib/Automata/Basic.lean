@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # Finite automata: NFA, DFA, and the unambiguous fragment
 
 The objects of Göös–Kiefer–Yuan, *Lower Bounds for Unambiguous Automata via
-Communication Complexity* (`source/kc/goos/`, §2).  Their three theorems are
+Communication Complexity* ([GKY22, §1.4]).  Their three theorems are
 about the number of *states* an automaton needs, so this file fixes what a
 state, a run, and an accepting run are, and — the point of the paper — what it
 means for an automaton to have at most one accepting run per word.
@@ -57,7 +57,7 @@ namespace Arlib.Automata
 universe u v
 
 /-- **A nondeterministic finite automaton** over state type `Q` and alphabet
-`σ` (paper §2, `source/kc/goos/parts/preliminaries.tex`).
+`σ` ([GKY22, §1.4]).
 
 The paper's quintuple `(Q, Σ, δ, I, F)`: `Q` and `σ` are the type parameters,
 `step` is `δ`, `start` is `I`, `accept` is `F`. -/
@@ -249,7 +249,7 @@ theorem IsDFA.isRun_unique (h : A.IsDFA) {q : Q} {w : List σ} {rs₁ rs₂ : Li
         rw [htail]
 
 
-/-- **Every DFA is a UFA** (paper §2, "Any DFA is a UFA"). -/
+/-- **Every DFA is a UFA** ([GKY22, §1.4], "Any DFA is a UFA"). -/
 theorem IsDFA.unambiguous (h : A.IsDFA) : A.Unambiguous := by
   intro w q₁ q₂ rs₁ rs₂ hs₁ hr₁ _ hs₂ hr₂ _
   obtain ⟨_, _, hu⟩ := h.1

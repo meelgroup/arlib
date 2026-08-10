@@ -37,7 +37,7 @@ two-sided bound that drives everything downstream.
 Everything here is proved from first principles with no `sorry`; in particular
 no eigenvalue, and no spectral theorem, appears anywhere.
 -/
-import Arlib.MarkovChains.Techniques.Functional
+import Arlib.Probability.FinDistFunctional
 
 namespace Arlib.MarkovChains
 

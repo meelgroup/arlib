@@ -9,8 +9,10 @@ Authors: Kuldeep S. Meel
 The local-to-global technique is an induction on the levels of a weighted
 complex, and every step of that induction is one identity: the variance at the
 upper level splits *exactly* into the variance of its projection to the lower
-level plus the Dirichlet form of the down-up walk.  In the monograph this is
-`lem:diff-var` (§6.6, line 2208),
+level plus the Dirichlet form of the down-up walk.  In the monograph —
+Chen–Štefankovič–Vigoda, *Spectral Independence and Local-to-Global Techniques
+for Optimal Mixing of Markov Chains*, arXiv:2307.13826 (2023), cited below as
+[CSV23] — this is `lem:diff-var` ([CSV23, §6.6]),
 
   `ℰ_{P^{∨∧}_{i,j}}(f^{(i)}) = Var_{π_i}(f^{(i)}) - Var_{π_j}(f^{(j)})`,
 

@@ -6,7 +6,7 @@ Authors: Kuldeep S. Meel
 /-
 # The two imported results behind the UFA complementation lower bound
 
-Göös–Kiefer–Yuan's `thm:complement` (`source/kc/goos/parts/complementation.tex:6`)
+Göös–Kiefer–Yuan's `thm:complement` ([GKY22, §2])
 is a four-step chain.  Steps 3 and 4 — the unambiguous DNF for the composed
 function, the UFA built from it, and the simulation of an NFA by a rectangle
 cover — are *proved* in this repository (`Circuits/DNFSubst.lean`,
@@ -17,20 +17,20 @@ exactly the idiom of `KnowledgeCompilation/LowerBounds/Imported.lean`:
 
 * `UnambiguousDNFHardCNF` — Balodis–Ben-David–Göös–Jain–Kothari, *Unambiguous
   DNFs and Alon–Saks–Seymour*, FOCS 2021, quoted as `thm:Puzzle-I`
-  (`source/kc/goos/parts/complementation.tex:24`);
+  ([GKY22, §2.1]);
 * `NondetLifting` — Göös, *Lower bounds for clique vs. independent set*, and
   Göös–Lovett–Meka–Watson–Zuckerman, quoted as `thm:lifting`
-  (`source/kc/goos/parts/complementation.tex:47`).
+  ([GKY22, §2.1]).
 
 Neither is an `axiom`.  Both are threaded explicitly into
-`Automata/Complement.lean`, so a reader of `thm_complement` can see precisely
-what it is conditional on, and anyone who later proves either can discharge it
-with no other change.  This is `KnowledgeCompilation/ROADMAP.md` §1.3 applied to
-the automata half of the repository.
+`Automata/Complement.lean`, so a reader of `complement_state_separation` can see
+precisely what it is conditional on, and anyone who later proves either can
+discharge it with no other change.  This is `docs/dev/KnowledgeCompilation-ROADMAP.md`
+§1.3 applied to the automata half of the repository.
 
 ## No asymptotics
 
-The paper writes `Ω̃(k²)` and `Ω(C₀(f)·b)`.  Following `ROADMAP.md` §5, the
+The paper writes `Ω̃(k²)` and `Ω(C₀(f)·b)`.  Following `docs/dev/Automata-ROADMAP.md` §5, the
 bundles carry **explicit numeric parameters** instead: `cnfBound` for the CNF
 width that `f` defeats, and a function `liftBound : ℕ → ℕ` for the rectangle
 count the lifting theorem produces.  Every downstream statement then relates the
@@ -41,7 +41,7 @@ the parameters at the very end.
 ## CNFs do not appear, and that is deliberate
 
 `C₀(f)` is the least width of a CNF for `f`.  The paper itself observes
-`C₀(f) = C₁(¬f)` (`source/kc/goos/parts/complementation.tex:23`), and *that* is
+`C₀(f) = C₁(¬f)` ([GKY22, §2.1]), and *that* is
 the form both the hypothesis and its consumer use: the lifting theorem is fed a
 lower bound on `C₀(f)`, and the only way a lower bound on a width is ever used is
 to say that no formula of smaller width computes the function.  So this file
@@ -60,7 +60,7 @@ carries the single strongest statement, at `w = cnfBound`, rather than a family
 ## Where the lifting theorem lives
 
 `NondetLifting.lift` concludes in the **variable-partition** model of
-`Communication/Rectangle.lean`: no cover of `(f ∘ g^κ)⁻¹(0)` by fewer than
+`Arlib/Communication/Rectangle.lean`: no cover of `(f ∘ g^κ)⁻¹(0)` by fewer than
 `liftBound d` rectangles of `Gadget.partition κ b`.  That is the model the
 imported theorem is actually about — the two parties are the two halves of the
 gadget's variables — and it is the model in which the sibling bundle
@@ -68,7 +68,7 @@ gadget's variables — and it is the model in which the sibling bundle
 imports of the two Göös–Kiefer–Yuan theorems look alike.
 
 Automata, on the other hand, cut a *word* at a position, which is the `TPRect`
-model of `Communication/TwoParty.lean`.  The translation between the two is
+model of `Arlib/Communication/TwoParty.lean`.  The translation between the two is
 `Automata/WordCoding.lean` and it is not free: it is the one genuinely new
 construction the assembly needs.  Putting it there rather than baking the
 two-party model into this bundle keeps the import faithful to its source.
@@ -76,25 +76,27 @@ two-party model into this bundle keeps the import faithful to its source.
 ## Non-vacuity
 
 Both bundles are inhabited at the foot of the file.  A bundle whose fields were
-jointly unsatisfiable would make `thm_complement` vacuously true while
-`#print axioms` reported nothing wrong, which is precisely the failure mode that
-motivated making these structures rather than axioms.  See the section comment
-there for what the witnesses do and — much more importantly — do not establish.
+jointly unsatisfiable would make `complement_state_separation` vacuously true
+while `#print axioms` reported nothing wrong, which is precisely the failure mode
+that motivated making these structures rather than axioms.  See the section
+comment there for what the witnesses do and — much more importantly — do not
+establish.
 -/
 import Arlib.KnowledgeCompilation.Circuits.DNF
-import Arlib.KnowledgeCompilation.Communication.Gadget
+import Arlib.Communication.Gadget
 
 namespace Arlib.Automata
 namespace Imported
 
 open Arlib.KnowledgeCompilation
+open Arlib.Communication
 
 /-! ## CNF width, without CNFs -/
 
 /-- **`f` has no CNF of width `w`**, i.e. the paper's `C₀(f) > w`.
 
 Stated through `C₀(f) = C₁(¬f)`
-(`source/kc/goos/parts/complementation.tex:23`): no DNF all of whose terms have
+([GKY22, §2.1]): no DNF all of whose terms have
 at most `w` literals computes `¬f`.  See the module docstring for why no CNF
 datatype is introduced.
 
@@ -116,7 +118,7 @@ theorem NoCNFOfWidth.mono {κ : Type} [DecidableEq κ] {w w' : ℕ}
 /-! ## Step 1: an unambiguous `k`-DNF with no narrow CNF -/
 
 /-- **Balodis–Ben-David–Göös–Jain–Kothari, Theorem 1** [IMPORTED], quoted as
-`thm:Puzzle-I` in `source/kc/goos/parts/complementation.tex:24`:
+`thm:Puzzle-I` in [GKY22, §2.1]:
 
 > For every `k ∈ ℕ` there exists a function `f : {0,1}^n → {0,1}` where
 > `n ≤ poly(k)` and such that `UC₁(f) ≤ k` and `C₀(f) ≥ Ω̃(k²)`.
@@ -125,8 +127,8 @@ The `UC₁(f) ≤ k` half is **data** rather than a property: it *is* an unambig
 `k`-DNF for `f`, which is the form the upper-bound half of the complementation
 argument consumes — it is substituted into, multiplied out, and compiled to a
 UFA.  Bundling the formula rather than the mere existence of one is what makes
-`thm_complement` produce an automaton instead of merely asserting that one
-exists.
+`complement_state_separation` produce an automaton instead of merely asserting
+that one exists.
 
 Three parameters replace the paper's asymptotics.  `k` is the DNF width;
 `termBound` is the number of terms, which the paper does not bound in this
@@ -135,14 +137,14 @@ proportional to (see the note below); and `cnfBound` is the paper's `Ω̃(k²)`.
 
 *On `termBound`.*  An unambiguous `k`-DNF over `n` variables has at most
 `(2n+1)^k` terms — the paper makes exactly this count for the *composed* formula
-at `source/kc/goos/parts/complementation.tex:85` — so no generality is lost by
+at [GKY22, §2.2] — so no generality is lost by
 carrying the count as a parameter, and carrying it is what keeps the final state
 bound explicit rather than `n^{O(bk)}`.
 
 *On `n ≤ poly(k)`.*  The variable count is the type `κ`, and the relation
 between `Fintype.card κ` and `k` is not used anywhere in the assembly: it matters
 only for the final asymptotic packaging `2^{Ω̃(k²)} = N^{Ω̃(log N)}`, which — per
-`ROADMAP.md` §5 — is deliberately not carried out.  So no field records it. -/
+`docs/dev/Automata-ROADMAP.md` §5 — is deliberately not carried out.  So no field records it. -/
 structure UnambiguousDNFHardCNF (κ : Type) [Fintype κ] [DecidableEq κ]
     (k cnfBound termBound : ℕ) where
   /-- The hard function, presented as a DNF — the paper's `f`. -/
@@ -159,7 +161,7 @@ structure UnambiguousDNFHardCNF (κ : Type) [Fintype κ] [DecidableEq κ]
 /-! ## Step 2: non-deterministic lifting -/
 
 /-- **Göös, Theorem 4** [IMPORTED], quoted as `thm:lifting` in
-`source/kc/goos/parts/complementation.tex:47`:
+[GKY22, §2.1]:
 
 > For any `n ∈ ℕ` there is a gadget `g : {0,1}^b × {0,1}^b → {0,1}` with
 > `b = Θ(log n)` such that for any `f : {0,1}^n → {0,1}` we have, for
@@ -169,10 +171,10 @@ Four things are made explicit.
 
 *The gadget is data.*  The upper-bound half of the argument composes with the
 very same gadget — `f`'s unambiguous DNF is expanded by substituting unambiguous
-`2b`-DNFs for `g` and `¬g` (`:80`) — so the bundle must hand it over, not merely
+`2b`-DNFs for `g` and `¬g` ([GKY22, §2.2]) — so the bundle must hand it over, not merely
 assert that one exists.
 
-*No logarithm.*  `Non₀ = log₂ Cov₀` by definition (`:38`), and this area keeps
+*No logarithm.*  `Non₀ = log₂ Cov₀` by definition ([GKY22, §2.1]), and this area keeps
 counts rather than their logarithms (`Automata/Simulation.lean`, "Counts, not
 logarithms").  So the conclusion is a lower bound on the number of rectangles:
 `liftBound d` is the paper's `2^{Ω(d·b)}`.
@@ -181,7 +183,7 @@ logarithms").  So the conclusion is a lower bound on the number of rectangles:
 to a specific `f` that is itself part of the other import — and, in the union
 argument, to a doubled function that is not the one whose DNF is compiled.
 
-*The composition is `Communication/Gadget.lean`'s*, with variables
+*The composition is `Arlib/Communication/Gadget.lean`'s*, with variables
 `Fin 2 × κ × Fin b` split by first component, and the conclusion is stated for
 `Gadget.partition κ b`.  See the module docstring for why the two-party
 (word-cutting) model is deliberately *not* used here. -/
@@ -197,11 +199,11 @@ structure NondetLifting (κ : Type) [Fintype κ] [DecidableEq κ]
 
 /-! ## A non-vacuity check
 
-`thm_complement` is conditional on the two bundles above and on nothing else.
-So there is a failure mode that `#print axioms` cannot detect and that would make
-the whole file worthless: if a bundle's fields were jointly **unsatisfiable**,
-every theorem taking it as a hypothesis would be vacuously true, would typecheck,
-and would report only the three standard axioms.  Making the imports structures
+`complement_state_separation` is conditional on the two bundles above and on
+nothing else.  So there is a failure mode that `#print axioms` cannot detect and
+that would make the whole file worthless: if a bundle's fields were jointly
+**unsatisfiable**, every theorem taking it as a hypothesis would be vacuously
+true, would typecheck, and would report only the three standard axioms.  Making the imports structures
 rather than `axiom`s does not by itself answer that worry; inhabiting them does.
 
 *What these witnesses are not.*  They are the smallest possible instances — one

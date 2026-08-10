@@ -11,8 +11,8 @@ function into a *communication*-complexity statement about a two-party function.
 Given `f : {0,1}^n → {0,1}` and a gadget `g : {0,1}^b × {0,1}^b → {0,1}`, the
 lifted function is `F := f ∘ g^n`, and the upper-bound half of both main theorems
 of Göös–Kiefer–Yuan is the same sentence, appearing twice
-(`source/kc/goos/parts/complementation.tex`, "Proof of Theorem 1"; reused for
-Theorem 2 at `source/kc/goos/parts/union.tex`, "Proof of Theorem 2"):
+([GKY22, §2], "Proof of Theorem 1"; reused for
+Theorem 2 at [GKY22, §3], "Proof of Theorem 2"):
 
 > `g` and `¬g` have unambiguous `2b`-DNFs, which can be extracted from the
 > deterministic decision tree of `g`.  By plugging these unambiguous `2b`-DNFs

@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # UFA complementation: `thm:complement`
 
 Göös–Kiefer–Yuan, *Lower Bounds for Unambiguous Automata via Communication
-Complexity*, §3 (`source/kc/goos/parts/complementation.tex`):
+Complexity* ([GKY22, §2]):
 
 > For every `n` there is a language `L ⊆ {0,1}*` recognised by an `n`-state UFA
 > such that any NFA recognising `L̄` requires `n^{Ω̃(log n)}` states.
@@ -19,7 +19,7 @@ the imported lifting theorem read through `Automata/WordCoding.lean` and
 
 ## The four steps, and where each of them lives
 
-The paper's proof (`:74`–`:96`) is a chain of four links.
+The paper's proof ([GKY22, §2.2]) is a chain of four links.
 
 1. *Balodis et al.*: an unambiguous `k`-DNF whose function has no narrow CNF.
    **Imported**, as `Imported.UnambiguousDNFHardCNF`.
@@ -41,7 +41,7 @@ of other papers and both of which are inhabited in `Automata/Imported.lean`.
 
 ## Explicit bounds
 
-Per `KnowledgeCompilation/ROADMAP.md` §5 no `Ω̃` appears.  With `n := |κ|` the
+Per `docs/dev/KnowledgeCompilation-ROADMAP.md` §5 no `Ω̃` appears.  With `n := |κ|` the
 number of variables of `f`, `b` the gadget width, `k` the DNF width, `termBound`
 the number of terms of `f`, `cnfBound` the CNF width `f` defeats, and `liftBound`
 the lifting theorem's rectangle count:
@@ -59,14 +59,14 @@ Two of the three factors in the upper bound are worth naming.  `(2^{2b})^k` is
 the number of ways to choose, for each of the `k` literals of a term of `f`, one
 of the at most `2^{2b}` minterms of `g` or of `¬g`; the paper bounds the same
 quantity crudely by "at most `(2(2bn)+1)^{2bk}` conjunctions of at most `2bk`
-literals" (`:83`), which is weaker and involves `n`.  And `2nb + 1` is the number
+literals" ([GKY22, §2.2]), which is weaker and involves `n`.  And `2nb + 1` is the number
 of positions in the word plus one, the paper's "`O(bn)` states for each initial
-state" (`:90`) with the constant pinned to `1`.
+state" ([GKY22, §2.2]) with the constant pinned to `1`.
 
 ## What the paper glosses over
 
 *The product with a length counter is unnecessary.*  The paper's last step
-(`:95`) converts an NFA for `{0,1}* ∖ L(A)` into one for `F⁻¹(0)` by a product
+([GKY22, §2.2]) converts an NFA for `{0,1}* ∖ L(A)` into one for `F⁻¹(0)` by a product
 with a `2bn + 2`-state DFA and pays a factor `2bn + 2` in the bound.  That step
 exists only to satisfy a `lem:NFA-CC` phrased for an automaton whose language is
 *exactly* `F⁻¹(1)`.  `Automata/Simulation.lean` phrases it for an automaton
@@ -76,7 +76,7 @@ here is `liftBound cnfBound` rather than `liftBound cnfBound / (2bn + 2)`.  See
 
 *The term count of `f` is not bounded by the paper's Theorem `thm:Puzzle-I`*,
 yet the UFA's state count is proportional to it.  The paper repairs this by
-counting conjunctions of `2bk` literals over `2bn` variables (`:83`), which
+counting conjunctions of `2bk` literals over `2bn` variables ([GKY22, §2.2]), which
 bounds the terms of the *composed* formula directly.  Here the count is carried
 as the parameter `termBound` of the import, which is both sharper and closer to
 what an eventual proof of that theorem would supply.
@@ -92,6 +92,7 @@ namespace Arlib.Automata
 namespace Complement
 
 open Arlib.KnowledgeCompilation
+open Arlib.Communication
 
 variable {κ : Type} [Fintype κ] [DecidableEq κ] {k cnfBound termBound b : ℕ}
   {liftBound : ℕ → ℕ}
@@ -99,7 +100,7 @@ variable {κ : Type} [Fintype κ] [DecidableEq κ] {k cnfBound termBound b : ℕ
 /-! ## Step 3: the composed formula and its automaton -/
 
 /-- **The unambiguous `2bk`-DNF `D` for `F = f ∘ g^κ`**
-(`source/kc/goos/parts/complementation.tex:80`): the gadget's minterm expansion
+([GKY22, §2.2]): the gadget's minterm expansion
 and its negation's substituted into `f`'s unambiguous `k`-DNF and multiplied out.
 
 This is `LowerBounds/UnionDerived.gadgetSubst` at the identity embedding — the
@@ -210,8 +211,8 @@ theorem card_ge_of_complement
 
 /-! ## The theorem -/
 
-/-- **`thm:complement`** (stated at `source/kc/goos/parts/introduction.tex:10`,
-restated and proved at `source/kc/goos/parts/complementation.tex:6`), with
+/-- **`thm:complement`** (stated at [GKY22, §1],
+restated and proved at [GKY22, §2]), with
 both bounds explicit.
 
 Given the two imported results — an unambiguous `k`-DNF over `κ` with at most
@@ -226,13 +227,24 @@ non-deterministic lifting theorem for a gadget on `b` bits with rectangle bound
 
 The paper's `n^{Ω̃(log n)}` is the comparison of these two numbers under the
 parameters of the imported theorems, `termBound · (2^{2b})^k = 2^{Õ(k)}` and
-`liftBound cnfBound = 2^{Ω̃(k²)}`; per `ROADMAP.md` §5 that comparison is
+`liftBound cnfBound = 2^{Ω̃(k²)}`; per `docs/dev/Automata-ROADMAP.md` §5 that comparison is
 packaging and is left to the reader of the two numbers.
 
-The three conjuncts are `ufa_unambiguous`, `ufa_card_le` and
-`card_ge_of_complement`; they are stated separately as well, because a consumer
-wanting the automaton itself wants `ufa` and not an existential. -/
-theorem thm_complement (Bd : Imported.UnambiguousDNFHardCNF κ k cnfBound termBound)
+This is a **derived** convenience: each of the three conjuncts is a theorem in
+its own right, stated above, and this statement is literally their triple.
+
+| conjunct | component lemma |
+|---|---|
+| `(ufa Bd L).Unambiguous` | `ufa_unambiguous` |
+| the state-count upper bound | `ufa_card_le` |
+| the lower bound for the complement | `card_ge_of_complement` |
+
+A consumer that wants only one of the three should call that component directly
+rather than destructure this triple; a consumer that wants the automaton itself
+wants `ufa`, and not an existential.  The sharper form of the third conjunct,
+constraining `C` only on split words, is `card_ge_of_complement_on_split`. -/
+theorem complement_state_separation
+    (Bd : Imported.UnambiguousDNFHardCNF κ k cnfBound termBound)
     (L : Imported.NondetLifting κ b liftBound) :
     (ufa Bd L).Unambiguous ∧
     Fintype.card (DNFtoUFA.State (WordCoding.encDNF (hardDNF Bd L)))

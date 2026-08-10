@@ -82,7 +82,7 @@ that the transfer lemma's `hμ1` is available — is **not** restated here: it i
 No `sorry`, no new axioms.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -172,4 +172,4 @@ theorem uniformMass_le_of_subset {α : Type*} [DecidableEq α] {C D : Finset α}
     refine mul_nonneg (by positivity) ?_
     split <;> positivity
 
-end Arlib
+end Arlib.Probability

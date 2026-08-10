@@ -52,6 +52,7 @@ per-step hypothesis `hB`; no further information theory is needed downstream.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

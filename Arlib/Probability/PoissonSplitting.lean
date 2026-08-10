@@ -104,7 +104,7 @@ import Mathlib.Data.Nat.Choose.Sum
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Algebra.BigOperators.Ring
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 open scoped BigOperators Classical
@@ -753,4 +753,4 @@ theorem tsum_poissonPMF_mul_countMass (S : Finset X) (q : X → ℝ) (hq : ∑ x
       = ∏ x ∈ S, poissonPMF (q x * mu) (k x) :=
   (hasSum_poissonPMF_mul_countMass S q hq mu k).tsum_eq
 
-end Arlib
+end Arlib.Probability

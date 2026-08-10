@@ -8,11 +8,11 @@ Authors: Kuldeep S. Meel
 
 Sixth and headline module of `KnowledgeCompilation.Tseitin`, formalizing §7 of
 Florent de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas with short
-regular resolution refutations* (`source/kc/decolnet/main.tex:670`).
+regular resolution refutations* ([dCM21, §6.2]).
 
-**Lemma 22** (`lem:dnnf_lower`, `:672`): a satisfiable `T(G,c)` with `G` connected
+**Lemma 22** (`lem:dnnf_lower`): a satisfiable `T(G,c)` with `G` connected
 of maximum degree `≤ Δ` needs a complete DNNF of size `2^{Ω(tw(G)/Δ)}`.  The paper
-extracts the **explicit** exponent (`:676`)
+extracts the **explicit** exponent ([dCM21, §6.2])
 
   `k = 2·tw(G) / (9Δ)`,
 
@@ -38,20 +38,21 @@ top of the boxed structural lemmas.  Both pieces are proved in full:
 each hypothesis is annotated with its source.  Discharging them from the bundles
 themselves needs the full adversarial-game mechanization — Adam's cut realizing
 `bw ≥ (2/3)tw` and the per-round rectangle bound — which is out of reach at this
-version (`RectangleGame.aRLe`/`DNNFtoRectangleGame` are the relevant boxes), so
+version (`RectangleGame.aRLe`/`Imported.DNNFtoRectangleGame` are the relevant
+boxes), so
 they are threaded in as hypotheses rather than derived.  This is the "cleanest
 explicit bound, gap documented" the plan calls for: the *counting* is proved, the
 *game realizing the counting* is imported.
 
-The map, from the proof at `source/kc/decolnet/main.tex:676`–`:683`:
+The map, from the proof at [dCM21, §6.2]:
 
 | hypothesis | source |
 | --- | --- |
-| `hbw : 2·t ≤ 3·|V'|` | `Branchwidth.HarveyWood` (`bw ≥ (2/3)tw`) + the game cut `|V'| ≥ bw` (`:679`) |
-| `hindep : |V'| ≤ Δ·|V''|` | max-degree-`Δ` independent subset `|V''| ≥ |V'|/Δ` (`:683`) |
-| `hstar : |V''| ≤ 3·k` | `Splitting.ThreeConnectedSplitChoice` (L19), `|V*| ≥ |V''|/3` (`:683`) |
-| `hcount : 2^{(|E|−|V|+1)} ≤ r · 2^{(|E|−|V|−k+1)}` | `Splitting.rectangle_induces_subConstraint` (L15) + `Splitting.IndepSplitModelCount` (L18): each rectangle holds `≤ 2^{|E|−|V|−k+1}` models, and `T(G,0)` has `2^{|E|−|V|+1}` |
-| `hsize : r ≤ |D|` | `RectangleGame.DNNFtoRectangleGame` (Thm 12): `aR ≤ |D|` |
+| `hbw : 2·t ≤ 3·|V'|` | `Imported.HarveyWood` (`Branchwidth.lean`, `bw ≥ (2/3)tw`) + the game cut `|V'| ≥ bw` ([dCM21, §6.2]) |
+| `hindep : |V'| ≤ Δ·|V''|` | max-degree-`Δ` independent subset `|V''| ≥ |V'|/Δ` ([dCM21, §6.2]) |
+| `hstar : |V''| ≤ 3·k` | `Imported.ThreeConnectedSplitChoice` (`Splitting.lean`, L19), `|V*| ≥ |V''|/3` ([dCM21, §6.2]) |
+| `hcount : 2^{(|E|−|V|+1)} ≤ r · 2^{(|E|−|V|−k+1)}` | `Splitting.rectangle_induces_subConstraint` (L15) + `Imported.IndepSplitModelCount` (L18): each rectangle holds `≤ 2^{|E|−|V|−k+1}` models, and `T(G,0)` has `2^{|E|−|V|+1}` |
+| `hsize : r ≤ |D|` | `Imported.DNNFtoRectangleGame` (`RectangleGame.lean`, Thm 12): `aR ≤ |D|` |
 
 The count is written with `b := |E|−|V|−k+1`, so `|E|−|V|+1 = b + k`, avoiding
 truncated natural-number subtraction.
@@ -60,7 +61,7 @@ truncated natural-number subtraction.
 
 This is Lemma 22, the paper's self-contained DNNF lower bound.  The full
 `Theorem 1` (regular-resolution length via the Step-1 reduction) is **deferred** —
-see `ROADMAP.md`, the Step-1 modules `Search`/`Regular`/`WellStructured`.
+see `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md`, the Step-1 modules `Search`/`Regular`/`WellStructured`.
 -/
 import Arlib.KnowledgeCompilation.Tseitin.ThreeConnected
 import Arlib.KnowledgeCompilation.Tseitin.Branchwidth
@@ -70,7 +71,7 @@ namespace Arlib.KnowledgeCompilation.Tseitin
 
 /-! ## The two self-contained steps -/
 
-/-- **The exponent chain** (`source/kc/decolnet/main.tex:683`).  From
+/-- **The exponent chain** ([dCM21, §6.2]).  From
 `2·t ≤ 3·V'` (Adam's cut, `bw ≥ (2/3)tw`), `V' ≤ Δ·V''` (independent subset), and
 `V'' ≤ 3·k` (splitting keeps `k ≥ V''/3` connected), the exponent satisfies
 `2·t / (9Δ) ≤ k`. -/
@@ -84,7 +85,7 @@ theorem k_ge_of_chain {t Δ Vp Vpp kstar : ℕ}
       _ = 9 * Δ * kstar := by ring
   exact Nat.div_le_of_le_mul hchain
 
-/-- **The pigeonhole** (`source/kc/decolnet/main.tex:676`).  If the `2^{b+k}`
+/-- **The pigeonhole** ([dCM21, §6.2]).  If the `2^{b+k}`
 models of `T(G,0)` are covered by `r` rectangles, each holding at most `2^b`
 models, then at least `2^k` rectangles are needed. -/
 theorem pow_le_of_total_le_mul {b kstar r : ℕ} (h : 2 ^ (b + kstar) ≤ r * 2 ^ b) :
@@ -94,8 +95,8 @@ theorem pow_le_of_total_le_mul {b kstar r : ℕ} (h : 2 ^ (b + kstar) ≤ r * 2 
 
 /-! ## Lemma 22 -/
 
-/-- **`lem:dnnf_lower`** (`source/kc/decolnet/main.tex:672`), with the
-paper's **explicit** exponent `k = 2·tw(G)/(9Δ)` (`:676`).
+/-- **`lem:dnnf_lower`** ([dCM21]), with the
+paper's **explicit** exponent `k = 2·tw(G)/(9Δ)` ([dCM21, §6.2]).
 
 A complete DNNF `D` computing a satisfiable `T(G,c)` — `G` connected, maximum
 degree `≤ Δ`, treewidth `t := tw(G)` — has size

@@ -19,7 +19,7 @@ lemmas discharge the `hsub`/`hadd` obligations on `M.ce.cond` directly.
 -/
 import Arlib.Probability.MixedCoinSpace
 
-namespace Arlib
+namespace Arlib.Probability
 
 namespace MixedCoinSpace
 
@@ -206,4 +206,4 @@ theorem condCE_forgetSet_sum {ι : Type} [DecidableEq ι] (T : Finset C.ι)
 
 end MixedCoinSpace
 
-end Arlib
+end Arlib.Probability

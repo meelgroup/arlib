@@ -533,7 +533,7 @@ def toParsimoniousReduction (R : PinnedReduction sizeA sizeB f g g₁ g₂ cc ce
   decode := R.decode
 
 /-- **A pinned FPRAS transfers, with its exponent.** -/
-theorem fpras (R : PinnedReduction sizeA sizeB f g g₁ g₂ cc ce sc se)
+theorem isFPRAS_comp_pinned (R : PinnedReduction sizeA sizeB f g g₁ g₂ cc ce sc se)
     {B : β → ℝ → PMF (ℝ × ℕ)} {c d : ℕ} (hg : IsFPRAS sizeB g B)
     (hB : IsFPRAS.PinnedTime sizeB B c d) :
     IsFPRAS sizeA f (fun w ε => (B (R.toFun w) ε).map (fun p => (p.1, p.2 + R.cost w)))
@@ -543,7 +543,7 @@ theorem fpras (R : PinnedReduction sizeA sizeB f g g₁ g₂ cc ce sc se)
   IsFPRAS.comp_parsimonious_pinned R.cost_pinned R.size_pinned R.count_eq hg hB
 
 /-- **A pinned FPAUS transfers, with its exponent.** -/
-theorem fpaus (R : PinnedReduction sizeA sizeB f g g₁ g₂ cc ce sc se)
+theorem isFPAUS_comp_pinned (R : PinnedReduction sizeA sizeB f g g₁ g₂ cc ce sc se)
     {B : β → ℝ → PMF (Option Ω₂ × ℕ)} {c d : ℕ} (hg : IsFPAUS sizeB g₂ B)
     (hB : IsFPAUS.PinnedTime sizeB B c d) :
     IsFPAUS sizeA g₁ (fun w δ => (B (R.toFun w) δ).map

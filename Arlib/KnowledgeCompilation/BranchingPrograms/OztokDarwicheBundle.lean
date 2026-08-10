@@ -328,17 +328,17 @@ theorem clog_two_le_self (r : ℕ) : Nat.clog 2 r ≤ r :=
   (Nat.le_pow_iff_clog_le (by norm_num)).mp (le_of_lt (Nat.lt_two_pow_self))
 
 open SimpleGraph in
-/-- **Theorem `separ2` for `T_r(P_{2r})`, fully unconditional.**  This is Razgon's separation
-(`source/kc/razgon/FBDDJOURN.tex:1082`) with *both* sides discharged inside Lean: the
+/-- **Theorem `decisionDNNF_robp_separation` for `T_r(P_{2r})`, fully unconditional.**  This is Razgon's separation
+([Raz16, `separ2`]) with *both* sides discharged inside Lean: the
 decision-DNNF upper bound comes from `exists_decisionDNNF_binTree_boxProd` (no Oztok–Darwiche
-oracle), and the ROBP lower bound from `Razgon.maintheor`.  The only hypothesis is `1 ≤ r`.
+oracle), and the ROBP lower bound from `Razgon.two_rpow_le_size_binTree_pathGraph`.  The only hypothesis is `1 ≤ r`.
 
 With `n = (2^{r+1} − 1)·2r` the number of variables:
 
 * there is a decision-DNNF for `φ(T_r(P_{2r}))` of size `≤ 15·(16·n⁵) + 1` — the paper's `O(n⁵)`;
 * every uniform read-once NROBP realising it has real size `≥ 2^{((r+1−⌈log₂ r⌉)·r/2)/f(5)}` —
   the paper's `n^{Ω(log n)}`. -/
-theorem separ2_quintic_unconditional {r : ℕ} (hr : 1 ≤ r) :
+theorem decisionDNNF_robp_separation_quintic_unconditional {r : ℕ} (hr : 1 ≤ r) :
     (∃ C : NNF (BinTreeNode r × Fin (2 * r)), IsDecisionDNNF C ∧
         (∀ α, C.eval α = true ↔ phi (binTree r □ SimpleGraph.pathGraph (2 * r)) α) ∧
         C.size ≤ 15 * (16 * ((2 ^ (r + 1) - 1) * (2 * r)) ^ 5) + 1) ∧
@@ -348,7 +348,8 @@ theorem separ2_quintic_unconditional {r : ℕ} (hr : 1 ≤ r) :
         (2 : ℝ) ^ ((((r + 1 - Nat.clog 2 r) * r / 2 : ℕ) : ℝ) / TCover.f 5) ≤ (s : ℝ) := by
   haveI : DecidableRel (binTree r □ SimpleGraph.pathGraph (2 * r)).Adj :=
     fun _ _ => Classical.dec _
-  refine ⟨?_, fun s Z hro hu hR => Razgon.maintheor (clog_two_le_self r) Z hro hu hR⟩
+  refine ⟨?_, fun s Z hro hu hR =>
+    Razgon.two_rpow_le_size_binTree_pathGraph (clog_two_le_self r) Z hro hu hR⟩
   obtain ⟨C, hC, hcomp, hsize⟩ := exists_decisionDNNF_binTree_boxProd r r
   refine ⟨C, hC, hcomp, le_trans hsize ?_⟩
   set n : ℕ := (2 ^ (r + 1) - 1) * (2 * r) with hn

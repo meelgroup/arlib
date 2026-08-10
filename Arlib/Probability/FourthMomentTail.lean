@@ -38,7 +38,7 @@ No new analysis happens here; all of the work is in `Arlib.Probability.MomentMet
 No `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -82,4 +82,4 @@ theorem fourth_moment_relative_tail {ι : Type} [Fintype ι] [DecidableEq ι] {P
   field_simp
   ring
 
-end Arlib
+end Arlib.Probability

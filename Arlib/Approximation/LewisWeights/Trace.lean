@@ -19,7 +19,7 @@ So the ℓ₁ Lewis weights always sum to the dimension.
 No `sorry`.
 -/
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset Matrix
@@ -79,4 +79,4 @@ theorem sum_lewis_eq_card (hL : IsLewis w a) (hw : ∀ i, 0 < w i) :
     _ = Matrix.trace (1 : Matrix d d ℝ) := by rw [Matrix.nonsing_inv_mul _ hdet]
     _ = (Fintype.card d : ℝ) := Matrix.trace_one
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

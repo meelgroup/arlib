@@ -7,17 +7,17 @@ Authors: Kuldeep S. Meel
 # Forgetting variables on a DNNF, and equivalence modulo forgetting
 
 Umut Oztok and Adnan Darwiche, *On Compiling DNNFs without Determinism*
-(`source/kc/darwiche/draft.tex`).  This file is the heart of that paper: the
+([OD17]).  This file is the heart of that paper: the
 linear-time forgetting operation on a decomposable NNF, and the equivalence
 relation — *equivalence modulo forgetting* — that the compilation algorithm is
 built on.
 
 ## What the paper says, and what it does not say
 
-The paper's algorithm (`alg:dnnf`, `:227`) compiles a DNNF for `f(X)` in three
+The paper's algorithm (`alg:dnnf`) compiles a DNNF for `f(X)` in three
 steps: find a `g(X,Y)` that `f` is *equivalent modulo forgetting* to, compile `g`
 to a **deterministic** DNNF with an off-the-shelf compiler, then forget `Y`.  The
-whole method rests on one sentence, at `:243`:
+whole method rests on one sentence, at [OD17, §3]:
 
 > This is due to the property of decomposability, which supports linear time
 > multiple-variable forgetting: all one needs is to replace auxiliary variables
@@ -79,7 +79,7 @@ Decomposability, by contrast, is preserved (`decomposable_forgetNNF`), because
 and the root are untouched — so the size relation is an **equality**,
 `size_forgetNNF : (forgetNNF C Y).size = C.size`, which is stronger than the "no
 larger" the task asks for and is what makes the step linear time.  Note that
-this is a statement about the DAG, in the sense of `ROADMAP.md` §1.1: no node is
+this is a statement about the DAG, in the sense of `docs/dev/KnowledgeCompilation-ROADMAP.md` §1.1: no node is
 duplicated, so no sharing is lost.
 
 ## Design notes
@@ -93,7 +93,8 @@ variable forgetting" — and there is no type-level way to say "these `k` of the
 variables".  So `Y : Finset V`, and the semantics of forgetting is stated as
 `∃ β, (∀ x ∉ Y, β x = α x) ∧ …`, an existential over assignments that may differ
 from `α` only inside `Y`.  `Forgetting.Separation` bridges the two idioms
-(`emf_existsFresh`).
+(`Separation.equivModForget_sauerhoffFn_gFun`, whose ambient type is `V ⊕ Unit` and
+whose forgotten set is the singleton `{Sum.inr ()}`).
 
 *Forgetting is a semantic notion, so `forgetFun` is `noncomputable`.*  The
 existential over `V → Bool` is not decidable for infinite `V`, and making the
@@ -112,7 +113,7 @@ variable {V : Type*} {n : ℕ}
 
 /-! ## Substituting `⊤` for the literals of a set of variables -/
 
-/-- **Substituting `⊤` for a `Y`-literal, at a single gate** (paper §3, `:243`,
+/-- **Substituting `⊤` for a `Y`-literal, at a single gate** (paper §3,
 "replace auxiliary variables with the constant `⊤` in the structure").
 
 Only leaves are touched, and only those labelled with a literal of a variable of
@@ -180,7 +181,7 @@ lemma eq_disj_of_forgetGate_eq_disj {Y : Finset V} {g : Gate V n} {j k : Fin n}
 
 /-! ## Forgetting on a circuit -/
 
-/-- **Forgetting the variables `Y` from an NNF** (paper §3, `:243`): relabel
+/-- **Forgetting the variables `Y` from an NNF** (paper §3): relabel
 every leaf carrying a literal of a `Y`-variable with the constant `⊤`, and change
 nothing else.
 
@@ -197,7 +198,7 @@ def forgetNNF (C : NNF V) (Y : Finset V) : NNF V where
 
 /-- **Forgetting costs nothing in size** — the node count is unchanged, so in
 particular it is no larger.  This is the quantitative half of the paper's
-"linear time" claim at `:243`. -/
+"linear time" claim at [OD17, §3]. -/
 @[simp] lemma size_forgetNNF (C : NNF V) (Y : Finset V) : (forgetNNF C Y).size = C.size := rfl
 
 @[simp] lemma root_forgetNNF (C : NNF V) (Y : Finset V) :
@@ -280,7 +281,7 @@ theorem decomposableFrom_forgetNNF {C : NNF V} {Y : Finset V} {r : Fin C.size}
     (Finset.disjoint_of_subset_right (Finset.sdiff_subset) hd)
 
 /-- **Forgetting preserves decomposability** — the first half of the paper's
-"the decomposability property stays intact" (`:250`). -/
+"the decomposability property stays intact" ([OD17, §3]). -/
 theorem decomposable_forgetNNF {C : NNF V} {Y : Finset V} (h : C.Decomposable) :
     (forgetNNF C Y).Decomposable :=
   decomposableFrom_forgetNNF h
@@ -398,7 +399,7 @@ decreasing_by
   · exact (C.disj_lt hg).1
   · exact (C.disj_lt hg).2
 
-/-- **The substituted circuit computes `∃Y. g`** (paper §3, `:243`).
+/-- **The substituted circuit computes `∃Y. g`** (paper §3).
 
 The `←` half holds for every NNF; the `→` half is where decomposability is used.
 See the module docstring. -/
@@ -414,7 +415,7 @@ theorem eval_forgetNNF_iff {C : NNF V} {Y : Finset V} (hdec : C.Decomposable) (�
 
 open Classical in
 /-- **Forgetting on functions**: `∃Y. f`, the disjunction of `f` over all ways of
-reassigning the variables of `Y` (paper §2, `:145`, iterated over a set).
+reassigning the variables of `Y` (paper §2, iterated over a set).
 
 Semantic and hence `noncomputable`; every consumer goes through
 `forgetFun_eq_true_iff`. -/
@@ -429,7 +430,7 @@ omit [DecidableEq V] in
 /-- **The headline of item 1**: substituting `⊤` for every literal of `Y` in a
 decomposable NNF for `g` yields a decomposable NNF for `∃Y. g`, of the same size.
 
-All three clauses together are the paper's sentence at `:243`, with the size
+All three clauses together are the paper's sentence at [OD17, §3], with the size
 relation sharpened from "linear" to "equal" and with decomposability identified
 as the hypothesis that makes the middle clause true.  Determinism is *not* among
 the conclusions, and `not_deterministic_forgetDetExample` shows it cannot be. -/
@@ -443,7 +444,7 @@ theorem forgetNNF_spec {C : NNF V} (Y : Finset V) (hC : C.IsDNNF) :
 
 /-! ## Determinism is not preserved
 
-The paper's `:249`: "What is crucial here is that the resulting structure does
+The paper's §3: "What is crucial here is that the resulting structure does
 not enforce determinism anymore, but the decomposability property stays intact."
 The second half is `decomposable_forgetNNF`; the first half is an existence
 statement and needs a witness, which is the three-node d-DNNF `y ∨ ¬y`. -/
@@ -503,7 +504,7 @@ theorem forgetDetExample_isdDNNF : forgetDetExample.IsdDNNF := by
       | false => rw [hα] at ha; simp at ha
       | true => rw [hα] at hb; simp at hb
 
-/-- **Forgetting does not preserve determinism** (paper `:249`).  Forgetting the
+/-- **Forgetting does not preserve determinism** (paper §3).  Forgetting the
 only variable turns the deterministic `y ∨ ¬y` into `⊤ ∨ ⊤`, whose two disjuncts
 are simultaneously satisfied by every assignment. -/
 theorem not_deterministic_forgetDetExample :
@@ -519,26 +520,28 @@ theorem not_deterministic_forgetDetExample :
 
 /-! ## Equivalence modulo forgetting, and the compilation algorithm -/
 
-/-- **`f` is equivalent modulo forgetting to `g`** (paper Definition, `:194`):
+/-- **`f` is equivalent modulo forgetting to `g`** (paper Definition, [OD17, §3]):
 `f(X) ≡ ∃Y. g(X,Y)`.
 
 The paper's disjointness of `X` and `Y` is not a side condition here, it is a
 *consequence*: the right-hand side manifestly does not look at `α` inside `Y`, so
-`emf` forces `f` not to either (`emf_indep`).  Carrying an explicit `X` would add
-a hypothesis that says nothing extra. -/
-def emf (Y : Finset V) (f g : (V → Bool) → Bool) : Prop :=
+`EquivModForget` forces `f` not to either (`equivModForget_indep`).  Carrying an
+explicit `X` would add a hypothesis that says nothing extra. -/
+def EquivModForget (Y : Finset V) (f g : (V → Bool) → Bool) : Prop :=
   ∀ α, f α = true ↔ ∃ β, (∀ x ∉ Y, β x = α x) ∧ g β = true
 
 omit [DecidableEq V] in
-/-- The canonical example: `∃Y. g` is emf to `g`.  Equivalently, `emf Y · g`
-determines its first argument up to nothing at all — see `emf_iff_eq_forgetFun`. -/
-theorem emf_forgetFun (Y : Finset V) (g : (V → Bool) → Bool) : emf Y (forgetFun Y g) g :=
+/-- The canonical example: `∃Y. g` is equivalent modulo forgetting `Y` to `g`.
+Equivalently, `EquivModForget Y · g` determines its first argument up to nothing at
+all — see `equivModForget_iff_eq_forgetFun`. -/
+theorem equivModForget_forgetFun (Y : Finset V) (g : (V → Bool) → Bool) :
+    EquivModForget Y (forgetFun Y g) g :=
   fun _ => forgetFun_eq_true_iff
 
 omit [DecidableEq V] in
-/-- Nothing is forgotten when `Y` is empty, and then `emf` is plain equality of
-functions. -/
-theorem emf_empty {f g : (V → Bool) → Bool} : emf ∅ f g ↔ f = g := by
+/-- Nothing is forgotten when `Y` is empty, and then `EquivModForget` is plain
+equality of functions. -/
+theorem equivModForget_empty {f g : (V → Bool) → Bool} : EquivModForget ∅ f g ↔ f = g := by
   constructor
   · intro h
     funext α
@@ -550,24 +553,25 @@ theorem emf_empty {f g : (V → Bool) → Bool} : emf ∅ f g ↔ f = g := by
       fun ⟨β, hβ, hv⟩ => by rwa [funext fun x => hβ x (Finset.not_mem_empty x)] at hv⟩
 
 omit [DecidableEq V] in
-/-- **`emf` pins its first argument down exactly**: `f` is emf to `g` iff `f` *is*
-`∃Y. g`.  This is the sense in which the paper's `f(X) ≡ ∃Y. g(X,Y)` is an
-equation and not merely a relation. -/
-theorem emf_iff_eq_forgetFun {Y : Finset V} {f g : (V → Bool) → Bool} :
-    emf Y f g ↔ f = forgetFun Y g := by
+/-- **`EquivModForget` pins its first argument down exactly**: `f` is equivalent
+modulo forgetting `Y` to `g` iff `f` *is* `∃Y. g`.  This is the sense in which the
+paper's `f(X) ≡ ∃Y. g(X,Y)` is an equation and not merely a relation. -/
+theorem equivModForget_iff_eq_forgetFun {Y : Finset V} {f g : (V → Bool) → Bool} :
+    EquivModForget Y f g ↔ f = forgetFun Y g := by
   constructor
   · intro h
     funext α
     rw [Bool.eq_iff_iff, forgetFun_eq_true_iff]
     exact h α
   · rintro rfl
-    exact emf_forgetFun Y g
+    exact equivModForget_forgetFun Y g
 
 omit [DecidableEq V] in
-/-- **The auxiliary variables really are auxiliary** (paper `:203`, "variables
-`Y` only act as auxiliary from the view of function `f`"): a function emf to
-something cannot see the forgotten variables. -/
-theorem emf_indep {Y : Finset V} {f g : (V → Bool) → Bool} (h : emf Y f g) {α α' : V → Bool}
+/-- **The auxiliary variables really are auxiliary** (paper §3, "variables
+`Y` only act as auxiliary from the view of function `f`"): a function equivalent
+modulo forgetting `Y` to something cannot see the forgotten variables. -/
+theorem equivModForget_indep {Y : Finset V} {f g : (V → Bool) → Bool}
+    (h : EquivModForget Y f g) {α α' : V → Bool}
     (hα : ∀ x ∉ Y, α x = α' x) : f α = f α' := by
   rw [Bool.eq_iff_iff, h α, h α']
   constructor
@@ -577,19 +581,20 @@ theorem emf_indep {Y : Finset V} {f g : (V → Bool) → Bool} (h : emf Y f g) {
     exact ⟨β, fun x hx => (hβ x hx).trans (hα x hx).symm, hv⟩
 
 /-- **Algorithm 1 returns a DNNF representation of its input** (paper
-Proposition, `:223`; the algorithm is at `:227`).
+Proposition, [OD17, §3]; the algorithm is at [OD17, `alg:dnnf`]).
 
 The algorithm's three lines are its three hypotheses and its conclusion: line 1
-produces a `g` with `emf Y f g`, line 2 produces a d-DNNF `C` computing `g`, and
-line 3 is `forgetNNF C Y`.  What comes out is decomposable, computes `f`, and has
-exactly as many nodes as what went in — but is not claimed deterministic, which
+produces a `g` with `EquivModForget Y f g`, line 2 produces a d-DNNF `C` computing
+`g`, and line 3 is `forgetNNF C Y`.  What comes out is decomposable, computes `f`,
+and has exactly as many nodes as what went in — but is not claimed deterministic, which
 is the entire point (`not_deterministic_forgetDetExample`).
 
 Note that only `C.IsDNNF` is used: the compiler of line 2 is asked for a d-DNNF
 because that is what off-the-shelf compilers produce, not because forgetting
 needs determinism. -/
-theorem emf_forgetNNF_isDNNF_computes {C : NNF V} {Y : Finset V} {f g : (V → Bool) → Bool}
-    (hemf : emf Y f g) (hC : C.IsdDNNF) (hcomp : C.Computes g) :
+theorem equivModForget_forgetNNF_isDNNF_computes {C : NNF V} {Y : Finset V}
+    {f g : (V → Bool) → Bool}
+    (hemf : EquivModForget Y f g) (hC : C.IsdDNNF) (hcomp : C.Computes g) :
     (forgetNNF C Y).IsDNNF ∧ (forgetNNF C Y).Computes f ∧ (forgetNNF C Y).size = C.size := by
   refine ⟨decomposable_forgetNNF hC.1, fun α => ?_, rfl⟩
   rw [Bool.eq_iff_iff, eval_forgetNNF_iff hC.1 α, hemf α]

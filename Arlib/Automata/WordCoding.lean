@@ -7,14 +7,14 @@ Authors: Kuldeep S. Meel
 # Coding a gadget composition as a word cut in half
 
 The one genuinely new construction the automata lower bounds need, and the only
-step of Göös–Kiefer–Yuan's §3 and §4 that their text does not perform at all —
+step of Göös–Kiefer–Yuan's §2 and §3 that their text does not perform at all —
 it is hidden inside the sentence "we tacitly identify a function
 `F : {0,1}^{m₁} × {0,1}^{m₂} → {0,1}` with the language
-`F⁻¹(1) = {xy | F(x,y) = 1}`" (`source/kc/goos/parts/complementation.tex:57`).
+`F⁻¹(1) = {xy | F(x,y) = 1}`" ([GKY22, §2.1]).
 
 ## The mismatch
 
-The composed function `f ∘ g^κ` of `Communication/Gadget.lean` is a function of
+The composed function `f ∘ g^κ` of `Arlib/Communication/Gadget.lean` is a function of
 the variables `Gadget.Var κ b = Fin 2 × κ × Fin b`, and the two parties are the
 two values of the *first* component: `Gadget.alice` is `{v | v.1 = 0}`.  That is
 a `VarPartition`, and the lifting theorem that is imported
@@ -22,7 +22,7 @@ a `VarPartition`, and the lifting theorem that is imported
 
 An automaton, on the other hand, reads a word and the cut is at a *position*:
 Alice holds a prefix, Bob a suffix, which is the `TPRect` model of
-`Communication/TwoParty.lean`.  Alice's variables are not a contiguous block of
+`Arlib/Communication/TwoParty.lean`.  Alice's variables are not a contiguous block of
 positions — they are interleaved with Bob's, one gadget at a time — so the two
 models are genuinely different and something has to be built.
 
@@ -62,7 +62,7 @@ observation `Automata/Simulation.lean` makes about `NFA.simFamily`.
 ## The surprise: the paper's product construction is unnecessary
 
 The last step of the proof of `thm:complement`
-(`source/kc/goos/parts/complementation.tex:95`) reads:
+([GKY22, §2.2]) reads:
 
 > Any NFA that recognizes `{0,1}* ∖ L(A)` can be transformed into an NFA that
 > recognizes `F⁻¹(0) = {0,1}^{2bn} ∖ L(A)` by taking a product with a DFA that
@@ -92,14 +92,15 @@ the binder of `TPCovers`.
 import Arlib.Automata.Simulation
 import Arlib.Automata.DNFtoUFA
 import Arlib.KnowledgeCompilation.Circuits.DNFMap
-import Arlib.KnowledgeCompilation.Communication.Gadget
-import Arlib.KnowledgeCompilation.Communication.Measures
+import Arlib.Communication.Gadget
+import Arlib.Communication.Measures
 import Mathlib.Data.List.OfFn
 
 namespace Arlib.Automata
 namespace WordCoding
 
 open Arlib.KnowledgeCompilation
+open Arlib.Communication
 
 /-! ## Negated fibres
 
@@ -121,7 +122,7 @@ This is how a lower bound on `Cov₀(F)` is turned into a lower bound on the num
 of states of an NFA for the *complement* language: the automaton for the
 complement accepts `x ++ y` exactly when `!(F x y)`, so `NFA.hasTPCover_of_nfa`
 applies to `¬F` and delivers a cover of `F⁻¹(0)`
-(`source/kc/goos/parts/complementation.tex:94`). -/
+([GKY22, §2.2]). -/
 theorem hasTPCover_false_of_not {X Y : Type*} {F : X → Y → Bool} {s : ℕ}
     (h : HasTPCover (fun x y => !(F x y)) true s) : HasTPCover F false s := by
   rwa [HasTPCover, tpFiber_not_true] at h
@@ -129,7 +130,7 @@ theorem hasTPCover_false_of_not {X Y : Type*} {F : X → Y → Bool} {s : ℕ}
 /-! ## The coding -/
 
 /-- **One party's word length**: one bit per (coordinate of `f`, bit of the
-gadget) pair.  The paper's `bn` (`source/kc/goos/parts/complementation.tex:78`),
+gadget) pair.  The paper's `bn` ([GKY22, §2.2]),
 with `n = |κ|`.
 
 An `abbrev` rather than a `def` so that `Fin (half κ b + half κ b)` and
@@ -271,7 +272,7 @@ theorem assignOf_aliceWord_bobWord (α : Gadget.Var κ b → Bool) :
 Alice's half-word and Bob's half-word are decoded and `f` is applied.
 
 This is the paper's identification of `F : {0,1}^{bn} × {0,1}^{bn} → {0,1}` with
-`f ∘ g^n` (`source/kc/goos/parts/complementation.tex:44`) made into a
+`f ∘ g^n` ([GKY22, §2.1]) made into a
 definition. -/
 noncomputable def twoParty (f : (Gadget.Var κ b → Bool) → Bool) :
     WordsOfLen Bool (half κ b) → WordsOfLen Bool (half κ b) → Bool :=
@@ -420,7 +421,7 @@ omit [DecidableEq κ] in
 number of positions is `2·|κ|·b + 1`.
 
 This is the paper's "`n^{O(bk)}` conjunctions, each dragging `O(bn)` states"
-(`source/kc/goos/parts/complementation.tex:90`) with both constants pinned
+([GKY22, §2.2]) with both constants pinned
 down. -/
 theorem ufa_card_le (D : DNF (Gadget.Var κ b)) :
     Fintype.card (DNFtoUFA.State (encDNF D)) ≤ D.numTerms * (len κ b + 1) := by

@@ -6,10 +6,10 @@ Authors: Suguman Bansal
 /-
 # Arlib.MDP — finite Markov decision processes with reachability objectives
 
-The control layer over `Arlib.MarkovChains`.  An `MDP S A` is a finite state set
+The control layer over a finite kernel.  An `MDP S A` is a finite state set
 `S`, a finite action set `A` with a non-empty enabled set `A(s)` at each state,
 an initial state `s₀`, and a transition kernel `P(· ∣ s,a)` — carried as the
-row-stochastic `Arlib.MarkovChains.FinKernel (S × A) S`, so every one-step
+row-stochastic `Arlib.Probability.FinKernel (S × A) S`, so every one-step
 expectation `∑_{s'} P(s' ∣ s,a) · f(s')` in the area *is* `FinKernel.act` and the
 kernel algebra (`act_sub`, `act_const`, …) is inherited rather than re-proved.
 The state space is partitioned into terminal states `S_term`, split by `isTarget`
@@ -23,6 +23,10 @@ replaces the missing discount factor is the *hitting-time weight* `T_s`, and the
 central theorem of the area is that it supplies a genuine contraction.
 
 ## Relation to `Arlib.MarkovChains`
+
+This is a *conceptual* parallel, not a dependency: the two areas sit side by side
+at the same layer and neither imports the other (both draw their kernel from
+`Arlib.Probability`).
 
 `MarkovChains.Techniques.HittingTime`, `RankingSupermartingale`, `ProgressPath`
 and `ReachDistance` are the **fixed-chain** version of this story: survival
@@ -48,6 +52,17 @@ depth.
 | `Reachability` | `V*`, `Q*` by dynamic programming, and `Qsem_eq_Qstar` coupling the semantic value to the Bellman fixed point. |
 | `Trajectory` | Trajectory probabilities `pathProb = ∏ P(s_{k+1} ∣ s_k, π(s_k))`, and `isGreatest_reachProbSem`: the dynamic program is the **attained maximum** over policies, not merely a supremum. |
 | `PolicyValue` | `V^π`, its own contraction `Hpi`, greedy optimality, and `tendsto_Vpi_greedy`. |
+
+## Source
+
+Several modules below audit their definitions against "the paper" — quoting its
+sentences and referring to the line numbers of its pseudocode.  **That paper is
+not named anywhere in this library and is not distributed with it**, so no
+citation can be given for it here.  The standard background for the material is
+Richard Bellman, *Dynamic Programming*, Princeton University Press, 1957, and
+Martin L. Puterman, *Markov Decision Processes: Discrete Stochastic Dynamic
+Programming*, Wiley, 1994; neither is the source being audited.  Nothing in the
+area depends on locating it: every statement is proved from scratch.
 
 This is the area root; it re-exports every module.  Import it for the whole
 area, or import a single module for one piece.

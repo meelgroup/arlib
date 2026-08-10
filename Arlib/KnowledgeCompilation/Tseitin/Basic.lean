@@ -8,10 +8,10 @@ Authors: Kuldeep S. Meel
 
 Foundation module for `KnowledgeCompilation.Tseitin`, which follows Florent
 de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas with short regular
-resolution refutations* (`source/kc/decolnet/main.tex`).  This file formalizes
-the paper's "Tseitin-Formulas" paragraph (`source/kc/decolnet/main.tex:339`),
-its Proposition 3 (satisfiability, `:343`) and Proposition 4 (model count,
-`:347`), and the conditioning operation (`:351`).
+resolution refutations* ([dCM21]).  This file formalizes
+the paper's "Tseitin-Formulas" paragraph ([dCM21, §2]),
+its Proposition 3 (satisfiability, [dCM21, `proposition:satisfiability_tseitin_formula`]) and Proposition 4 (model count,
+[dCM21, `proposition:number_model_tseitin_formula`]), and the conditioning operation ([dCM21, §2]).
 
 ## The object
 
@@ -27,10 +27,10 @@ and `T(G, c) := ⋀_{v ∈ V} χ_v`.
 `Forgetting.Basic`, no CNF datatype is built.  `Formula G c` is directly the
 predicate on assignments "every vertex parity constraint holds".  The paper uses
 `T(G, c)` in two guises — a system of parity constraints and, once it turns to
-proof systems (`:353`), a CNF encoding — but every statement formalized here
+proof systems ([dCM21, §2]), a CNF encoding — but every statement formalized here
 (Propositions 3 and 4, conditioning) is about the *satisfying assignments*, so
 the semantic predicate is the right object and the CNF encoding is deferred to
-the resolution modules (see `ROADMAP.md`).
+the resolution modules (see `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md`).
 
 **Values in `ZMod 2`, not `Bool`.**  An assignment to the edge variables is a map
 `{e // e ∈ G.edgeSet} → ZMod 2`.  The paper writes `x_e ∈ {0, 1}` and the
@@ -51,12 +51,12 @@ what Proposition 4's count `2^{|E| − |V| + K}` is about.
   component, each edge of the component is counted at both endpoints, so the
   edge contributions cancel mod `2`.
 * **Proposition 3, the converse** (even charge ⟹ satisfiable) is carried as an
-  inhabited bundle `TseitinSatisfiabilityConverse`, per `ROADMAP.md` §1.3: it
-  needs a spanning-forest construction that Mathlib v4.15's tree API does not
-  support cheaply.  `tseitin_satisfiable_iff` assembles the two directions into
+  inhabited bundle `Imported.TseitinSatisfiabilityConverse`, per `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md`
+  §1.3: it needs a spanning-forest construction that Mathlib v4.15's tree API does
+  not support cheaply.  `tseitin_satisfiable_iff` assembles the two directions into
   the paper's biconditional.
 * **Proposition 4, the model count**, is carried as an inhabited bundle
-  `TseitinModelCount` (a GF(2)-rank fact), not proved here.
+  `Imported.TseitinModelCount` (a GF(2)-rank fact), not proved here.
 
 Both bundles are inhabited at the foot of the file so that the conditional
 statements are known not to be vacuous.
@@ -78,29 +78,29 @@ variable (G : SimpleGraph V) [DecidableRel G.Adj]
 
 /-- **An assignment** to the edge variables of `G`: a value in `𝔽₂ = ZMod 2` for
 each edge.  The variable type is the edge set itself, so there are exactly `|E|`
-variables (`source/kc/decolnet/main.tex:341`). -/
+variables ([dCM21, §2]). -/
 abbrev Assignment (G : SimpleGraph V) : Type _ := {e // e ∈ G.edgeSet} → ZMod 2
 
 /-- **The edges incident to a vertex** `v`, as a `Finset` of edge variables: the
 index set of the sum in the parity constraint `χ_v`
-(`source/kc/decolnet/main.tex:341`, the set `E(v)`). -/
+([dCM21, §2], the set `E(v)`). -/
 def incEdges (v : V) : Finset {e // e ∈ G.edgeSet} :=
   Finset.univ.filter (fun e => v ∈ (e : Sym2 V))
 
 /-! ## Parity constraints and the Tseitin-formula -/
 
-/-- **The parity constraint `χ_v`** (`source/kc/decolnet/main.tex:341`): the sum
+/-- **The parity constraint `χ_v`** ([dCM21, §2]): the sum
 of the edge variables incident to `v` equals the charge `c v`, in `𝔽₂`. -/
 def chi (c : V → ZMod 2) (v : V) (α : Assignment G) : Prop :=
   (∑ e ∈ incEdges G v, α e) = c v
 
-/-- **The flipped constraint `χ̄_v`** (`source/kc/decolnet/main.tex:341`): the
+/-- **The flipped constraint `χ̄_v`** ([dCM21, §2]): the
 parity constraint on the same edge variables but with charge `1 − c(v)`.  Over
 `𝔽₂`, `1 − c v = c v + 1`. -/
 def chiBar (c : V → ZMod 2) (v : V) (α : Assignment G) : Prop :=
   (∑ e ∈ incEdges G v, α e) = c v + 1
 
-/-- **The Tseitin-formula `T(G, c)`** (`source/kc/decolnet/main.tex:341`) as a
+/-- **The Tseitin-formula `T(G, c)`** ([dCM21, §2]) as a
 predicate on assignments: `α` is a *model* iff it satisfies the parity constraint
 of every vertex.  (Named `Formula` rather than `Tseitin` to avoid a namespace
 clash; `Formula G c` is `T(G, c)`.) -/
@@ -124,23 +124,23 @@ variable (G)
 /-! ## Conditioning on an edge literal
 
 Conditioning `T(G, c)` on a literal `ℓ_e` for `e = s(a, b)` yields another
-Tseitin-formula `T(G − e, c')` (`source/kc/decolnet/main.tex:351`).  The
+Tseitin-formula `T(G − e, c')` ([dCM21, §2]).  The
 underlying graph is `G` with the edge `e` removed; the charge is unchanged for
 `¬x_e` and shifted at the two endpoints for `x_e`.  This file provides the graph
 and the charge functions — the object `T(G − e, c')` — with the semantic
 conditioning correspondence itself deferred to the `Splitting` module, where the
-branch recursion consumes it (see `ROADMAP.md`). -/
+branch recursion consumes it (see `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md`). -/
 
 /-- **`G − e`**, the graph obtained by deleting a single edge `e`
-(`source/kc/decolnet/main.tex:351`, `G' = G - e`). -/
+([dCM21, §2], `G' = G - e`). -/
 def deleteEdge (e : Sym2 V) : SimpleGraph V := G.deleteEdges {e}
 
 /-- **The conditioned charge for the literal `¬x_e`**: unchanged, `c' = c`
-(`source/kc/decolnet/main.tex:351`). -/
+([dCM21, §2]). -/
 def condChargeNeg (c : V → ZMod 2) : V → ZMod 2 := c
 
 /-- **The conditioned charge for the literal `x_e`** with `e = s(a, b)`:
-`c' = c + 1_a + 1_b (mod 2)` (`source/kc/decolnet/main.tex:351`), flipping the
+`c' = c + 1_a + 1_b (mod 2)` ([dCM21, §2]), flipping the
 charge at each endpoint of `e`. -/
 def condChargePos (c : V → ZMod 2) (a b : V) : V → ZMod 2 :=
   fun v => c v + (if v = a then 1 else 0) + (if v = b then 1 else 0)
@@ -157,7 +157,7 @@ theorem condChargePos_apply_of_ne (c : V → ZMod 2) {a b v : V}
 /-! ## Connected components and Proposition 3 (easy direction) -/
 
 /-- **The vertices of a connected component**, as a `Finset`
-(`source/kc/decolnet/main.tex:344`, the set `U`).  Equality of connected
+([dCM21, `proposition:satisfiability_tseitin_formula`], the set `U`).  Equality of connected
 components carries no `Decidable` instance in Mathlib v4.15, so the filter is
 taken classically; this object appears only inside `Prop`s. -/
 noncomputable def componentFinset (K : G.ConnectedComponent) : Finset V := by
@@ -214,7 +214,7 @@ private theorem even_filter_card (K : G.ConnectedComponent)
       simp
 
 /-- **`proposition:satisfiability_tseitin_formula`, the easy direction**
-(`source/kc/decolnet/main.tex:343`).  If `T(G, c)` is
+([dCM21, `proposition:satisfiability_tseitin_formula`]).  If `T(G, c)` is
 satisfiable, then every connected component `U` of `G` has even total charge,
 `∑_{v ∈ U} c(v) = 0 (mod 2)`.
 
@@ -253,14 +253,16 @@ theorem even_charge_of_sat {c : V → ZMod 2} (h : ∃ α, Formula G c α)
 The converse — even charge on every component implies satisfiability — needs a
 spanning-forest construction (choose a spanning tree of each component, set the
 non-tree edges to `0`, and propagate the tree edges from the leaves inward),
-which Mathlib v4.15 does not support cheaply.  Following `ROADMAP.md` §1.3 it is
+which Mathlib v4.15 does not support cheaply.  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 it is
 carried as a named bundle, threaded into the biconditional as a hypothesis, and
 inhabited below so the conditional is not vacuous. -/
 
 variable (G)
 
+namespace Imported
+
 /-- **`proposition:satisfiability_tseitin_formula`, the converse**
-(`source/kc/decolnet/main.tex:343`), as an
+([dCM21, `proposition:satisfiability_tseitin_formula`]), as an
 imported hypothesis: if every connected component of `G` has even total charge,
 then `T(G, c)` is satisfiable.  Not proved here; see the section docstring. -/
 structure TseitinSatisfiabilityConverse (c : V → ZMod 2) : Prop where
@@ -269,21 +271,25 @@ structure TseitinSatisfiabilityConverse (c : V → ZMod 2) : Prop where
     (∀ K : G.ConnectedComponent, ∑ v ∈ componentFinset G K, c v = 0) →
     ∃ α, Formula G c α
 
+end Imported
+
 /-- **`proposition:satisfiability_tseitin_formula`**
-(`source/kc/decolnet/main.tex:343`), the full biconditional: `T(G, c)`
+([dCM21, `proposition:satisfiability_tseitin_formula`]), the full biconditional: `T(G, c)`
 is satisfiable iff every connected component has even total charge.  The forward
 direction is `even_charge_of_sat`; the converse is supplied by the imported
-`TseitinSatisfiabilityConverse`. -/
+`Imported.TseitinSatisfiabilityConverse`. -/
 theorem tseitin_satisfiable_iff {c : V → ZMod 2}
-    (H : TseitinSatisfiabilityConverse G c) :
+    (H : Imported.TseitinSatisfiabilityConverse G c) :
     (∃ α, Formula G c α) ↔
       ∀ K : G.ConnectedComponent, ∑ v ∈ componentFinset G K, c v = 0 :=
   ⟨fun h K => even_charge_of_sat h K, H.satisfiable_of_even⟩
 
 /-! ## Proposition 4, the model count — as an inhabited import -/
 
+namespace Imported
+
 /-- **`proposition:number_model_tseitin_formula`**
-(`source/kc/decolnet/main.tex:347`, from Glinskih–Itsykson), as an
+([dCM21, `proposition:number_model_tseitin_formula`], from Glinskih–Itsykson), as an
 imported hypothesis: a satisfiable Tseitin-formula `T(G, c)` has exactly
 `2^{|E| − |V| + K}` models, where `K` is the number of connected components.
 
@@ -301,27 +307,29 @@ structure TseitinModelCount (c : V → ZMod 2) : Prop where
     2 ^ (G.edgeFinset.card + Fintype.card G.ConnectedComponent)
       = Nat.card {α : Assignment G // Formula G c α} * 2 ^ Fintype.card V
 
+end Imported
+
 /-! ## Non-vacuity of the imported bundles
 
 Each imported bundle above is inhabited by a concrete witness, so that the
 statements conditional on it are known to be about something rather than
-vacuously true (`ROADMAP.md` §1.3). -/
+vacuously true (`docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3). -/
 
-/-- **`TseitinSatisfiabilityConverse` is inhabited**, for the zero charge on any
-graph: the all-zero assignment satisfies `T(G, 0)`, so the converse holds
+/-- **`Imported.TseitinSatisfiabilityConverse` is inhabited**, for the zero charge
+on any graph: the all-zero assignment satisfies `T(G, 0)`, so the converse holds
 outright.  A degenerate but genuine witness — it establishes only that the shape
 of the hypothesis is satisfiable, not the general converse, which is the imported
 content. -/
-def tseitinConverse_zero : TseitinSatisfiabilityConverse G 0 where
+def tseitinConverse_zero : Imported.TseitinSatisfiabilityConverse G 0 where
   satisfiable_of_even _ := ⟨fun _ => 0, fun v => by simp [chi]⟩
 
-/-- **`TseitinModelCount` is inhabited.**  On the empty graph over the empty
-vertex type, `|E| = 0`, `|V| = 0`, `K = 0`, and there is a unique (empty)
+/-- **`Imported.TseitinModelCount` is inhabited.**  On the empty graph over the
+empty vertex type, `|E| = 0`, `|V| = 0`, `K = 0`, and there is a unique (empty)
 assignment, which satisfies `T`; the count `2^{0+0} = 1 · 2^0` holds.  A
 degenerate but genuine witness (the antecedent `∃ α, Formula` is *true* here, so
 the count clause is not vacuously discharged). -/
 def tseitinModelCount_empty :
-    TseitinModelCount (⊥ : SimpleGraph (Fin 0)) 0 where
+    Imported.TseitinModelCount (⊥ : SimpleGraph (Fin 0)) 0 where
   card_models _ := by
     have hM : Nat.card
         {α : Assignment (⊥ : SimpleGraph (Fin 0)) // Formula (⊥ : SimpleGraph (Fin 0)) 0 α}

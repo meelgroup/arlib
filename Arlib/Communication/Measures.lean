@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # The rectangle measures `Cov` and `Par`
 
 The counting measures of the communication-complexity detour (paper §3,
-`source/kc/arXiv.tex:290`, `:295`; inventory D19, D21).  `Cov_b^Π(f)` is the
+[VS24, §3]; inventory D19, D21).  `Cov_b^Π(f)` is the
 least number of `Π`-rectangles needed to cover `f⁻¹(b)`, `Par_b^Π(f)` the least
 number needed to *partition* it, and the best-partition measures `Cov_b(f)`,
 `Par_b(f)` minimise those over all balanced partitions `Π` of the variables.
@@ -55,7 +55,7 @@ downstream arithmetic step to buy a lemma that is discharged once, here.
 
 The paper immediately renames these measures logarithmically,
 `NCC_b^Π(f) := log₂ Cov_b^Π(f)` and `UCC_b^Π(f) := log₂ Par_b^Π(f)`
-(`source/kc/arXiv.tex:290`, `:669`), and identifies them with the cost of
+([VS24, §3], [VS24, §A]), and identifies them with the cost of
 non-deterministic and unambiguous two-party protocols.  Neither the logarithm
 nor the protocol is formalized here, deliberately (inventory D20 and Part E).
 Every quantitative statement in the paper is used in the exponentiated form
@@ -65,12 +65,12 @@ protocol characterisation is cited to Kushilevitz–Nisan and used only as
 intuition, so formalizing protocols would add a layer with no consumer.
 Everything below stays in `ℕ`.
 -/
-import Arlib.KnowledgeCompilation.Basic
-import Arlib.KnowledgeCompilation.Communication.Rectangle
+import Arlib.Communication.BooleanFunction
+import Arlib.Communication.Rectangle
 import Mathlib.Data.Nat.Lattice
 import Mathlib.Data.Fintype.BigOperators
 
-namespace Arlib.KnowledgeCompilation
+namespace Arlib.Communication
 
 variable {V : Type*} [DecidableEq V] {Z : Finset V}
 
@@ -83,17 +83,18 @@ omit [DecidableEq V] in
 @[simp] lemma mem_fiber {f : (V → Bool) → Bool} {b : Bool} {α : V → Bool} :
     fiber f b α ↔ f α = b := Iff.rfl
 
--- `DependsOn f Z` — "assignments agreeing on `Z` give `f` the same value" — now
--- lives in `Arlib.KnowledgeCompilation.Basic`.  `Circuits/` needs the very same
--- notion for the paper's `p(X)` in an `X`-decomposition, and having defined it
--- twice produced a genuine name clash between the two halves of the area.
+-- `DependsOn f Z` — "assignments agreeing on `Z` give `f` the same value" — lives
+-- in `Arlib.Communication.BooleanFunction`.  `KnowledgeCompilation/Circuits/`
+-- needs the very same notion for the paper's `p(X)` in an `X`-decomposition, and
+-- `KnowledgeCompilation/BranchingPrograms/` needs its `List`-indexed reading; all
+-- three used to carry their own copy.
 
 /-! ## Covers of a prescribed size -/
 
 variable {P : VarPartition Z} {f : (V → Bool) → Bool} {b : Bool} {k m : ℕ}
 
 /-- **`f⁻¹(b)` admits a cover by `k` `Π`-rectangles** (paper §3,
-`source/kc/arXiv.tex:290`; inventory D19).
+[VS24, §3]; inventory D19).
 
 The predicate from which `fixedCov` is built.  Existentially quantifying the
 family and fixing only its size is what makes an upper bound on `Cov_b^Π(f)`
@@ -103,7 +104,7 @@ def HasCoverOfSize (P : VarPartition Z) (f : (V → Bool) → Bool) (b : Bool)
   ∃ R : Fin k → Rectangle P, Covers R (fiber f b)
 
 /-- **`f⁻¹(b)` admits a partition into `k` `Π`-rectangles** (paper §3,
-`source/kc/arXiv.tex:295`; inventory D19). -/
+[VS24, §3]; inventory D19). -/
 def HasPartitionOfSize (P : VarPartition Z) (f : (V → Bool) → Bool) (b : Bool)
     (k : ℕ) : Prop :=
   ∃ R : Fin k → Rectangle P, Partitions R (fiber f b)
@@ -141,7 +142,7 @@ lemma HasPartitionOfSize.mono (h : HasPartitionOfSize P f b k) (hkm : k ≤ m) :
 
 /-! ## The fixed-partition measures -/
 
-/-- **`Cov_b^Π(f)`** (paper §3, `source/kc/arXiv.tex:290`; inventory D19): the
+/-- **`Cov_b^Π(f)`** (paper §3, [VS24]; inventory D19): the
 least number of `Π`-rectangles covering `f⁻¹(b)`.
 
 `0` when there is no finite cover; see the module docstring on the junk
@@ -150,7 +151,7 @@ noncomputable def fixedCov (P : VarPartition Z) (f : (V → Bool) → Bool)
     (b : Bool) : ℕ :=
   sInf {k | HasCoverOfSize P f b k}
 
-/-- **`Par_b^Π(f)`** (paper §3, `source/kc/arXiv.tex:295`; inventory D19): the
+/-- **`Par_b^Π(f)`** (paper §3, [VS24]; inventory D19): the
 least number of `Π`-rectangles partitioning `f⁻¹(b)`. -/
 noncomputable def fixedPar (P : VarPartition Z) (f : (V → Bool) → Bool)
     (b : Bool) : ℕ :=
@@ -193,7 +194,7 @@ theorem fixedCov_le_fixedPar (h : Partitionable P f b) :
 
 /-! ## The best-partition measures -/
 
-/-- **`Cov_b(f)`** (paper §3, `source/kc/arXiv.tex:292`; inventory D21): the
+/-- **`Cov_b(f)`** (paper §3, [VS24]; inventory D21): the
 least `k` such that *some* balanced partition of the variable set `Z` admits a
 cover of `f⁻¹(b)` by `k` rectangles.
 
@@ -213,7 +214,7 @@ is the paper's set of inputs of `f`, and the intended pairing is
 noncomputable def bestCov (Z : Finset V) (f : (V → Bool) → Bool) (b : Bool) : ℕ :=
   sInf {k | ∃ P : VarPartition Z, P.Balanced ∧ HasCoverOfSize P f b k}
 
-/-- **`Par_b(f)`** (paper §3, `source/kc/arXiv.tex:296`; inventory D21): the
+/-- **`Par_b(f)`** (paper §3, [VS24]; inventory D21): the
 same minimum for rectangular partitions.  This is the measure bounded by the
 rectangle lemma, `Par₁(f) ≤ s` for a d-SDNNF of size `s`. -/
 noncomputable def bestPar (Z : Finset V) (f : (V → Bool) → Bool) (b : Bool) : ℕ :=
@@ -330,7 +331,7 @@ partition of `f⁻¹(b)` for *any* partition `Π` of `Z`.  Discarded cells are
 replaced by the empty rectangle rather than removed, which keeps the count a
 clean power of two at the cost of a bound that is not tight.
 
-Explicit rather than asymptotic, per `ROADMAP.md` §5.  Its real job is to
+Explicit rather than asymptotic, per `docs/dev/KnowledgeCompilation-ROADMAP.md` §5.  Its real job is to
 discharge `Coverable`/`Partitionable` for every function the paper considers. -/
 theorem hasPartitionOfSize_two_pow (P : VarPartition Z) (hf : DependsOn f Z)
     (b : Bool) : HasPartitionOfSize P f b (2 ^ Z.card) := by
@@ -399,4 +400,4 @@ theorem bestCov_le_two_pow (P : VarPartition Z) (hP : P.Balanced)
 
 end Cells
 
-end Arlib.KnowledgeCompilation
+end Arlib.Communication

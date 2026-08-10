@@ -33,10 +33,11 @@ import Arlib.Approximation.LewisWeights.SampleConc
 import Arlib.Approximation.Coresets.Embedding
 import Arlib.Probability.UnionBound
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
+open Arlib.Probability
 
 variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 variable {w : ι → ℝ} {a : ι → d → ℝ}
@@ -349,4 +350,4 @@ theorem lewis_importance_embeds [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 
           Eexact_eq_zero_imp_sampled_eq_zero hw ω s hgs0
         rw [hfs0, hgs0]; simp
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

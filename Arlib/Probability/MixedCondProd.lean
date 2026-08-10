@@ -45,7 +45,7 @@ version; the a.e. variant is the follow-up.
 import Arlib.Probability.MixedCoinSpace
 import Arlib.Probability.MixedCondCELinear
 
-namespace Arlib
+namespace Arlib.Probability
 
 open MeasureTheory
 open scoped BigOperators
@@ -459,4 +459,4 @@ theorem condCE_forgetSet_prod_disjoint_forget_ae (U : Finset C.ι) {ι : Type}
   exact (hstep1.trans (hstep2 ▸ hstep3))
 
 end MixedCoinSpace
-end Arlib
+end Arlib.Probability

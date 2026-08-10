@@ -9,12 +9,12 @@ Authors: Kuldeep S. Meel
 Third module of `KnowledgeCompilation.Tseitin`, formalizing the graph measure the
 DNNF lower bound is stated in: §2 of Florent de Colnet and Stefan Mengel,
 *Characterizing Tseitin-formulas with short regular resolution refutations*
-(`source/kc/decolnet/main.tex:321`).
+([dCM21, §2]).
 
 ## Branch decompositions reuse v-trees
 
 A *branch decomposition* of `G` is a full binary tree whose leaves are in
-bijection with the **edges** of `G` (`source/kc/decolnet/main.tex:321`).  That is
+bijection with the **edges** of `G` ([dCM21, §2]).  That is
 exactly a well-formed `VTree` over the leaf type `{e // e ∈ G.edgeSet}` whose leaf
 set is all of `E(G)` — so we reuse `Circuits/VTree.lean` rather than defining a new
 tree, with `T.WellFormed` giving the leaf bijection and `T.vars = univ` giving
@@ -23,7 +23,7 @@ tree, with `T.WellFormed` giving the leaf bijection and `T.vars = univ` giving
 Each edge of the decomposition tree partitions `E(G)` into the two sides of the
 tree it separates; this is exactly a subtree `s` and its complement.  The *order*
 of that cut is the number of vertices of `G` incident to edges on **both** sides
-(`:321`), and the *branchwidth* `bw(G)` is the minimum over decompositions of the
+([dCM21, §2]), and the *branchwidth* `bw(G)` is the minimum over decompositions of the
 maximum order over cuts.
 
 ## The `…Le` convention
@@ -39,7 +39,8 @@ boundedness side condition at every use.
 **Lemma 2** (`lemma:bw_vs_tw`, Harvey–Wood) — `bw(G) − 1 ≤ tw(G) ≤ (3/2)·bw(G)` for
 `bw(G) ≥ 2` — is the bridge that lets the main result be stated in the more
 familiar treewidth.  It is a genuine external theorem, carried as the `structure`
-`HarveyWood` relating `BranchwidthLe` to `BranchingPrograms.TreeProduct.TreewidthLe`.
+`Imported.HarveyWood` relating `BranchwidthLe` to
+`BranchingPrograms.TreeProduct.TreewidthLe`.
 -/
 import Arlib.KnowledgeCompilation.Tseitin.Basic
 import Arlib.KnowledgeCompilation.Circuits.VTree
@@ -55,7 +56,7 @@ variable (G : SimpleGraph V) [DecidableRel G.Adj]
 /-! ## The order of a cut and branchwidth -/
 
 /-- **The order of the cut induced by a subtree `s`** of a branch decomposition
-(`source/kc/decolnet/main.tex:321`): the number of vertices of `G` incident to an
+([dCM21, §2]): the number of vertices of `G` incident to an
 edge below `s` *and* to an edge not below `s`.  The subtree `s` picks out one side
 `s.vars ⊆ E(G)` of the tree edge; the other side is its complement. -/
 def order (s : VTree {e // e ∈ G.edgeSet}) : ℕ :=
@@ -63,7 +64,7 @@ def order (s : VTree {e // e ∈ G.edgeSet}) : ℕ :=
     (∃ e ∈ s.vars, v ∈ (e : Sym2 V)) ∧
     (∃ e ∈ Finset.univ \ s.vars, v ∈ (e : Sym2 V)))).card
 
-/-- **`G` has branchwidth at most `k`** (`source/kc/decolnet/main.tex:321`): some
+/-- **`G` has branchwidth at most `k`** ([dCM21, §2]): some
 branch decomposition — a well-formed v-tree over the edges whose leaves are exactly
 `E(G)` — has every cut of order at most `k`.  The paper's `bw(G)` is the least such
 `k`; this predicate is the form both a producer (an explicit decomposition) and a
@@ -84,8 +85,10 @@ variable (G)
 
 /-! ## Lemma 2: branchwidth versus treewidth — as an imported bridge -/
 
-/-- **`lemma:bw_vs_tw`** (`source/kc/decolnet/main.tex:326`, Harvey–Wood
-`[HarveyW17, Lemma 12]`), as an imported hypothesis: for `bw(G) ≥ 2`,
+namespace Imported
+
+/-- **`lemma:bw_vs_tw`** ([dCM21], Harvey–Wood
+`[HW17, Lemma 12]`), as an imported hypothesis: for `bw(G) ≥ 2`,
 `bw(G) − 1 ≤ tw(G) ≤ (3/2)·bw(G)`.  This is the bridge letting a branchwidth bound
 be read as a treewidth bound (and back), stated here as the two implications
 between `BranchwidthLe` and `TreeProduct.TreewidthLe` that a lower-bound argument
@@ -101,12 +104,15 @@ consumes:
 and a non-vacuity witness would have to construct, for a concrete graph, both a
 branch decomposition (with its cut orders) *and* a tree decomposition realizing the
 inequalities — which is the bookkeeping the import stands in for.  This is the
-deliberate `ROADMAP.md` §1.3 exception (cf. `Splitting.VertexSplitEquiv`,
-`Imported.SDDComplementation`): the obstruction is stated, never an `axiom`. -/
+deliberate `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 exception (cf. `Imported.VertexSplitEquiv` in
+`Splitting.lean`, `KnowledgeCompilation.Imported.SDDComplementation`): the
+obstruction is stated, never an `axiom`. -/
 structure HarveyWood (G : SimpleGraph V) [DecidableRel G.Adj] : Prop where
   /-- `tw(G) ≤ (3/2)·bw(G)`, in `…Le` form. -/
   tw_le_bw : ∀ b, 2 ≤ b → BranchwidthLe G b → TreeProduct.TreewidthLe G (3 * b / 2)
   /-- `bw(G) − 1 ≤ tw(G)`, i.e. `bw(G) ≤ tw(G) + 1`, in `…Le` form. -/
   bw_le_tw : ∀ t, TreeProduct.TreewidthLe G t → BranchwidthLe G (t + 1)
+
+end Imported
 
 end Arlib.KnowledgeCompilation.Tseitin

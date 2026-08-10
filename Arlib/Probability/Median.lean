@@ -32,7 +32,7 @@ import Arlib.Prelude
 import Mathlib.Data.Fin.Tuple.Sort
 import Mathlib.Order.Interval.Finset.Fin
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 open scoped Classical
@@ -183,4 +183,4 @@ theorem medianOf_nonneg {n : ℕ} (v : Fin n → ℝ) (h : ∀ b, 0 ≤ v b) :
   · rw [dif_neg (by omega)]
   · rw [dif_pos hn]; exact h _
 
-end Arlib
+end Arlib.Probability

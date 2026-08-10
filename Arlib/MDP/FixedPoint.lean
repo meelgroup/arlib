@@ -25,6 +25,7 @@ namespace Arlib
 
 open scoped BigOperators Topology
 open Finset Filter
+open Arlib.Combinatorics
 
 variable {S A : Type*} [Fintype S] [DecidableEq S] [Fintype A] [DecidableEq A]
 

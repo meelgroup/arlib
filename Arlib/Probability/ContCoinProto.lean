@@ -30,7 +30,7 @@ import Mathlib.MeasureTheory.Integral.SetIntegral
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
-namespace Arlib.ContCoinProto
+namespace Arlib.Probability.ContCoinProto
 
 open MeasureTheory Set
 
@@ -236,4 +236,4 @@ theorem Ex_const {m k : ℕ} (drawMass : Draw m → ℝ) (hsum : ∑ d, drawMass
     rw [MeasureTheory.integral_const, measure_univ]; simp
   rw [Finset.sum_congr rfl (fun d _ => by rw [hint d]), ← Finset.sum_mul, hsum, one_mul]
 
-end Arlib.ContCoinProto
+end Arlib.Probability.ContCoinProto

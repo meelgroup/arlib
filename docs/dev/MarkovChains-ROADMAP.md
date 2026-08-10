@@ -1,7 +1,7 @@
 # `Arlib.MarkovChains` — roadmap
 
 Entry point for anyone picking this area up. Read this file, then
-[`PAPER-INVENTORY.md`](PAPER-INVENTORY.md) for the detailed statement-by-statement
+[`MarkovChains-PAPER-INVENTORY.md`](MarkovChains-PAPER-INVENTORY.md) for the detailed statement-by-statement
 catalogue of the source monograph.
 
 **Source.** Zongchen Chen, Daniel Štefankovič, Eric Vigoda, *Spectral Independence and
@@ -54,7 +54,8 @@ This is not asceticism. Every textbook step that "follows from the spectral deco
 has an elementary variational or discriminant proof, and the elementary proof transfers to
 Lean at a small fraction of the cost. Where it has paid off so far:
 
-- `Techniques/Bilinear.lean` — Cauchy–Schwarz for a PSD symmetric bilinear form, via the
+- `Arlib/Probability/Bilinear.lean` (was `Techniques/Bilinear.lean`) — Cauchy–Schwarz for a
+  PSD symmetric bilinear form, via the
   discriminant of `t ↦ B(u + t·v, u + t·v)`.
 - `Techniques/SpectralGap.lean` — `ip_act_sq_le`, the step from the numerical-range bound
   `|⟪f, P f⟫| ≤ c⟪f, f⟫` to the operator bound `⟪P f, P f⟫ ≤ c²⟪f, f⟫`. Textbooks get this
@@ -96,26 +97,31 @@ theorem is axiom-clean (`propext, Classical.choice, Quot.sound` only).
 ## 2. Current state
 
 Everything below is built, `sorry`-free, warning-free, and reachable from
-`import Arlib.MarkovChains`. `PAPER-INVENTORY.md` item numbers are given where they apply.
+`import Arlib.MarkovChains`. `MarkovChains-PAPER-INVENTORY.md` item numbers are given where they apply.
 The tables list **every** module in the area; nothing here is a work in progress.
 
 ### `Techniques/` — the `L²` core
 
+**Five of these modules have since moved to `Arlib/Probability/`** — they are facts about
+finite distributions and kernels, not about Markov chains, and `Arlib.Probability` had to
+stop depending on `Arlib.MarkovChains`. The `Module` column below gives the current path.
+`Arlib.MarkovChains.*` spellings still resolve through an `export` shim; see `MIGRATION.md`.
+
 | Module | Contents | Inventory |
 | --- | --- | --- |
-| `Chain.lean` | `FinDist`, `FinKernel` (deliberately *rectangular* — the up/down operators move between level types), `FinChain`, the actions `act` and `push`, `row`, `comp`/`∘ₖ`, `id`, `iter`, `act_sub_const`/`act_add_const`, `FinDist.dirac` and `push_dirac`, `finKernel_ext`, `Stationary`, `Reversible`. | D-level |
-| `Bilinear.lean` | `IsBilin`, `psd_cauchy_schwarz` (discriminant proof), `isBilin_weighted`. | — |
-| `Functional.lean` | The `L²(μ)` calculus: `Ex`, `ip`, `Var`; `Var_eq_ip_sub_sq`, **`Var_eq_pair`**, `ip_sq_le`; lambda-form bilinearity; the support-only lemmas `Ex_congr_ae`/`Var_congr_ae`/`Ex_mono_of_ne_zero`; `Ex_sum`, `Ex_comp_equiv`; `Ex_push_eq`/`ip_push_eq`; `relDensity` with `relDensity_nonneg`, `chiSq`. | D4–D10, T1 |
+| `Arlib/Probability/FinDist.lean` (was `Chain.lean`) | `FinDist`, `FinKernel` (deliberately *rectangular* — the up/down operators move between level types), `FinChain`, the actions `act` and `push`, `row`, `comp`/`∘ₖ`, `id`, `iter`, `act_sub_const`/`act_add_const`, `FinDist.dirac` and `push_dirac`, `finKernel_ext`, `Stationary`, `Reversible`. | D-level |
+| `Arlib/Probability/Bilinear.lean` (was `Bilinear.lean`) | `IsBilin`, `psd_cauchy_schwarz` (discriminant proof), `isBilin_weighted`. | — |
+| `Arlib/Probability/FinDistFunctional.lean` (was `Functional.lean`) | The `L²(μ)` calculus: `Ex`, `ip`, `Var`; `Var_eq_ip_sub_sq`, **`Var_eq_pair`**, `ip_sq_le`; lambda-form bilinearity; the support-only lemmas `Ex_congr_ae`/`Var_congr_ae`/`Ex_mono_of_ne_zero`; `Ex_sum`, `Ex_comp_equiv`; `Ex_push_eq`/`ip_push_eq`; `relDensity` with `relDensity_nonneg`, `chiSq`. | D4–D10, T1 |
 | `Dirichlet.lean` | `dirichlet` as a bilinear form; **`sum_pair_sq`** (the pair expansion, parameterised by a sign `s`); `dirichlet_self_eq_pair`; `abs_ip_act_self_le`; `ip_act_eq_sum_sum` and `ip_act_comm` (reversibility = self-adjointness); **`SpectralGapAtLeast`** and **`NonnegDefinite`**. | T7–T10, T12 |
 | `SpectralGap.lean` | `AbsSpectralBound`; `absSpectralBound_of_gap`; **`ip_act_sq_le`** (the operator bound); `Var_act_le`, `Var_iter_le`; **`relDensity_push`** and `chiSq_push_le`. | T11, T13–T15 |
-| `TotalVariation.lean` | `row`, `Pr`; `tvDist` with its event characterisation and triangle inequality; **`tvDist_push_le`** (data processing); `MixesWithin`; **`tvDist_sq_le_chiSq`**. | D1, D3, T2–T5 |
+| `TotalVariation.lean`, split into `Arlib/Probability/FinKernelAlgebra.lean`, `Arlib/Probability/FinDistTV.lean` and the `MixesWithin` remainder still at `Techniques/TotalVariation.lean` | `row`, `Pr`; `tvDist` with its event characterisation and triangle inequality; **`tvDist_push_le`** (data processing); `MixesWithin`; **`tvDist_sq_le_chiSq`**. | D1, D3, T2–T5 |
 | `Lazy.lean` | `FinChain.lazy`; laziness preserves stationarity/reversibility; **`lazy_nonnegDefinite`**; the Dirichlet form and gap exactly halved, the latter as an *equivalence* (`lazy_spectralGapAtLeast_iff`); `Var_iter_lazy_le`. | D17, T19 |
 | `MixingTime.lean` | `chiSq_dirac`, `chiSq_iter_le`; **`tvDist_iter_row_le`**; the user-facing **`mixesWithin_lazy_of_gap`** — `T_mix(ε) ≤ (2/γ)·ln(1/(2ε√μ_min))` — and `mixesWithin_of_log_le`, its laziness-free form for a PSD chain. | T16, T17 |
 | `Mixture.lean` | `FinKernel.mix` (two-way), **`FinKernel.avg`** (uniform average), `mixWeights` (general); stationarity, reversibility, `dirichlet_*`, **`avg_nonnegDefinite`**, gap inheritance; `avg_spectralGapAtLeast_of_single`; `lazy_eq_mix`. | — |
 | `Adjoint.lean` | `Adjoint μ ν K L` (`Reversible` is the self-adjoint case); **`Adjoint.comp`** (adjointness composes, order reversed on one side) with unit `adjoint_id`; `Adjoint.ip_act`; `push_left`/`push_right`; **`comp_reversible`**, **`comp_nonnegDefinite`** for both composites; `dirichlet_comp`. | T28–T30 |
 | `Comparison.lean` | `DirichletLe`; **`spectralGapAtLeast_of_dirichletLe`** (gap transfer); **`dirichletLe_of_entrywise`**; `comp_reversible`/`iter_reversible`; **`absSpectralBound_iter`**, `spectralGapAtLeast_iter`. | — |
 | `Conductance.lean` | `flow`, `flow_comm`, `cut`; **`dirichlet_indicator`**; `Var_indicator`; `conductance`; **`spectralGap_le_conductance`** (easy Cheeger) and `spectralGap_mul_le_cut`. | — |
-| `Coupling.lean` | `Coupling`, `indep`, `symm`, `disagree`; **`Coupling.tvDist_le`**; the maximal coupling and **`exists_coupling_disagree_eq_tvDist`**. | D58, T4(b) |
+| `Arlib/Probability/Coupling.lean` (was `Coupling.lean`) | `Coupling`, `indep`, `symm`, `disagree`; **`Coupling.tvDist_le`**; the maximal coupling and **`exists_coupling_disagree_eq_tvDist`**. | D58, T4(b) |
 | `Transport.lean` | `EqOnSupport` and `Transport`/`Encodes` (transport of a gap along an injection). Both "vanishes off the range" conditions are theorems, not hypotheses. | — |
 | `PotentialDecay.lean` | The Lyapunov/drift route to a *hitting-time* rather than a mixing bound: `act_mono`/`act_nonneg`, **`act_iter_le_of_drift`** (`K Φ ≤ λΦ` self-improves to `K^t Φ ≤ λ^t Φ`), `expectation_iter_le_of_drift`, **`not_reached_le_of_drift`**. | — |
 | `SinusoidalPotential.lean` | Wilson's potential `Φ(i) = sin(Ci)/sin C` for Huber's hole walk (Huber 2006b, Thm 5): the second-difference identity **`sinPot_second_diff`**, the drift inequality, and the hitting-time bound. Records two repairs to the published argument (a backward rate `q ≤ p`, and the reflecting boundary). | — |
@@ -283,6 +289,13 @@ Almost all of this existed because agents were forbidden to edit shared files, s
 general-purpose lemmas landed wherever they were first needed. Two passes have now been
 made; what follows records where things went and what was deliberately left.
 
+*The paths below are the paths as of those passes.* `Techniques/Chain.lean`,
+`Techniques/Bilinear.lean`, `Techniques/Functional.lean` and `Techniques/Coupling.lean` have
+since moved to `Arlib/Probability/` (as `FinDist.lean`, `Bilinear.lean`,
+`FinDistFunctional.lean`, `Coupling.lean`), and `Techniques/TotalVariation.lean` has been
+split; see `MIGRATION.md`. The record is left in its original spelling because it is a
+history of a past pass, not a current index.
+
 **First pass.**
 
 - **To `Techniques/Functional.lean`:** `ip_add_left`/`ip_add_right`/
@@ -434,7 +447,7 @@ argument for §1.1 in miniature.
 
 ---
 
-## 5. A caveat on `PAPER-INVENTORY.md`
+## 5. A caveat on `MarkovChains-PAPER-INVENTORY.md`
 
 That file was produced by a reading pass over `source/main.tex`. Its statements, line
 numbers, difficulty ratings and the two errata it reports (the matroid exchange axiom at

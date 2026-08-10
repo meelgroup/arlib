@@ -31,10 +31,11 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Sampler
 import Arlib.Probability.FinProbProd
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
@@ -99,4 +100,4 @@ theorem Ex_prodFinProb_swapPair (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < 
           * (sampleSpace w hw m).mass (swapPair σ p).2 * X (swapPair σ p)
   rw [mass_swapPair w hw m σ p]
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

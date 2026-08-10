@@ -33,7 +33,7 @@ import Arlib.Prelude
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset Real

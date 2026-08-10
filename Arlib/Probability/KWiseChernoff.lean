@@ -69,8 +69,8 @@ with `x² = min(1, 4t/(3μ))`, the crude factorial estimate `(2t)! ≤ (2t)^{2t}
 `8 (2tμ + 4t²)ᵗ`, and `e(3tμ + 4t²) ≤ (3e/2)(2tμ + 4t²)`, so (BR) is theirs with
 the leading constant `8` traded for `(3e/2)ᵗ ≈ 4.08ᵗ`.  The same shape is proved
 by an explicit partition count in the `uniqueskolem` development
-(`UniqueSkolem.survivor_sum_le`); the proof here is independent of it and takes a
-different route.
+(`UniqueSkolem.survivor_sum_le`, in a sibling repository not distributed with
+this library); the proof here is independent of it and takes a different route.
 
 Crucially, (BR) is **not** of the Stirling shape `K (2tμ/e)ᵗ` that the module
 docstring of `Arlib.Probability.StirlingMoment` *refutes*: the additive `4t²` is
@@ -120,7 +120,7 @@ No `sorry`; `#print axioms` on every theorem above reports exactly
 `[propext, Classical.choice, Quot.sound]`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -721,6 +721,6 @@ theorem exp_tail_relative_ge_one (hind : KWiseIndep P K Z) (hZ : IsIndicatorFami
 
 end Tail
 
-end Arlib
+end Arlib.Probability
 
 

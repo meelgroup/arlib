@@ -373,7 +373,8 @@ theorem labelsIn_and_degreeLE_of_accepts (h : A.IsFinite k) :
     exact h.degree q a qs hq hstep
 
 /-- **`L(A) ⊆ Trees_k[Γ]`**: every accepted tree is `k`-ary.  This is the side
-condition `preliminaries.tex` puts on the *input* of `#TA`, here derived from
+condition the source manuscript's preliminaries put on the *input* of `#TA`
+(see `SuccinctNFA.lean` for the provenance), here derived from
 the side condition on `Δ`. -/
 theorem degreeLE_of_mem_lang (h : A.IsFinite k) {t : LTree Γ} (ht : t ∈ A.lang) :
     LTree.DegreeLE k t := by

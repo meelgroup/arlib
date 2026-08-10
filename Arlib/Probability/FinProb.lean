@@ -4,40 +4,77 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 /-
-# A self-contained finite probability space
+# The bundled finite probability space
 
 Many combinatorial probability arguments live over a *finite* outcome space,
 with each outcome carrying an explicit probability (for example, obtained as a
 product of coin-toss probabilities).  Rather than pulling in the full
-measure-theoretic machinery, we model exactly this: a finite type of outcomes
-with a nonnegative mass function summing to one.  This is a bona-fide
-(discrete) probability space, and keeps every quantity in `ℝ`, which makes the
-combinatorial arguments (union bound, tail bounds) clean and robust.
+measure-theoretic machinery, we model exactly this, and keep every quantity in
+`ℝ`, which is what makes the combinatorial arguments (union bound, tail bounds)
+clean and robust.
+
+**One primitive, two presentations.**  `FinDist Ω`
+(`Arlib.Probability.FinDist`) is the primitive: a mass function on a *given*
+finite type, parameterised over `Ω` and universe-polymorphic.  `FinProb` is its
+*bundled* form — it packages the outcome type together with its
+`Fintype`/`DecidableEq` instances and its law, so that a whole space can be
+passed as a single object, which is what the combinatorial arguments here want.
+
+`FinProb` is therefore a thin layer, not a rival: its field is literally a
+`FinDist`, and `P.mass` is a reducible abbreviation for `P.μ.p`.  Every
+definitional-equality argument that used to go through a primitive `mass` field
+still goes through unchanged, and `P.toFinDist` takes a bundled space back to the
+primitive.  Reach for `FinDist` when the outcome type is fixed and given; reach
+for `FinProb` when the space itself is the thing being constructed, transported
+or quantified over.
 
 Everything here is proved from first principles with no `sorry`.
 -/
-import Arlib.Prelude
+import Arlib.Probability.FinDist
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
 
-/-- A finite probability space: a `Fintype` of outcomes `Ω` with a nonnegative
-mass function `mass` summing to `1`. -/
+/-- A finite probability space: a `Fintype` of outcomes `Ω` carrying a
+distribution `μ : FinDist Ω`.
+
+This is the *bundled* form of `FinDist`: it packages the outcome type together
+with its `Fintype`/`DecidableEq` instances and its law, so that a space can be
+passed around as a single object.  `FinDist` remains the primitive; everything
+here is a thin layer over it.  The mass function is available as `P.mass`
+(a reducible abbreviation for `P.μ.p`), so all the existing `mass`-level API is
+unchanged. -/
 structure FinProb where
+  /-- The outcome type. -/
   Ω : Type
   [fin : Fintype Ω]
   [dec : DecidableEq Ω]
-  mass : Ω → ℝ
-  mass_nonneg : ∀ ω, 0 ≤ mass ω
-  mass_sum : ∑ ω, mass ω = 1
+  /-- The law of the space, as a distribution on `Ω`. -/
+  μ : FinDist Ω
 
 attribute [instance] FinProb.fin FinProb.dec
 
 namespace FinProb
 
 variable (P : FinProb)
+
+/-- The mass function of a finite probability space.  Reducible: it *is* the
+underlying `FinDist`'s mass function, so every definitional-equality argument
+that used to go through the old `mass` field still goes through. -/
+abbrev mass : P.Ω → ℝ := P.μ.p
+
+theorem mass_nonneg (ω : P.Ω) : 0 ≤ P.mass ω := P.μ.p_nonneg ω
+
+theorem mass_sum : ∑ ω, P.mass ω = 1 := P.μ.p_sum
+
+/-- The law of a finite probability space, read as a distribution on its outcome
+type.  This is the bridge in the other direction from the `FinProb` bundle back
+to the `FinDist` primitive. -/
+abbrev toFinDist : FinDist P.Ω := P.μ
+
+@[simp] theorem toFinDist_apply (ω : P.Ω) : P.toFinDist ω = P.mass ω := rfl
 
 /-- Events are subsets of the outcome space, represented as `Finset`s. -/
 abbrev Event := Finset P.Ω
@@ -111,4 +148,4 @@ theorem Pr_biUnion_disjoint {ι : Type*}
   rw [Finset.sum_biUnion h]
 
 end FinProb
-end Arlib
+end Arlib.Probability

@@ -21,7 +21,7 @@ All are stated over an arbitrary `[DecidableEq α]`.  No `sorry`.
 import Arlib.Prelude
 import Mathlib.Order.Interval.Finset.Nat
 
-namespace Arlib
+namespace Arlib.Combinatorics
 
 open Finset
 
@@ -160,4 +160,4 @@ theorem union_inter_right {α : Type*} [DecidableEq α] {a b V W : Finset α}
     Finset.disjoint_iff_inter_eq_empty.1 (Finset.disjoint_of_subset_left ha hdis)
   rw [haW, Finset.empty_union]
 
-end Arlib
+end Arlib.Combinatorics

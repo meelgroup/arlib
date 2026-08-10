@@ -24,8 +24,12 @@ That identity is the sum-of-angles formula `sin(θ - c) + sin(θ + c) =
 stepping towards the absorbing end.
 
 This is Theorem 5 of M. Huber, *Fast perfect sampling from linear extensions*,
-Discrete Mathematics **306** (2006) 420–428, which in turn adapts Wilson's
-analysis of the Karzanov–Khachiyan chain.
+Discrete Mathematics **306**(4) (2006) 420–428 — cited below as [Hub06] — which
+in turn adapts the analysis of the Karzanov–Khachiyan chain ([KK91]: A. V.
+Karzanov, L. G. Khachiyan, *On the conductance of order Markov chains*, Order
+**8**(1) (1991) 7–15) in D. B. Wilson, *Mixing times of lozenge tiling and card
+shuffling Markov chains*, Ann. Appl. Probab. **14**(1) (2004) 274–325, cited
+below as [Wil04].
 
 ## Contents
 
@@ -471,7 +475,7 @@ theorem contraction_le_exp' (n : ℕ) (hn : 2 ≤ n) :
 
 /-! ## Assembly: the hitting-time bound for the hole walk -/
 
-/-- **Huber 2006b, Theorem 5, single hole.**  Let `K` be a chain on
+/-- **[Hub06, Thm 5], single hole.**  Let `K` be a chain on
 `{0, 1, …, n-1}` — read as the distance of a "hole" of the bounding chain from
 the right-hand end — with
 

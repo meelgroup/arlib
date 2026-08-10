@@ -7,8 +7,8 @@ Authors: Kuldeep S. Meel
 # The graph vocabulary behind Razgon's lower bound
 
 Shared foundation for `BranchingPrograms/`, which follows Igor Razgon, *On the
-read-once property of branching programs and CNFs of bounded treewidth*
-(`source/kc/razgon/FBDDJOURN.tex`).
+read-once property of branching programs and CNFs of bounded treewidth*,
+Algorithmica 75(2):277–294, 2016 ([Raz16]).
 
 Three notions, and one design decision each.
 
@@ -33,7 +33,7 @@ A matching of size `t` between `S` and its complement is recorded as a pair of
 injective functions `Fin t → V` rather than as a `Finset` of edges with a
 disjointness condition.  The size is then the index type and is fixed before the
 data, so "there is a matching of size `t`" is a predicate on `t` with no
-cardinality side condition — the same reason `Communication.Rectangle` indexes
+cardinality side condition — the same reason `Arlib.Communication.Rectangle` indexes
 covers by `Fin k`.  Injectivity is required of each side separately; the two
 sides cannot collide with each other, since one lands in `S` and the other
 outside it.
@@ -48,7 +48,7 @@ That is not a shortcut.  Every statement in the paper about matching width is a
 lower bound (`mw(T_r(H)) ≥ …`, "if `mw(G) ≥ t` then every root-leaf path …"),
 and `MatchingWidthGe` is exactly the form both the producer and the consumer
 want: `dmwtwstruct` proves the `∀ ordering, ∃ prefix` statement directly, and
-`tnodecut` consumes it by feeding in the ordering induced by one path.  A
+`exists_split_isTNode` consumes it by feeding in the ordering induced by one path.  A
 numeric `mw` would sit between them as a `sSup` needing a boundedness side
 condition at each use, and would have to be unfolded to this predicate anyway.
 -/
@@ -84,13 +84,13 @@ omit [Fintype V] in
 @[simp] lemma posSet_indicatorAssign (S : Finset V) : posSet (indicatorAssign S) = S := by
   ext v; simp
 
-/-- **`φ(G)`**, semantically (paper §4, `source/kc/razgon/FBDDJOURN.tex:447`):
+/-- **`φ(G)`**, semantically ([Raz16, §3]):
 the monotone 2-CNF `⋀_{uv ∈ E} (u ∨ v)`, as a predicate on assignments. -/
 def phi (G : SimpleGraph V) (α : V → Bool) : Prop :=
   ∀ ⦃u v : V⦄, G.Adj u v → α u = true ∨ α v = true
 
 omit [DecidableEq V] in
-/-- **`basicobs`** (`source/kc/razgon/FBDDJOURN.tex:568`): `α` satisfies
+/-- **`basicobs`** ([Raz16]): `α` satisfies
 `φ(G)` exactly when the vertices it sets true form a vertex cover of `G`.
 
 This is the whole bridge between the formula and the graph, and after it the
@@ -183,7 +183,7 @@ lemma prefixSet_card_eq_univ (e : VertexOrder V) :
     prefixSet e (Fintype.card V) = Finset.univ := by
   ext v; simp
 
-/-- **`mw(G) ≥ t`** (paper §4, `source/kc/razgon/FBDDJOURN.tex:493`): every
+/-- **`mw(G) ≥ t`** ([Raz16, §3]): every
 ordering of the vertices has a prefix carrying a matching of size `t` across
 its cut.
 

@@ -89,6 +89,7 @@ supplies. The primed variants take the weaker hypothesis.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

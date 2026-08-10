@@ -15,7 +15,7 @@ so this file fixes the encoding that all of them inherit.
 
 An NNF is a *directed acyclic graph* with a unique source, fan-in-two `∧`/`∨`
 internal nodes, and leaves labelled `0`, `1`, `x` or `¬x`; its size `|C|` is the
-number of vertices (paper §2, `def: NNF`, `source/kc/arXiv.tex:141`).
+number of vertices (paper §2, `def: NNF`, [VS24]).
 
 The tempting Lean encoding — an inductive tree — is **wrong for this area**, and
 the reason is worth stating once, loudly, because everything downstream depends
@@ -115,7 +115,7 @@ def Gate.children : Gate V n → List (Fin n)
     (Gate.disj j k : Gate V n).children = [j, k] := rfl
 
 /-- **A Boolean circuit in Negation Normal Form** over variables `V`
-(paper `def: NNF`, `source/kc/arXiv.tex:141`).
+(paper `def: NNF`, [VS24]).
 
 Nodes are the indices `Fin size`; `gate i` labels node `i`; `child_lt` says
 every child of `i` is a strictly smaller index, which makes the graph acyclic
@@ -344,7 +344,7 @@ end Vars
 /-! ## Decomposability and determinism
 
 The two syntactic restrictions that carve d-DNNF out of NNF (paper §2,
-`source/kc/arXiv.tex:146`).  Both are imposed on the *nodes* of the circuit,
+[VS24, §2]).  Both are imposed on the *nodes* of the circuit,
 i.e. on the indices reachable from the source, exactly as in the paper; see the
 module docstring. -/
 

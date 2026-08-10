@@ -8,7 +8,7 @@ Authors: Kuldeep S. Meel
 
 Fifth module of `KnowledgeCompilation.Tseitin`, formalizing §6 of Florent
 de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas with short regular
-resolution refutations* (`source/kc/decolnet/main.tex:620`): the reductions that
+resolution refutations* ([dCM21, §6]): the reductions that
 let the DNNF lower bound (Lemma 22) be proved only for `3`-connected graphs with
 charge `0`.
 
@@ -16,21 +16,22 @@ charge `0`.
 
 Every result in this section is an external theorem — Bodlaender–Koster on safe
 separators, and two lemmas turning on **topological minors**, which Mathlib v4.15
-does not have.  Following `ROADMAP.md` §1.3 each is a named `structure`:
+does not have.  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 each is a named `structure` in the
+area's `Imported` namespace:
 
-* **Lemma 6** (`lemma:reduction_to_T(G,0)`, `:627`) — `ReduceToZeroCharge`:
+* **Lemma 6** (`lemma:reduction_to_T(G,0)`, [dCM21, §6]) — `Imported.ReduceToZeroCharge`:
   negating the edge variables along a path between two charged vertices gives a
   DNNF for `T(G,0)` of the same size, so the smallest DNNF size does not depend on
   the charge.  **Inhabited** at `c = 0` (the reduction's fixed point).
-* **Lemma 20** (`lemma:safe_size_1_and_size_2_separators`, `:639`) —
-  `SafeSeparators`, Bodlaender–Koster.  A provenance marker: "safe for treewidth"
-  needs `tw(G[S∪V']+clique(S)) = tw(G)`, a clique-augmented induced-subgraph
-  treewidth construction absent here.
-* **Lemma 21** (`lemma:DNNF_size_for_TS_on_topological_minors`, `:649`) —
-  `TopMinorDNNF`: a topological minor `H` of `G` inherits a DNNF for `T(H,0)` of
-  the same size.  **Inhabited** at the identity minor `H = G`.
-* **Lemma 23** (`lemma:tological_minor_3-connected`, `:658`) —
-  `ThreeConnectedTopMinor`: a graph of treewidth `≥ 3` has a `3`-connected
+* **Lemma 20** (`lemma:safe_size_1_and_size_2_separators`) —
+  `Imported.SafeSeparators`, Bodlaender–Koster.  A provenance marker: "safe for
+  treewidth" needs `tw(G[S∪V']+clique(S)) = tw(G)`, a clique-augmented
+  induced-subgraph treewidth construction absent here.
+* **Lemma 21** (`lemma:DNNF_size_for_TS_on_topological_minors`) —
+  `Imported.TopMinorDNNF`: a topological minor `H` of `G` inherits a DNNF for
+  `T(H,0)` of the same size.  **Inhabited** at the identity minor `H = G`.
+* **Lemma 23** (`lemma:tological_minor_3-connected`) —
+  `Imported.ThreeConnectedTopMinor`: a graph of treewidth `≥ 3` has a `3`-connected
   topological minor of the same treewidth.
 
 `IsThreeConnected` is reused from `Tseitin.Splitting`.
@@ -75,7 +76,7 @@ def DNNFSizeLe (G : SimpleGraph V) [DecidableRel G.Adj] (c : V → ZMod 2) (s : 
   ∃ C : NNF {e // e ∈ G.edgeSet},
     C.IsDNNF ∧ C.Computes (formulaBool G c) ∧ C.size ≤ s
 
-/-- **The topological-minor relation** (`source/kc/decolnet/main.tex:642`), carried
+/-- **The topological-minor relation** ([dCM21, §6.1]), carried
 as the same-vertex subgraph relation `H ≤ G` — a reflexive under-approximation of
 the real notion (which allows subdivision elimination and vertex changes), absent
 from Mathlib v4.15.  See the module docstring. -/
@@ -88,8 +89,10 @@ theorem IsTopMinor.refl (G : SimpleGraph V) : IsTopMinor G G := le_refl G
 
 variable (G : SimpleGraph V) [DecidableRel G.Adj]
 
-/-- **`lemma:reduction_to_T(G,0)`** (`source/kc/decolnet/main.tex:361`,
-[ItsyksonRSS19]), imported: for a satisfiable `T(G,c)` with `G` connected, the
+namespace Imported
+
+/-- **`lemma:reduction_to_T(G,0)`** ([dCM21],
+[IRSS19]), imported: for a satisfiable `T(G,c)` with `G` connected, the
 smallest DNNF size is independent of the charge — negating the edge variables along
 a path between two `1`-charged vertices gives a same-size DNNF for `T(G,0)`.
 Inhabited at `c = 0`. -/
@@ -98,7 +101,7 @@ structure ReduceToZeroCharge (c : V → ZMod 2) : Prop where
   size_iff : ∀ s, DNNFSizeLe G c s ↔ DNNFSizeLe G 0 s
 
 /-- **`lemma:safe_size_1_and_size_2_separators`**
-(`source/kc/decolnet/main.tex:639`, Bodlaender–Koster), imported as a
+([dCM21, `lemma:safe_size_1_and_size_2_separators`], Bodlaender–Koster), imported as a
 provenance marker: every size-1 separator is safe for treewidth, and absent
 size-1 separators every size-2 separator is safe.  The "safe" predicate
 (`tw(G[S∪V']+clique(S)) = tw(G)`) needs a clique-augmented induced-subgraph
@@ -109,7 +112,7 @@ structure SafeSeparators : Prop where
   imported : True
 
 /-- **`lemma:DNNF_size_for_TS_on_topological_minors`**
-(`source/kc/decolnet/main.tex:649`), imported: a topological minor `H`
+([dCM21, `lemma:DNNF_size_for_TS_on_topological_minors`]), imported: a topological minor `H`
 of `G` inherits a DNNF for `T(H,0)` no larger than one for `T(G,0)`.  Inhabited at
 the identity minor. -/
 structure TopMinorDNNF (H : SimpleGraph V) [DecidableRel H.Adj] : Prop where
@@ -119,14 +122,14 @@ structure TopMinorDNNF (H : SimpleGraph V) [DecidableRel H.Adj] : Prop where
   transfer : ∀ s, DNNFSizeLe G 0 s → DNNFSizeLe H 0 s
 
 /-- **`lemma:tological_minor_3-connected`**
-(`source/kc/decolnet/main.tex:658`), imported: a graph of treewidth `≥ 3` has a
+([dCM21, `lemma:tological_minor_3-connected`]), imported: a graph of treewidth `≥ 3` has a
 `3`-connected topological minor of the same treewidth.  Treewidth equality is
 `∀ t, TreewidthLe H t ↔ TreewidthLe G t`, and `tw(G) ≥ 3` is `¬ TreewidthLe G 2`.
 
 **Not inhabited here.**  A witness is the Bodlaender–Koster separator-elimination
-construction (`:661`–`:667`) over topological minors — precisely the imported
+construction ([dCM21, §6.1]) over topological minors — precisely the imported
 content, and unavailable without a topological-minor theory.  The deliberate
-`ROADMAP.md` §1.3 exception. -/
+`docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 exception. -/
 structure ThreeConnectedTopMinor : Prop where
   /-- Existence of a treewidth-preserving `3`-connected topological minor. -/
   exists_minor :
@@ -134,19 +137,21 @@ structure ThreeConnectedTopMinor : Prop where
     ∃ H : SimpleGraph V, IsTopMinor H G ∧ IsThreeConnected H ∧
       (∀ t, TreeProduct.TreewidthLe H t ↔ TreeProduct.TreewidthLe G t)
 
+end Imported
+
 /-! ## Non-vacuity witnesses -/
 
-/-- **`ReduceToZeroCharge` is inhabited** at `c = 0` (the reduction's fixed point):
-`DNNFSizeLe G 0 s ↔ DNNFSizeLe G 0 s`. -/
-def reduceToZeroCharge_zero : ReduceToZeroCharge G 0 where
+/-- **`Imported.ReduceToZeroCharge` is inhabited** at `c = 0` (the reduction's
+fixed point): `DNNFSizeLe G 0 s ↔ DNNFSizeLe G 0 s`. -/
+def reduceToZeroCharge_zero : Imported.ReduceToZeroCharge G 0 where
   size_iff _ := Iff.rfl
 
-/-- **`SafeSeparators` is inhabited** (provenance marker). -/
-def safeSeparators : SafeSeparators := ⟨trivial⟩
+/-- **`Imported.SafeSeparators` is inhabited** (provenance marker). -/
+def safeSeparators : Imported.SafeSeparators := ⟨trivial⟩
 
-/-- **`TopMinorDNNF` is inhabited** at the identity minor `H = G`: the DNNF for
-`T(G,0)` is a DNNF for `T(G,0)`. -/
-def topMinorDNNF_id : TopMinorDNNF G G where
+/-- **`Imported.TopMinorDNNF` is inhabited** at the identity minor `H = G`: the
+DNNF for `T(G,0)` is a DNNF for `T(G,0)`. -/
+def topMinorDNNF_id : Imported.TopMinorDNNF G G where
   minor := IsTopMinor.refl G
   transfer _ := id
 

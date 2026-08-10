@@ -14,7 +14,7 @@ counting rectangles survives no approximation at all, whereas a lower bound on
 nonnegative rank comes with an error parameter and still implies a rectangle
 bound.  This file defines nonnegative rank in the idiom of the surrounding
 development and proves the one inequality that connects it to what is already
-here, Göös–Kiefer–Yuan `eq:una-nrank` (`source/kc/goos/parts/union.tex:158`):
+here, Göös–Kiefer–Yuan `eq:una-nrank` ([GKY22, §3.3]):
 a rectangular partition of `f⁻¹(1)` into `r` pieces *is* a decomposition of the
 communication matrix of `f` into `r` nonnegative rank-one terms, so
 `Par₁(F) ≥ rk⁺(F)`.
@@ -23,7 +23,7 @@ communication matrix of `f` into `r` nonnegative rank-one terms, so
 
 The source treats `F : X × Y → {0,1}` as a matrix and a rank-one term as an
 outer product `u vᵀ` with `u ∈ ℝ_{≥0}^X`, `v ∈ ℝ_{≥0}^Y`
-(`source/kc/goos/parts/union.tex:157`).  Transcribing that literally here would
+([GKY22, §3.3]).  Transcribing that literally here would
 mean functions of *two* arguments, `(V → Bool) → (V → Bool) → ℝ`, and would
 immediately fall out of step with everything around it: in this development
 there is only one assignment `α : V → Bool`, and the partition `P : VarPartition Z`
@@ -64,7 +64,7 @@ a `Partitionable` hypothesis for exactly the reason `fixedCov_le_fixedPar` does.
 
 `HasApproxNonnegRankOfSize P g ε r` asks for a sum of `r` nonnegative rank-one
 terms within pointwise distance `ε` of `g`
-(`source/kc/goos/parts/union.tex:162`).  The source defines `rk⁺_ε(M)` as the
+([GKY22, §3.3]).  The source defines `rk⁺_ε(M)` as the
 least `rk⁺(N)` over nonnegative `N` that `ε`-approximate `M`; here the
 approximant is not named, only its decomposition, which is the same thing
 unfolded — and the side condition that `N` be *nonnegative* is then automatic,
@@ -72,7 +72,7 @@ since a sum of nonnegative rank-one terms is nonnegative
 (`HasNonnegRankOfSize.nonneg`).  Note also that the error is one-sided in
 neither direction and is *absolute*, not relative, so `rk⁺_ε` is not monotone in
 any useful sense in `ε` beyond `mono_eps` below; the source itself flags the
-error parameter as badly behaved (`source/kc/goos/parts/union.tex:26`) and
+error parameter as badly behaved ([GKY22, §3.1]) and
 tracks it by hand.
 
 Two things in `eq:una-nrank` are deliberately not formalized.  The second
@@ -84,18 +84,18 @@ matrices, so the inequality silently coerces; here the coercion is the explicit
 `fiberIndicator`, and stating the theorem for a general fibre `b` rather than
 only for `b = 1` costs nothing.
 -/
-import Arlib.KnowledgeCompilation.Communication.Measures
+import Arlib.Communication.Measures
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 
-namespace Arlib.KnowledgeCompilation
+namespace Arlib.Communication
 
 variable {V : Type*} [DecidableEq V] {Z : Finset V}
 
 /-! ## Nonnegative rank-one terms -/
 
 /-- **A nonnegative rank-one term for the partition `Π`**
-(`source/kc/goos/parts/union.tex:157`, the factors `u ∈ ℝ_{≥0}^X` and
+([GKY22, §3.3], the factors `u ∈ ℝ_{≥0}^X` and
 `v ∈ ℝ_{≥0}^Y` of an outer product `u vᵀ`).
 
 The real-valued analogue of `Rectangle`: a pair of nonnegative functions on
@@ -180,7 +180,7 @@ variable {P : VarPartition Z}
 
 open scoped Classical in
 /-- **The rank-one term of a rectangle**: the source's matrix `Mᵢ`, "`1` on the
-rectangle `Rᵢ` and `0` elsewhere" (`source/kc/goos/parts/union.tex:161`).
+rectangle `Rᵢ` and `0` elsewhere" ([GKY22, §3.3]).
 
 Both factors are indicators — of `R.left` and of `R.right` respectively — so
 each is local to its own block by the corresponding field of `R`, and the
@@ -213,7 +213,7 @@ variable {P : VarPartition Z} {f : (V → Bool) → Bool} {g : (V → Bool) → 
   {b : Bool} {r r' : ℕ} {ε ε' : ℝ}
 
 /-- **`g` is a sum of `r` nonnegative rank-one terms**
-(`source/kc/goos/parts/union.tex:157`): the predicate from which `rk⁺` is built,
+([GKY22, §3.3]): the predicate from which `rk⁺` is built,
 `M = ∑_{i=1}^r uᵢ vᵢᵀ` in the idiom of this development.
 
 Existentially quantifying the family and fixing only its size is what makes an
@@ -224,7 +224,7 @@ def HasNonnegRankOfSize (P : VarPartition Z) (g : (V → Bool) → ℝ) (r : ℕ
   ∃ M : Fin r → NonnegRankOne P, ∀ α, ∑ i, (M i).eval α = g α
 
 /-- **`g` is within `ε` of a sum of `r` nonnegative rank-one terms**
-(`source/kc/goos/parts/union.tex:162`): the predicate from which `rk⁺_ε` is
+([GKY22, §3.3]): the predicate from which `rk⁺_ε` is
 built.
 
 The source quantifies over nonnegative matrices `N` that `ε`-approximate `M` and
@@ -247,7 +247,7 @@ lemma HasNonnegRankOfSize.nonneg (h : HasNonnegRankOfSize P g r) (α : V → Boo
 
 /-- **An exact decomposition is an `ε`-approximate one**, for any `ε ≥ 0`: the
 error is `0`.  The inequality `rk⁺_ε(M) ≤ rk⁺(M)` of
-`source/kc/goos/parts/union.tex:162`, in predicate form. -/
+[GKY22, §3.3], in predicate form. -/
 theorem HasNonnegRankOfSize.approx (h : HasNonnegRankOfSize P g r) (hε : 0 ≤ ε) :
     HasApproxNonnegRankOfSize P g ε r := by
   obtain ⟨M, hM⟩ := h
@@ -311,7 +311,7 @@ function that is `1` exactly on `f⁻¹(b)`, viewed in `ℝ`.
 
 The source writes `F` both for the Boolean function and for its
 `{0,1}`-matrix and lets the coercion be silent
-(`source/kc/goos/parts/union.tex:157`); here it is this definition.  Keeping the
+([GKY22, §3.3]); here it is this definition.  Keeping the
 fibre `b` a parameter, rather than fixing `b = 1`, costs nothing and matches
 `fiber` in `Communication.Measures`. -/
 def fiberIndicator (f : (V → Bool) → Bool) (b : Bool) : (V → Bool) → ℝ :=
@@ -330,7 +330,7 @@ lemma fiberIndicator_true : fiberIndicator f true = fun α => if f α then (1 : 
   rfl
 
 /-- **`Par_b^Π(f) ≥ rk⁺(F)`, the content of `eq:una-nrank`**
-(`source/kc/goos/parts/union.tex:158`, justified at `:161`).
+([GKY22, §3.3], where it is justified).
 
 If `f⁻¹(b)` is partitioned into the `r` rectangles `R₁, …, R_r`, then the
 communication matrix of `f` is the sum of the `r` nonnegative rank-one terms
@@ -388,7 +388,7 @@ decomposition of size `r` means no rectangular partition of size `r`.
 
 The contrapositive of `hasNonnegRankOfSize_of_hasPartitionOfSize`.  A nonnegative
 rank lower bound — which is what the lifting theorems of
-`source/kc/goos/parts/union.tex:168` produce — is transported to a lower bound on
+[GKY22, §3.3] produce — is transported to a lower bound on
 the partition number by this lemma and nothing else. -/
 theorem not_hasPartitionOfSize_of_not_hasNonnegRankOfSize
     (h : ¬ HasNonnegRankOfSize P (fiberIndicator f b) r) :
@@ -411,7 +411,7 @@ measures of `Communication.Measures` are: `Nat.sInf` of an empty set is `0`, so
 a comparison between two measures needs to know that the right-hand one is not
 junk.  Everything above is stated in predicate form and is unaffected. -/
 
-/-- **`rk⁺(g)`** (`source/kc/goos/parts/union.tex:157`): the least number of
+/-- **`rk⁺(g)`** ([GKY22, §3.3]): the least number of
 nonnegative rank-one terms summing to `g`.
 
 `0` when there is no finite decomposition — for instance whenever `g` takes a
@@ -439,7 +439,7 @@ lemma not_hasNonnegRank_of_lt_fixedNonnegRank (h : r < fixedNonnegRank P g) :
 lemma hasNonnegRank_fixedNonnegRank (h : NonnegRankable P g) :
     HasNonnegRankOfSize P g (fixedNonnegRank P g) := Nat.sInf_mem h
 
-/-- **`Par_b^Π(f) ≥ rk⁺(F)`** (`source/kc/goos/parts/union.tex:158`), in numeric
+/-- **`Par_b^Π(f) ≥ rk⁺(F)`** ([GKY22, §3.3]), in numeric
 form.
 
 The `Partitionable` hypothesis is the junk-value guard and is exactly the one
@@ -463,4 +463,4 @@ theorem le_fixedPar_of_le_fixedNonnegRank {n : ℕ} (h : Partitionable P f b)
     (hn : n ≤ fixedNonnegRank P (fiberIndicator f b)) : n ≤ fixedPar P f b :=
   hn.trans (fixedNonnegRank_le_fixedPar h)
 
-end Arlib.KnowledgeCompilation
+end Arlib.Communication

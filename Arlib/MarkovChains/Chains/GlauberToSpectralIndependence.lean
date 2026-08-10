@@ -6,9 +6,12 @@ Authors: Kuldeep S. Meel
 /-
 # Optimal relaxation time implies spectral independence
 
-This module proves `lem:opt-relax-SI` of the source monograph (`source/main.tex`
-line 504, due to Anari–Jain–Koehler–Pham–Vuong): **a Glauber dynamics that mixes
-optimally is spectrally independent.**  It is the converse of the development's
+This module proves `lem:opt-relax-SI` of the source monograph — Zongchen Chen,
+Daniel Štefankovič, Eric Vigoda, *Spectral Independence and Local-to-Global
+Techniques for Optimal Mixing of Markov Chains*, arXiv:2307.13826 (2023), cited
+below as [CSV23] — which attributes the lemma to Anari–Jain–Koehler–Pham–Vuong
+(which of their papers is meant is not recorded anywhere in this library):
+**a Glauber dynamics that mixes optimally is spectrally independent.**  It is the converse of the development's
 central implication, `Chains.SpectralIndependenceMixing`, and it closes the loop:
 spectral independence is not merely *sufficient* for an `O(n)` relaxation time,
 it is *necessary*.
@@ -66,7 +69,7 @@ theorem is tight.
 
 The monograph quantifies over pinnings, and asks that the Glauber dynamics *for
 `μ_τ`* have relaxation time `≤ C·(n − |S|)`.  `Chains.PinnedGlauber` warns
-(`siteChainPin_of_mem`, and `ROADMAP.md` §3.6) that `glauber (pinWeight w Λ τ)`
+(`siteChainPin_of_mem`, and `docs/dev/MarkovChains-ROADMAP.md` §3.6) that `glauber (pinWeight w Λ τ)`
 is **not** that chain: it averages over all `|V|` sites and the `|Λ|` pinned ones
 are no-ops, so it is the conditional Glauber dynamics *with holding probability*
 `|Λ|/|V|`.  Getting this right is the whole content of the pinned statement, so
@@ -325,7 +328,7 @@ theorem spectralIndependence_of_spectralGapAtLeast_glauber (w : (V → S) → �
     (le_of_lt (div_pos one_pos (mul_pos hγ hn)))
     (approxTensorization_of_spectralGapAtLeast_glauber hγ hgap)
 
-/-- **`lem:opt-relax-SI`, unpinned** (`source/main.tex` line 504, first sentence).
+/-- **`lem:opt-relax-SI`, unpinned** ([CSV23, `lem:opt-relax-SI`], first sentence).
 
 *If the Glauber dynamics for `μ` has relaxation time at most `C·n`, then
 `λ_max(Ψ_μ) ≤ C`.*
@@ -465,7 +468,7 @@ theorem dirichlet_freeGlauber_empty (w : (V → S) → ℝ) (hw : ∀ σ, 0 ≤ 
 
 `((n−|Λ|)/n) · ℰ_{freeGlauber}(f) ≤ ℰ_{P_GD}(f)`.
 
-This is the factor recorded in `ROADMAP.md` §3.6, and the proof needs *less* than
+This is the factor recorded in `docs/dev/MarkovChains-ROADMAP.md` §3.6, and the proof needs *less* than
 that discussion: the pinned sites are not shown to be no-ops, only to contribute
 a nonnegative amount to `∑_v μ[Var_v(f)]`.  For a pinned weight they contribute
 exactly `0` (`PinnedGlauber.siteChainPin_of_mem`), so the inequality is then an
@@ -562,7 +565,7 @@ section Pinned
 variable {V : Type*} [Fintype V] [DecidableEq V] [Nonempty V]
 variable {S : Type*} [Fintype S] [DecidableEq S]
 
-/-- **`lem:opt-relax-SI` at one pinning** (`source/main.tex` line 504, second
+/-- **`lem:opt-relax-SI` at one pinning** ([CSV23, `lem:opt-relax-SI`], second
 sentence).
 
 *If the Glauber dynamics for `μ_τ` has relaxation time at most `C·(n − |Λ|)`,

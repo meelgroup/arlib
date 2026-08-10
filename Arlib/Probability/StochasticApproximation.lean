@@ -59,7 +59,7 @@ import Mathlib.Probability.Martingale.Basic
 import Mathlib.Probability.Martingale.Convergence
 import Mathlib.Topology.Algebra.Order.LiminfLimsup
 
-namespace Arlib.StochApprox
+namespace Arlib.Probability.StochApprox
 
 open scoped BigOperators Topology
 open Filter Finset MeasureTheory ProbabilityTheory
@@ -396,4 +396,4 @@ theorem tendsto_zero_of_sa
   simp only [Function.comp_def, Real.sqrt_sq_eq_abs, Real.sqrt_zero] at habs
   exact (tendsto_zero_iff_abs_tendsto_zero _).mpr habs
 
-end Arlib.StochApprox
+end Arlib.Probability.StochApprox

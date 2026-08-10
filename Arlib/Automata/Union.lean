@@ -6,9 +6,9 @@ Authors: Kuldeep S. Meel
 /-
 # UFA union: `thm:union`
 
-Göös–Kiefer–Yuan §4 (`source/kc/goos/parts/union.tex`): two languages recognised
+Göös–Kiefer–Yuan [GKY22, §3]: two languages recognised
 by small UFAs whose *union* needs a huge one.  The paper's proof
-(`source/kc/goos/parts/union.tex:187`) is the §3 argument again, with three
+([GKY22, §3.4]) is the [GKY22, §2] argument again, with three
 substitutions: conical juntas in place of DNF width, non-negative rank in place
 of rectangle covers, and `Par₁` — rectangular *partitions*, i.e. unambiguous
 protocols — in place of `Cov₀`.
@@ -23,9 +23,9 @@ already exists in this repository, and rests on only two imports:
     Imported.NonnegLifting       (GLMWZ16; Kothari)
 
 with Göös–Kiefer–Yuan's own Lemma 14 — the one link they prove themselves —
-fully checked in `Communication/ConicalJunta.lean`, and
+fully checked in `Arlib/KnowledgeCompilation/LowerBounds/ConicalJunta.lean`, and
 `LowerBounds/UnionDerived.unionHard_of_imports` assembling them into an
-`Imported.UnionHard`.  See `KnowledgeCompilation/ROADMAP.md` §3, "Unwinding I1′".
+`Imported.UnionHard`.  See `docs/dev/KnowledgeCompilation-ROADMAP.md` §3, "Unwinding I1′".
 
 What was missing was the **automata-facing** statement, and that is this file:
 two UFAs whose union requires many states.  The only genuinely new step is the
@@ -43,7 +43,7 @@ The paper writes the two languages as
     L₁ = {x x' y y' | F(x, y) = 1},   L₂ = {x x' y y' | F(x', y') = 1}
 
 with Alice holding `x x'` and Bob `y y'`.  Following
-`Communication/Gadget.lean`, the four blocks are absorbed into the variable
+`Arlib/Communication/Gadget.lean`, the four blocks are absorbed into the variable
 *type*: taking `κ := ι ⊕ ι` makes a block a pair (side, copy), the side being the
 partition and the copy being the `Sum`.  So this file takes two arbitrary DNFs
 `ψ` and `φ` over `Gadget.Var κ b` and needs no four-block bookkeeping at all;
@@ -53,10 +53,10 @@ with `ψ` the composition placed at `Sum.inl` and `φ` at `Sum.inr`.
 ## The hypothesis on the union automaton
 
 The lower bound is about UFAs, not NFAs — `lem:UFA-CC`
-(`source/kc/goos/parts/union.tex:150`), not `lem:NFA-CC` — because a rectangular
+([GKY22, `lem:UFA-CC`]), not `lem:NFA-CC` — because a rectangular
 *partition* is what bounds non-negative rank; a cover would double-count.  So the
 hypothesis on `C` is that it is unambiguous and that it recognises the union of
-the two languages.  Unlike §3 there is no complementation, so the union is stated
+the two languages.  Unlike [GKY22, §2] there is no complementation, so the union is stated
 directly as `A₁.Accepts w ∨ A₂.Accepts w` and no negated fibre appears.
 
 ## Explicit bounds
@@ -65,9 +65,9 @@ With `n := |κ|`: each of the two UFAs has at most `termBound · (2·n·b + 1)`
 states, and every UFA for the union has at least `partBound` states, where
 `termBound` and `partBound` are the parameters of `Imported.UnionHard` — for the
 derived instance, `|f| · (2^{2b})^m` and the lifting theorem's `liftBound d`.
-No `Ω̃` appears anywhere, per `KnowledgeCompilation/ROADMAP.md` §5.
+No `Ω̃` appears anywhere, per `docs/dev/KnowledgeCompilation-ROADMAP.md` §5.
 
-Note that the term-count factor is `termBound` on the nose here, where §3's
+Note that the term-count factor is `termBound` on the nose here, where [GKY22, §2]'s
 theorem carries `termBound · (2^{2b})^k`: there the composition is performed
 inside the theorem, here it has already been performed by
 `unionHard_of_imports` and is inside `termBound`.
@@ -79,6 +79,7 @@ namespace Arlib.Automata
 namespace Union
 
 open Arlib.KnowledgeCompilation
+open Arlib.Communication
 
 variable {κ : Type} [Fintype κ] [DecidableEq κ] {b k termBound partBound : ℕ}
 
@@ -150,7 +151,7 @@ theorem card_ge_of_union
 
 /-! ## The theorem -/
 
-/-- **`thm:union`** (`source/kc/goos/parts/union.tex:3`), with both bounds
+/-- **`thm:union`** ([GKY22, §3]), with both bounds
 explicit.
 
 Given two unambiguous DNFs over the gadget variables, each with at most
@@ -163,11 +164,24 @@ partitioned under the gadget's balanced partition:
 
 The paper's `N^{Ω̃(log N)}` is the comparison of these two numbers under the
 parameters that `LowerBounds/UnionDerived.unionHard_of_imports` supplies; per
-`ROADMAP.md` §5 that packaging is left to the reader of the two numbers.
+`docs/dev/Automata-ROADMAP.md` §5 that packaging is left to the reader of the two numbers.
 
 Unambiguity of `ψ` and `φ` is what makes the two automata UFAs; it plays no part
-in the lower bound, which is why `card_ge_of_union` does not take it. -/
-theorem thm_union
+in the lower bound, which is why `card_ge_of_union` does not take it.
+
+This is a **derived** convenience: all five leaves are theorems in their own
+right and this statement is literally their tuple.
+
+| leaf | component lemma |
+|---|---|
+| `(WordCoding.ufa ψ).Unambiguous`, and the same for `φ` | `WordCoding.ufa_unambiguous` |
+| the two state-count upper bounds | `ufa_card_le` |
+| the lower bound for the union | `card_ge_of_union` |
+
+A consumer that wants only one of them should call that component directly
+rather than destructure `⟨⟨_, _⟩, ⟨_, _⟩, _⟩`.  The sharper form of the last
+leaf, constraining `C` only on split words, is `card_ge_of_union_on_split`. -/
+theorem union_state_separation
     (ψ φ : DNF (Gadget.Var κ b))
     (hψu : ψ.Unambiguous) (hφu : φ.Unambiguous)
     (hψt : ψ.numTerms ≤ termBound) (hφt : φ.numTerms ≤ termBound)
@@ -186,6 +200,31 @@ theorem thm_union
    ⟨ufa_card_le ψ hψt, ufa_card_le φ hφt⟩,
    fun _ _ C hCu hC => card_ge_of_union ψ φ hard C hCu hC⟩
 
+/-- **The hardness clause of `Imported.UnionHard`, transported to the gadget's
+own partition.**
+
+`Imported.UnionHard.not_hasPartition` states it at the bundle's abstract
+partition `H.P`; the hypothesis `hP` identifies that partition with
+`Gadget.partition κ b`, which is the only partition the word coding of
+`Automata/WordCoding.lean` can speak about.  Rewriting along `hP` is the sole
+piece of genuine content in `union_state_separation_of_unionHard`, so it is
+stated here on its own: a consumer wanting only the lower bound can pair it with
+`card_ge_of_union` and never destructure a tuple.
+
+`hP` is not a restriction — `UnionDerived.unionHard_of_imports` builds its
+instance with `P := Gadget.partition (ι ⊕ ι) b` literally, so `hP` is discharged
+by `rfl` there — but it cannot be dropped, because `UnionHard` is stated for an
+arbitrary balanced partition of the variable set. -/
+theorem not_hasPartition_of_unionHard
+    (H : Imported.UnionHard (Finset.univ : Finset (Gadget.Var κ b)) k termBound partBound)
+    (hP : H.P = Gadget.partition κ b) :
+    ∀ r < partBound, ¬ HasPartitionOfSize (Gadget.partition κ b)
+      (fun α => DNF.eval H.ψ α || DNF.eval H.φ α) true r := by
+  intro r hr
+  have hhard := H.hard
+  rw [hP] at hhard
+  exact not_hasPartition_of_lt_fixedPar (lt_of_lt_of_le hr hhard)
+
 /-- **`thm:union` from `Imported.UnionHard`**, the bundle that
 `KnowledgeCompilation/LowerBounds/` already derives from two primitive imports
 (`UnionDerived.unionHard_of_imports`).
@@ -199,8 +238,12 @@ balanced partition of the variable set while the word coding of
 
 This is the end-to-end statement: the two UFAs and the lower bound on their
 union, conditional on `HardnessOfNegation` and `NonnegLifting` and on nothing
-else, once `unionHard_of_imports` is plugged in. -/
-theorem thm_union_of_unionHard
+else, once `unionHard_of_imports` is plugged in.
+
+It is `union_state_separation` at the bundle's two DNFs, so it inherits that
+theorem's five components; the only step of its own is the transport of the
+hardness clause across `hP`, which is `not_hasPartition_of_unionHard`. -/
+theorem union_state_separation_of_unionHard
     (H : Imported.UnionHard (Finset.univ : Finset (Gadget.Var κ b)) k termBound partBound)
     (hP : H.P = Gadget.partition κ b) :
     ((WordCoding.ufa H.ψ).Unambiguous ∧ (WordCoding.ufa H.φ).Unambiguous) ∧
@@ -211,18 +254,15 @@ theorem thm_union_of_unionHard
     ∀ (Q : Type) [Fintype Q] (C : NFA Q Bool), C.Unambiguous →
       (∀ w : List Bool,
         C.Accepts w ↔ ((WordCoding.ufa H.ψ).Accepts w ∨ (WordCoding.ufa H.φ).Accepts w)) →
-        partBound ≤ Fintype.card Q := by
-  refine thm_union H.ψ H.φ H.unambiguous.1 H.unambiguous.2
-    H.numTerms_le.1 H.numTerms_le.2 ?_
-  intro r hr
-  have hhard := H.hard
-  rw [hP] at hhard
-  exact not_hasPartition_of_lt_fixedPar (lt_of_lt_of_le hr hhard)
+        partBound ≤ Fintype.card Q :=
+  union_state_separation H.ψ H.φ H.unambiguous.1 H.unambiguous.2
+    H.numTerms_le.1 H.numTerms_le.2 (not_hasPartition_of_unionHard H hP)
 
 /-! ## A non-vacuity check for the `hP` form
 
-`thm_union` itself needs no bundle — take `ψ = φ = []` and `partBound = 0` — so
-it cannot be vacuous.  `thm_union_of_unionHard` is a different matter: it asks
+`union_state_separation` itself needs no bundle — take `ψ = φ = []` and
+`partBound = 0` — so it cannot be vacuous.
+`union_state_separation_of_unionHard` is a different matter: it asks
 for an `Imported.UnionHard` **whose partition is the gadget's**, and the witness
 in `KnowledgeCompilation/LowerBounds/Imported.lean` is at a two-variable
 partition instead.  Were the two conditions jointly unsatisfiable the corollary

@@ -11,7 +11,10 @@ then take a step of whichever chain came up".  This is not a curiosity but the
 way the chains this development cares about are *built*.  The Glauber dynamics
 on a spin system is, by definition, the uniform average over the vertices `v` of
 the single-site heat-bath update at `v`; heat-bath block dynamics is the uniform
-average over blocks.  And the monograph's proof that heat-bath block dynamics is
+average over blocks.  And the proof in the monograph — Chen–Štefankovič–Vigoda,
+*Spectral Independence and Local-to-Global Techniques for Optimal Mixing of
+Markov Chains*, arXiv:2307.13826 (2023), cited below as [CSV23] — that
+heat-bath block dynamics is
 positive semidefinite is exactly the observation that each single-block update
 is PSD together with the fact that *a mixture of PSD kernels is PSD*.
 
@@ -26,8 +29,11 @@ semidefiniteness and Poincaré inequalities from their constituents for free.
   finite nonempty index type, with the same list of lemmas.  This is the form
   downstream code should prefer: no hypotheses are carried in the data, so terms
   built from it are defeq across different proof terms.
-* **`avg_nonnegDefinite`** — the statement the monograph uses at line 1120: an
-  average of positive semidefinite chains is positive semidefinite.
+* **`avg_nonnegDefinite`** — the statement [CSV23] uses for the positive
+  semidefiniteness of heat-bath block dynamics: an average of positive
+  semidefinite chains is positive semidefinite.  (`docs/dev/MarkovChains-ROADMAP.md` attributes the
+  positive semidefiniteness of Glauber dynamics to Dyer–Greenhill–Ullrich; the
+  precise reference is not recorded anywhere in this library.)
 * **`avg_spectralGapAtLeast_of_single`** — the form that actually gets used for
   Glauber dynamics: if *one* constituent has a Poincaré constant `γ` and all the
   others are merely stationary, the average has Poincaré constant `γ / |ι|`.

@@ -8,7 +8,7 @@ Authors: Kuldeep S. Meel
 
 Spectral independence is stated in the source monograph as a bound on the
 largest eigenvalue of an influence matrix.  This development never names an
-eigenvalue (see the design principles in `ROADMAP.md`), so the condition has to
+eigenvalue (see the design principles in `docs/dev/MarkovChains-ROADMAP.md`), so the condition has to
 be carried by the inequality that the *next* lemma actually consumes, which is
 an ordering between two quadratic forms.  This module supplies that ordering,
 and nothing else: no `Matrix` API, no spectral theory, not even symmetry.
@@ -45,7 +45,7 @@ why no spectral input is ever needed.
 
 Everything here is proved from first principles with no `sorry`.
 -/
-import Arlib.MarkovChains.Techniques.Bilinear
+import Arlib.Probability.Bilinear
 
 namespace Arlib.MarkovChains
 

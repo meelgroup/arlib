@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # Laws, total variation, and couplings for `FinProb`
 
 `Arlib` carries two independent finite-probability idioms.  The
-`MarkovChains` development works with `Arlib.MarkovChains.FinDist Ω`, a mass
+`FinDist` development works with `Arlib.Probability.FinDist Ω`, a mass
 function on a finite type, and it is there that the total-variation distance
 `tvDist` and the whole coupling theory — `Coupling`, `Coupling.tvDist_le`,
 `maximalCoupling`, `exists_coupling_disagree_eq_tvDist` — are developed.  The
@@ -38,7 +38,7 @@ applications need.
   `FinProb.condTv_le_condPr_ne` is the version conditioned on an event, which
   is the shape the application consumes.
 * `FinProb.exists_finProb_coupling` — the **converse**, and the reason the
-  `MarkovChains` coupling theory is worth reaching for: given *any* two
+  `FinDist` coupling theory is worth reaching for: given *any* two
   distributions on `κ` there is a `FinProb` carrying a pair of random variables
   with those laws and with `Pr[X ≠ Y]` exactly `tvDist`.  Its proof is
   `maximalCoupling` transported along `Ω := κ × κ`, `X := Prod.fst`,
@@ -54,7 +54,9 @@ of the two, which is by construction local to `Arlib`.
 
 ## The intended application
 
-The `#NFA` FPRAS of PODS 2024 couples the algorithm's sample sets `S(q^ℓ)` to
+The `#NFA` FPRAS of [MCM24] — Kuldeep S. Meel ⓡ Sourav Chakraborty ⓡ Umang
+Mathur, *A Faster FPRAS for #NFA*, PODS 2024 (arXiv:2312.13320) — couples the
+algorithm's sample sets `S(q^ℓ)` to
 idealised uniform ones `U(q^ℓ)`.  The paper asserts in one line that if the
 conditional law of `S` is within total-variation distance `η` of the law of `U`
 then a joint law with `Pr[S ≠ U] ≤ η` exists.  `exists_finProb_coupling` is
@@ -64,14 +66,14 @@ hypothesis from a pointwise coupling that has already been built.
 Everything here is proved from first principles with no `sorry`.
 -/
 import Arlib.Probability.Conditioning
-import Arlib.MarkovChains.Techniques.Coupling
+import Arlib.Probability.Coupling
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
-open MarkovChains (FinDist Coupling tvDist tvDist_nonneg tvDist_comm tvDist_le_one
-  tvDist_eq_sum_posPart maximalCoupling maximalCoupling_disagree)
+open FinDist (tvDist tvDist_nonneg tvDist_comm tvDist_le_one tvDist_eq_sum_posPart)
+open Coupling (maximalCoupling maximalCoupling_disagree)
 
 namespace FinProb
 
@@ -238,7 +240,7 @@ end Law
 
 /-! ## The maximal coupling, transported to `FinProb`
 
-The converse direction.  `MarkovChains.maximalCoupling` produces, for any two
+The converse direction.  `Coupling.maximalCoupling` produces, for any two
 `FinDist`s on `κ`, a joint distribution on `κ × κ` with the right marginals and
 disagreement probability exactly `tvDist`.  Reading that joint distribution as
 the mass function of a `FinProb` on the outcome type `κ × κ`, and the two
@@ -259,9 +261,7 @@ coupling's two marginals as laws (`law_couplingSpace_fst`,
 `law_couplingSpace_snd`). -/
 noncomputable def couplingSpace {μ ν : FinDist κ} (c : Coupling μ ν) : FinProb where
   Ω := κ × κ
-  mass p := c.joint p
-  mass_nonneg p := c.joint.coe_nonneg p
-  mass_sum := c.joint.sum_coe
+  μ := c.joint
 
 /-- The mass function of `couplingSpace c` is the coupling's joint law. -/
 @[simp] theorem couplingSpace_mass {μ ν : FinDist κ} (c : Coupling μ ν) (p : κ × κ) :
@@ -311,7 +311,7 @@ and which disagree with probability *exactly* `tvDist μ ν`.
 
 Together with `tv_le_Pr_ne` (which says no pair on a common space can do better)
 this identifies `tvDist μ ν` as the minimum of `Pr[X ≠ Y]` over all such pairs.
-This is the existence statement the `#NFA` argument of PODS 2024 uses when it
+This is the existence statement the `#NFA` argument of [MCM24] uses when it
 passes from "the conditional law of `S` is `η`-close to that of `U`" to "there
 is a joint law with `Pr[S ≠ U] ≤ η`". -/
 theorem exists_finProb_coupling (μ ν : FinDist κ) :
@@ -335,4 +335,4 @@ theorem exists_finProb_coupling_le (μ ν : FinDist κ) {η : ℝ} (hη : tvDist
 end Transport
 
 end FinProb
-end Arlib
+end Arlib.Probability

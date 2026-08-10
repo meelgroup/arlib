@@ -51,7 +51,7 @@ both its equations are `rfl`.
 
 ### 1.2 Imported results are hypotheses, never axioms
 
-Same discipline as `Arlib/KnowledgeCompilation/ROADMAP.md` §1.3, and for the same
+Same discipline as [`KnowledgeCompilation-ROADMAP.md`](KnowledgeCompilation-ROADMAP.md) §1.3, and for the same
 reason. Two results are genuinely imported (§3), and both are `structure`s
 threaded explicitly into the theorems that consume them.
 
@@ -61,7 +61,7 @@ detect that. `Imported.unambiguousDNFHardCNF_witness` and
 `Imported.nondetLifting_witness` are minimal witnesses; they say nothing about
 the quantitative content, which is the imported theorem, but they establish that
 the conditionals are about something. Both are simultaneously inhabitable at
-`κ = Fin 1`, so `Complement.thm_complement` in particular is checked non-vacuous.
+`κ = Fin 1`, so `Complement.complement_state_separation` in particular is checked non-vacuous.
 
 ### 1.3 Explicit bounds, never `Õ` / `Ω̃`
 
@@ -117,8 +117,9 @@ stating the conclusion as a lower bound on the cover number itself.
 theorem's chain rests on GJPW18 Lemma 8 and GLMWZ16/Kothari lifting, both carried
 by `KnowledgeCompilation/LowerBounds/Imported.lean`, with everything between them
 proved — including Göös–Kiefer–Yuan's own Lemma 14 in
-`Communication/ConicalJunta.lean` and `Par₁ ≥ rk⁺` in `Communication/NonnegRank.lean`.
-`Union.thm_union_of_unionHard` connects to `UnionDerived.unionHard_of_imports`,
+`Arlib/KnowledgeCompilation/LowerBounds/ConicalJunta.lean` and `Par₁ ≥ rk⁺` in
+`Arlib/Communication/NonnegRank.lean`.
+`Union.union_state_separation_of_unionHard` connects to `UnionDerived.unionHard_of_imports`,
 and the partition-equality side condition is `rfl`.
 
 **A3 — full rank of the `k`-uniform disjointness matrix**
@@ -158,7 +159,7 @@ against a lower bound of `liftBound cnfBound` on any NFA for the complement.
 
 Converting to `N^{Ω̃(log N)}` means substituting `n ≤ poly(k)` and absorbing
 constants. It is not done, for the same reason
-`KnowledgeCompilation/ROADMAP.md` §5 gives: the explicit inequality is stronger,
+[`KnowledgeCompilation-ROADMAP.md`](KnowledgeCompilation-ROADMAP.md) §5 gives: the explicit inequality is stronger,
 checkable, and does not hide which constants were traded. Note that `n ≤ poly(k)`
 from A1 is used *nowhere else* — it only matters for that repackaging.
 
@@ -174,15 +175,14 @@ from A1 is used *nowhere else* — it only matters for that repackaging.
   Everything it needs is present.
 - **`cl: or` in its degree form** (`parts/applications.tex:9`). Only the matrix
   version is formalized. The proof is literally the same one; it belongs on the
-  conical-junta side, in `Communication/ConicalJunta.lean`.
+  conical-junta side, in `Arlib/KnowledgeCompilation/LowerBounds/ConicalJunta.lean`.
 - **`thm: error` end to end.** `ErrorReduction` supplies the `1/4` upper bound
   generically in `F`; instantiating it at §4's hard function to get the stated
   gap is a short assembly that has not been written.
-- **Promoting `Communication/`.** This area imports from
-  `Arlib.KnowledgeCompilation.Communication`, which is where the machinery
-  already lived. Nothing is wrong with that, but the honest structure is a
-  communication-complexity area that both depend on. It is a pure file move plus
-  import updates.
+- ~~**Promoting `Communication/`.**~~ **Done.** The machinery used to live at
+  `Arlib.KnowledgeCompilation.Communication`; it is now its own area,
+  `Arlib.Communication`, which this area and `Arlib.KnowledgeCompilation` both
+  depend on. See `MIGRATION.md`.
 
 ---
 

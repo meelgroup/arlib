@@ -14,11 +14,11 @@ that turns an information bound into a *query* lower bound: if an estimate `X̂`
 of a hidden parameter `X` carries little information about `X`, then it must be
 wrong often.
 
-## Main definitions
-
-* `Arlib.InformationTheory.errIndicator X Xhat` — the `Bool`-valued indicator of
-  the error event `X ≠ X̂`.
-* `Arlib.InformationTheory.errProb X Xhat` — the error probability `Pr[X ≠ X̂]`.
+The error event itself — `Arlib.Probability.errIndicator X Xhat`, the
+`Bool`-valued indicator of `X ≠ X̂`, and `Arlib.Probability.errProb X Xhat`, its
+probability — carries no information-theoretic content and lives in
+`Arlib.Probability.Law`; both are re-exported by `Arlib.InformationTheory.Basic`
+under their old `Arlib.InformationTheory` spellings.
 
 ## Main results
 
@@ -61,25 +61,10 @@ bad slices are the ones with `E = 1`, and the reconstruction is `X̂` itself.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory
-
-/-! ### The error event -/
-
-/-- The error indicator of an estimate. -/
-def errIndicator {α : Type} [DecidableEq α] {P : FinProb} (X Xhat : P.Ω → α) : P.Ω → Bool :=
-  fun ω => decide (X ω ≠ Xhat ω)
-
-/-- The error probability of an estimate. -/
-noncomputable def errProb {α : Type} [Fintype α] [DecidableEq α] {P : FinProb}
-    (X Xhat : P.Ω → α) : ℝ :=
-  dist P (errIndicator X Xhat) true
-
-/-- The error probability is the mass of an event, hence nonnegative. -/
-theorem errProb_nonneg {α : Type} [Fintype α] [DecidableEq α] {P : FinProb}
-    (X Xhat : P.Ω → α) : 0 ≤ errProb X Xhat :=
-  dist_nonneg _ _
 
 /-! ### An unnormalised maximum-entropy bound
 

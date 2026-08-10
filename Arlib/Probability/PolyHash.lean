@@ -65,7 +65,7 @@ Throughout: `[Field F] [Fintype F] [DecidableEq F]`.
 Everything here is proved with no `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -135,15 +135,16 @@ mass `(|F| ^ k)⁻¹`. -/
 noncomputable def polyHashSpace (F : Type) [Field F] [Fintype F] [DecidableEq F]
     (k : ℕ) : FinProb where
   Ω := Fin k → F
-  mass := fun _ => ((Fintype.card F : ℝ) ^ k)⁻¹
-  mass_nonneg := fun _ => by positivity
-  mass_sum := by
-    have hF : (0 : ℝ) < (Fintype.card F : ℝ) := by
-      exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
-    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_fin,
-      nsmul_eq_mul]
-    push_cast
-    exact mul_inv_cancel₀ (by positivity)
+  μ :=
+    { p := fun _ => ((Fintype.card F : ℝ) ^ k)⁻¹
+      p_nonneg := fun _ => by positivity
+      p_sum := by
+        have hF : (0 : ℝ) < (Fintype.card F : ℝ) := by
+          exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
+        rw [Finset.sum_const, Finset.card_univ, Fintype.card_fun, Fintype.card_fin,
+          nsmul_eq_mul]
+        push_cast
+        exact mul_inv_cancel₀ (by positivity) }
 
 /-- **Uniformity**: every outcome of `polyHashSpace F k` has mass `(|F| ^ k)⁻¹`. -/
 @[simp] theorem polyHashSpace_mass {k : ℕ} (c : (polyHashSpace F k).Ω) :
@@ -494,4 +495,4 @@ theorem kwiseIndep_polyHash (hk : 0 < k) {x : ι → F} (hx : Function.Injective
     rw [Finset.prod_congr rfl hone, Finset.prod_const]
   rw [hL, hR]
 
-end Arlib
+end Arlib.Probability

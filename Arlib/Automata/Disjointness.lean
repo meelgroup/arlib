@@ -4,22 +4,22 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 /-
-# §5: sparse set disjointness — Razborov's covering family, and the UFA bound
+# [GKY22, §4]: sparse set disjointness — Razborov's covering family, and the UFA bound
 
-Göös–Kiefer–Yuan's separation (`lem: separation`, §5,
-`source/kc/goos/parts/separation.tex:16`) rests on two facts about
+Göös–Kiefer–Yuan's separation (`lem: separation`, §4,
+[GKY22, `lem:separation`]) rests on two facts about
 `Disj^n_k = {(S,T) : |S| = |T| = k, S ∩ T = ∅}`, pulling in opposite directions:
 
 * **Upper bound.** Polynomially many sets `Z₁, …, Z_ℓ ⊆ [n]` suffice so that
   *every* disjoint pair `(S,T)` is *separated* by some `Z_i` — `S ⊆ Z_i` and
-  `Z_i ∩ T = ∅` (`separation.tex:44`).  An NFA can then guess `i`.
+  `Z_i ∩ T = ∅` ([GKY22, §4.1]).  An NFA can then guess `i`.
 * **Lower bound.** `Par₁` of the disjointness matrix is at least `C(n,k)`
-  (`separation.tex:30`), so no *unambiguous* automaton is small.
+  ([GKY22, §4.1]), so no *unambiguous* automaton is small.
 
 Both are here.  The NFA construction that consumes the first is not; see the
 closing section.
 
-## Counting, not probability (`separation.tex:45`)
+## Counting, not probability ([GKY22, §4.1])
 
 The paper's covering family comes from the probabilistic method: a uniform
 random `Z` separates a fixed pair with probability `2^{-2k}`, so `ℓ` independent
@@ -46,7 +46,7 @@ The paper takes `ℓ = ⌈2^{2k}·ln C(n,k)²⌉`.  We take
 
 which for the paper's `k = ⌈log₂ n⌉` is `O(n³)` against the paper's
 `O(n² log² n)` — both polynomial, which is all `lem: separation` needs, and the
-exponent is explicit rather than hidden in a `Ω`-sign (`ROADMAP.md` §5).
+exponent is explicit rather than hidden in a `Ω`-sign (`docs/dev/Automata-ROADMAP.md` §5).
 
 The gain is that no logarithm and no real-valued rounding ever appear.  Two
 replacements do it.  First, the union bound is taken over `4ⁿ` rather than over
@@ -69,14 +69,14 @@ estimate; `e` really is in the way, and Bernoulli is the shortest route past it.
 
 ## The full-rank fact is imported, and it is the only thing that is
 
-`separation.tex:29` cites Kushilevitz–Nisan, Example 2.12, for
+[GKY22, §4.1] cites Kushilevitz–Nisan, Example 2.12, for
 `rank(F) = C(n,k)`.  That is not a small fact: the disjointness matrix on
 `k`-subsets is a member of the Johnson scheme whose nonsingularity for `n ≥ 2k`
 is equivalent to a theorem of Gottlieb on inclusion matrices, and the standard
 proof computes the `k+1` eigenvalues `(−1)^i C(n−k−i, k−i)`.  Nothing in Mathlib
 is close to it.
 
-Following `ROADMAP.md` §1.3 and `LowerBounds/Imported.lean`, it enters as a
+Following `docs/dev/Automata-ROADMAP.md` §1.3 and `LowerBounds/Imported.lean`, it enters as a
 **one-field structure**, `DisjFullRank`, and never as an `axiom` — and, as
 there, the structure is *inhabited* (`disjFullRank_zero`) so that every theorem
 conditional on it is known not to be vacuous.
@@ -90,7 +90,7 @@ provable here and the import should be as small as possible.
   nonnegativity of the vectors is never used, which is exactly right: the bound
   `Par₁ ≥ rk⁺ ≥ rk` loses nothing by forgetting signs.
 * `Par₁ ≥ rk⁺` — that is `hasNNRankLE_of_hasTPPartition`, already in
-  `Communication/TwoParty.lean`.
+  `Arlib/Communication/TwoParty.lean`.
 
 So the conditional chain is `DisjFullRank → Par₁(F) ≥ C(n,k) → (n/k)^k`, with
 one hypothesis and two proved links.
@@ -107,7 +107,7 @@ nonempty set.
 ## The NFAs are not here
 
 `lem: separation` also asserts `n^{O(1)}`-state NFAs for `⟨Disj^n_k⟩` and its
-complement (`separation.tex:36`, `:40`).  They are not formalized.  The covering
+complement ([GKY22, §4.1]).  They are not formalized.  The covering
 family they need is `exists_sepFamily`, which is here; what is missing is the
 encoding `⟨S⟩⟨T⟩ ∈ {0,1}^{2n}` of a pair as a *word*, together with the state
 count of the automaton that guesses `i ∈ [ℓ]` and then verifies `S ⊆ Z_i` and
@@ -115,7 +115,7 @@ count of the automaton that guesses `i ∈ [ℓ]` and then verifies `S ⊆ Z_i` 
 `Automata/Basic.lean`'s `NFA`, and it feeds only the *upper* bound half of the
 separation, which carries none of the quantitative content.
 -/
-import Arlib.KnowledgeCompilation.Communication.TwoParty
+import Arlib.Communication.TwoParty
 import Mathlib.Algebra.Order.Ring.Pow
 import Mathlib.Data.Finset.Interval
 import Mathlib.Data.Fintype.BigOperators
@@ -127,14 +127,14 @@ import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 
 namespace Arlib.Automata
 
-open Arlib.KnowledgeCompilation
+open Arlib.Communication
 
 namespace Disjointness
 
 /-! ## Integer Bernoulli, and the binomial bound
 
 Two pieces of arithmetic, both stated in `ℕ` with no division and no rounding.
-The first drives the covering count; the second is `separation.tex:33`'s step
+The first drives the covering count; the second is [GKY22, §4.1]'s step
 `C(n,k) ≥ (n/k)^k`. -/
 
 /-- **Bernoulli, in integers**: `2·rʳ ≤ (r+1)ʳ` for `r ≥ 1`.
@@ -172,7 +172,7 @@ theorem two_mul_pred_pow_le {q : ℕ} (hq : 2 ≤ q) : 2 * (q - 1) ^ q ≤ q ^ q
     _ = (r + 1) ^ (r + 1) := by ring
 
 /-- **`nᵏ ≤ kᵏ · C(n,k)`** for `k ≤ n` — the division-free form of the paper's
-`C(n,k) ≥ (n/k)^k` (`source/kc/goos/parts/separation.tex:33`).
+`C(n,k) ≥ (n/k)^k` ([GKY22, §4.1]).
 
 The proof is termwise: `C(n,k) = ∏_{i<k} (n−i)/(k−i)` and each factor is at
 least `n/k`, which in `ℕ` is the cleared inequality `n·(k−i) ≤ k·(n−i)`.  Both
@@ -207,7 +207,7 @@ theorem pow_le_pow_mul_choose {n k : ℕ} (h : k ≤ n) : n ^ k ≤ k ^ k * n.ch
   exact Nat.le_of_mul_le_mul_right hcancel (Nat.factorial_pos k)
 
 /-- **`(n/k)^k ≤ C(n,k)`** with `ℕ`-division, for `1 ≤ k ≤ n`
-(`source/kc/goos/parts/separation.tex:33`).
+([GKY22, §4.1]).
 
 Floor division only helps: `(n/k)·k ≤ n`, so the cleared bound
 `pow_le_pow_mul_choose` implies this one after cancelling `kᵏ`. -/
@@ -248,7 +248,7 @@ theorem pow_mul_lt_pow {q m c t : ℕ} (hq : 2 ≤ q) (hm : 1 ≤ m) (hc : c < 2
 
 variable {n k : ℕ}
 
-/-- **`Z` separates `(S,T)`** (`source/kc/goos/parts/separation.tex:49`):
+/-- **`Z` separates `(S,T)`** ([GKY22, §4.1]):
 `S ⊆ Z` and `Z ∩ T = ∅`. -/
 def Separates (Z S T : Finset (Fin n)) : Prop := S ⊆ Z ∧ Disjoint Z T
 
@@ -272,7 +272,7 @@ theorem sepFinset_eq_Icc (S T : Finset (Fin n)) :
 
 /-- **There are exactly `2^{n−2k}` separators of a disjoint pair of `k`-sets**
 — the paper's probability `2^{-2k}`, cleared of its denominator `2ⁿ`
-(`source/kc/goos/parts/separation.tex:50`). -/
+([GKY22, §4.1]). -/
 theorem card_sepFinset (S T : Finset (Fin n)) (hS : S.card = k) (hT : T.card = k)
     (hd : Disjoint S T) :
     (Finset.univ.filter (fun Z => Separates Z S T)).card = 2 ^ (n - 2 * k) := by
@@ -283,13 +283,13 @@ theorem card_sepFinset (S T : Finset (Fin n)) (hS : S.card = k) (hT : T.card = k
 
 /-- **The size of the covering family**: `2^{2k}·(2n+1)`.
 
-The paper's `⌈2^{2k}·ln C(n,k)²⌉` (`source/kc/goos/parts/separation.tex:51`)
+The paper's `⌈2^{2k}·ln C(n,k)²⌉` ([GKY22, §4.1])
 with the logarithm replaced by the cruder but integer `2n+1`; see the module
 header for why.  For `k = ⌈log₂ n⌉` this is `O(n³)`. -/
 def sepFamilySize (n k : ℕ) : ℕ := 2 ^ (2 * k) * (2 * n + 1)
 
 /-- **Razborov's covering-set lemma** (`lem: separation`(a),
-`source/kc/goos/parts/separation.tex:44`), by counting.
+[GKY22, §4.1]), by counting.
 
 There are `2^{2k}·(2n+1)` sets `Z₁, …, Z_ℓ ⊆ [n]` such that every pair of
 disjoint `k`-subsets `(S,T)` has some `Z_i` with `S ⊆ Z_i` and `Z_i ∩ T = ∅`.
@@ -399,14 +399,14 @@ theorem exists_sepFamily (n k : ℕ) :
 /-! ## The UFA lower bound
 
 `Par₁(F) ≥ C(n,k)` for `F` the disjointness function on `k`-subsets
-(`source/kc/goos/parts/separation.tex:30`). -/
+([GKY22, §4.1]). -/
 
 /-- **The `k`-subsets of `[n]`**, the common input type of both parties
-(`source/kc/goos/parts/separation.tex:27`). -/
+([GKY22, §4.1]). -/
 abbrev DisjIndex (n k : ℕ) : Type := {S : Finset (Fin n) // S.card = k}
 
 /-- **Sparse set disjointness** as a two-party function
-(`source/kc/goos/parts/separation.tex:28`). -/
+([GKY22, §4.1]). -/
 def disjFun (n k : ℕ) : DisjIndex n k → DisjIndex n k → Bool :=
   fun S T => decide (Disjoint S.1 T.1)
 
@@ -444,16 +444,16 @@ theorem card_le_of_hasNNRankLE {ι : Type*} [Fintype ι] [DecidableEq ι] {M : �
 
 /-- **I — the sparse disjointness matrix is nonsingular**
 [IMPORTED — Kushilevitz–Nisan, Example 2.12, quoted at
-`source/kc/goos/parts/separation.tex:29`].
+[GKY22, §4.1]].
 
 *The `C(n,k) × C(n,k)` matrix `[S ∩ T = ∅]` on `k`-subsets of `[n]` has full
 rank.*
 
-This is the sole hypothesis of the lower-bound half of §5, and it is a genuine
+This is the sole hypothesis of the lower-bound half of [GKY22, §4], and it is a genuine
 theorem: the matrix lies in the Johnson association scheme, its nonsingularity
 for `n ≥ 2k` is equivalent to Gottlieb's theorem on inclusion matrices, and the
 standard proof diagonalizes it with eigenvalues `(−1)^i·C(n−k−i, k−i)`.  Per
-`ROADMAP.md` §1.3 it is a hypothesis and never an `axiom`; `disjFullRank_zero`
+`docs/dev/Automata-ROADMAP.md` §1.3 it is a hypothesis and never an `axiom`; `disjFullRank_zero`
 shows the hypothesis is about something.
 
 Stated as invertibility of the determinant rather than as `rank = C(n,k)`
@@ -521,26 +521,26 @@ namespace DisjFullRank
 
 /-- **`Par₁(F) ≥ C(n,k)`, in the form a lower bound is consumed**: no
 rectangular partition of the disjointness fibre has fewer than `C(n,k)` parts
-(`source/kc/goos/parts/separation.tex:30`, via `eq: una-nrank` at
-`source/kc/goos/parts/union.tex:158`). -/
+([GKY22, §4.1], via `eq: una-nrank` at
+[GKY22, §3.3]). -/
 theorem choose_le_of_hasTPPartition (H : DisjFullRank n k) {r : ℕ}
     (h : HasTPPartition (disjFun n k) true r) : n.choose k ≤ r := by
   have hcard := card_le_of_hasNNRankLE (M := tpIndicator (disjFun n k)) H.isUnit_det
     (hasNNRankLE_of_hasTPPartition h)
   rwa [card_disjIndex] at hcard
 
-/-- **`Par₁(F) ≥ C(n,k)`** (`source/kc/goos/parts/separation.tex:30`). -/
+/-- **`Par₁(F) ≥ C(n,k)`** ([GKY22, §4.1]). -/
 theorem choose_le_tpPar (H : DisjFullRank n k) :
     n.choose k ≤ tpPar (disjFun n k) true := by
   have hne : {r : ℕ | HasTPPartition (disjFun n k) true r}.Nonempty :=
     ⟨_, disjHasTPPartition (disjFun n k)⟩
   exact H.choose_le_of_hasTPPartition (Nat.sInf_mem hne)
 
-/-- **`Par₁(F) ≥ (n/k)^k`** (`source/kc/goos/parts/separation.tex:33`), the form
+/-- **`Par₁(F) ≥ (n/k)^k`** ([GKY22, §4.1]), the form
 in which the paper feeds the bound to `k = ⌈log₂ n⌉` to obtain `n^{Ω(log n)}`.
 
 That last step is not taken here: it is an asymptotic repackaging of this
-explicit inequality, and `ROADMAP.md` §5 keeps the explicit form. -/
+explicit inequality, and `docs/dev/Automata-ROADMAP.md` §5 keeps the explicit form. -/
 theorem div_pow_le_tpPar (H : DisjFullRank n k) (hk : 1 ≤ k) (hkn : k ≤ n) :
     (n / k) ^ k ≤ tpPar (disjFun n k) true :=
   le_trans (div_pow_le_choose hk hkn) H.choose_le_tpPar

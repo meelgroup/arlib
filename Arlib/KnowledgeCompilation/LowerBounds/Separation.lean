@@ -6,8 +6,8 @@ Authors: Kuldeep S. Meel
 /-
 # The separation theorems
 
-`thm: main` (`source/kc/arXiv.tex:113`, proof at `:334`) and `thm: sep`
-(`source/kc/arXiv.tex:107`, proof at `:465`): the assembly of everything else in
+`thm: main` ([VS24], proof at [VS24, §4.2]) and `thm: sep`
+([VS24, `thm: sep`], proof at [VS24, §4.5]): the assembly of everything else in
 the area into the statement that **structured d-DNNF is not closed under
 negation**, and its consequence that d-SDNNF is strictly more succinct than SDD.
 
@@ -24,7 +24,7 @@ the theorems below take that bundle as a hypothesis, with its `termBound` and
   for `f`, and
 * a lower bound `coverBound ≤ |C|` on every structured DNNF for `¬f`.
 
-This is `ROADMAP.md` §5 carried to the end of the chain: *given hardness with
+This is `docs/dev/KnowledgeCompilation-ROADMAP.md` §5 carried to the end of the chain: *given hardness with
 these constants, the separation has those constants*.  Instantiating `k`,
 `m = 6n+1`, `|F| = 2^t` and `termBound = 2^{Õ(k)}` recovers the paper's
 `n^{Ω̃(log n)}` by arithmetic on the two displayed numbers, and that arithmetic
@@ -51,7 +51,7 @@ the whole construction exists to overcome.
 
 ## `var(T) = var(ψ')`: needed by the machinery, not by the statement
 
-The paper's `def: vtree` (`source/kc/arXiv.tex:150`) makes a v-tree a v-tree
+The paper's `def: vtree` ([VS24]) makes a v-tree a v-tree
 *for the variable set of the function*, so `var(T) = var(ψ')` is built into its
 notation and never appears as a hypothesis.  Here `Respects` relates a circuit
 to an *arbitrary* tree, and the machinery does need the equality: the rectangle
@@ -81,6 +81,7 @@ import Arlib.KnowledgeCompilation.Circuits.DNFtoCircuit
 namespace Arlib.KnowledgeCompilation
 namespace Separation
 
+open Arlib.Communication
 open AffinePerms Lifting
 
 /-- Covering `(¬f)⁻¹(1)` is covering `f⁻¹(0)`.  The rectangle lemma is stated for
@@ -103,7 +104,7 @@ variable {Zι : Type} [Fintype Zι] [DecidableEq Zι]
 variable {k termBound coverBound : ℕ}
 
 omit [Fintype ι] in
-/-- **The upper-bound half of `thm: main`** (`source/kc/arXiv.tex:340`): `ψ'`
+/-- **The upper-bound half of `thm: main`** ([VS24, §4.2]): `ψ'`
 compiles into a d-SDNNF respecting any prescribed v-tree over its variables, of
 explicitly bounded size.
 
@@ -147,9 +148,9 @@ theorem coverBound_le_fixedCov_permDNF
     (fun _ _ _ _ h => hrep h) hZ' hΓ hm hz false)
 
 /-- **The best-partition lower bound**, `coverBound ≤ Cov₀(ψ')` — the paper's
-`NCC₀(f) ≥ NCC₀^Π(g)` (`source/kc/arXiv.tex:334`).
+`NCC₀(f) ≥ NCC₀^Π(g)` ([VS24, §4.2]).
 
-The hypothesis is the junk-value guard of `Communication/Measures.lean`: `bestCov`
+The hypothesis is the junk-value guard of `Arlib/Communication/Measures.lean`: `bestCov`
 is an `sInf` over the balanced partitions, so if there were no balanced partition
 of `var(ψ')` at all it would be `0` and no lower bound could hold.  One balanced
 partition is all that is needed, and the rectangle lemma supplies one in the
@@ -227,7 +228,7 @@ theorem coverBound_le_size_of_computes_not
     (hasCoverOfSize_of_hasCoverOfSize_permDNF (P := H.P) he
       (fun _ _ _ _ h => hrep h) hT'vars hbal hm hz hcov)
 
-/-- **`thm: main`** (`source/kc/arXiv.tex:113`): *there is a Boolean function
+/-- **`thm: main`** ([VS24]): *there is a Boolean function
 with a small structured d-DNNF whose negation has no small structured DNNF*,
 with both bounds explicit.
 
@@ -235,7 +236,7 @@ The function is `ψ'`, the copy-and-permute lifting of the hard `k`-DNF supplied
 by the imported fixed-partition hardness.  Everything is conditional on that
 hardness and on nothing else: `#print axioms` reports only the three standard
 ones, and the hypothesis is a parameter rather than an axiom precisely so that
-this statement says something (`ROADMAP.md` §1.3).
+this statement says something (`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.3).
 
 The two bounds, side by side:
 
@@ -245,7 +246,7 @@ The two bounds, side by side:
 
 The paper's `n^{Ω̃(log n)}` is the comparison of these two numbers under its
 choice of parameters; see the module docstring. -/
-theorem thm_main
+theorem exists_dSDNNF_hard_negation
     (H : Imported.FixedPartitionHard (Finset.univ : Finset ι) k termBound coverBound)
     {e : ι × Fin m → F} (he : Function.Injective e)
     {rep : F × F → Zι → Bool} (hrep : Function.Injective rep)
@@ -266,7 +267,7 @@ theorem thm_main
     fun T C hT hR hC =>
       coverBound_le_size_of_computes_not H he hrep hm hz hT hR hC⟩
 
-/-- **`thm: sep`** (`source/kc/arXiv.tex:107`, proof at `:465`): *there is a
+/-- **`thm: sep`** ([VS24], proof at [VS24, §4.5]): *there is a
 function with a small d-SDNNF and no small SDD*.
 
 The paper's proof is two sentences: complement the SDD, and apply `thm: main`.
@@ -278,7 +279,7 @@ The conclusion is stated as `coverBound ≤ c·|C|^d` rather than as a bound on
 `|C|` itself, because extracting `|C|` would mean a `d`-th root in `ℕ` and a
 rounding convention chosen for no reason: the inequality as displayed is exactly
 what the argument gives, and any instantiation can take the root itself. -/
-theorem thm_sep {c d : ℕ}
+theorem exists_dSDNNF_hard_sdd {c d : ℕ}
     (H : Imported.FixedPartitionHard (Finset.univ : Finset ι) k termBound coverBound)
     (comp : Imported.SDDComplementation (F ⊕ Zι) c d)
     {e : ι × Fin m → F} (he : Function.Injective e)

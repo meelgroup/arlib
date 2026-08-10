@@ -11,7 +11,7 @@ that this development cares about — the function it computes, its width, its
 term count, its unambiguity — survives, because renaming touches only the
 *names* of variables.
 
-The use is gadget composition (`Communication/Gadget.lean`).  A gadget is a
+The use is gadget composition (`Arlib/Communication/Gadget.lean`).  A gadget is a
 function of `2b` bits and its minterm expansion is naturally a DNF over
 `Fin 2 × Fin b`; what the composition needs is that same DNF over the variables
 `Fin 2 × κ × Fin b` of the composed function, for one fixed coordinate `i : κ`.

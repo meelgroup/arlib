@@ -29,8 +29,11 @@ identity in both directions.  That equivalence is
 
 ## What is proved *here*, and a correction to the obvious paraphrase
 
-The monograph's converse (`main.tex` line 504, `lem:opt-relax-SI`, quoted from
-Anari–Jain–Koehler–Pham–Vuong) reads:
+The monograph's converse — [CSV23, `lem:opt-relax-SI`], i.e. Zongchen Chen,
+Daniel Štefankovič, Eric Vigoda, *Spectral Independence and Local-to-Global
+Techniques for Optimal Mixing of Markov Chains*, arXiv:2307.13826 (2023), which
+quotes it from Anari–Jain–Koehler–Pham–Vuong (which of their papers is meant is
+not recorded anywhere in this library) — reads:
 
 > if for any pinning `τ` on a subset `S` of vertices, **the Glauber dynamics**
 > for `μ_τ` has relaxation time bounded by `≤ C·(n−|S|)`, then `μ` is

@@ -10,36 +10,42 @@ Knowledge compilation: representation languages for Boolean functions, and
 lower bounds on their size.
 
 The development follows Harry Vinall-Smeeth, *Structured d-DNNF Is Not Closed
-Under Negation* (IJCAI 2024), in `source/kc/arXiv.tex`.  See `ROADMAP.md` for
-the design principles and `PAPER-INVENTORY.md` for the statement-by-statement
+Under Negation* (IJCAI 2024; arXiv:2403.03362) — cited below as [VS24].  See `docs/dev/KnowledgeCompilation-ROADMAP.md` for
+the design principles and `docs/dev/KnowledgeCompilation-PAPER-INVENTORY.md` for the statement-by-statement
 catalogue of the source paper.
 
-The area is split seven ways, mirroring the shape of the argument:
+The *tool* the argument runs on is not here.  Rectangles, covers and partitions
+of `f⁻¹(b)`, and the measures `Cov` and `Par` they define, are
+`Arlib.Communication`, which this area imports.  They used to be a subdirectory
+here, until `Arlib.Automata` turned out to need exactly the same machinery for
+exactly the same reason — a state lower bound is a rectangle lower bound — and a
+tool that two areas depend on should be an area, not a subdirectory of one of
+them.  What survives here is everything specific to *circuits*: the bridge from
+circuit size to rectangle count, and what is done with it.
+
+The area is split six ways, mirroring the shape of the argument:
 
 * **`Circuits/`** — the *objects*.  NNF and the syntactic restrictions that cut
   representation languages out of it: decomposability, determinism, v-trees and
   structuredness, SDD, and the arithmetic-circuit analogues.
-* **`Communication/`** — the *tool*.  Rectangles, covers and partitions of
-  `f⁻¹(b)`, the measures `Cov`, `Par`, `NCC`, `UCC`, and the distinction
-  between the fixed-partition and best-partition models.
 * **`LowerBounds/`** — the *bridge and the argument*.  The rectangle lemma
   connecting circuit size to rectangle covers, the copy-and-permute lifting
   from fixed to best partition, and the separation theorems.
 * **`BranchingPrograms/`** — a *second paper*, Igor Razgon, *On the read-once
-  property of branching programs and CNFs of bounded treewidth*
-  (`source/kc/razgon/FBDDJOURN.tex`).  It shares the area's subject — how large
+  property of branching programs and CNFs of bounded treewidth*, Algorithmica
+  75(2):277–294, 2016 ([Raz16]).  It shares the area's subject — how large
   a representation of a Boolean function must be — but none of its machinery:
   the engine is matching width and a probabilistic covering bound, not
   communication complexity.
 * **`Forgetting/`** — a *third paper*, Oztok–Darwiche, *On Compiling DNNFs
-  without Determinism* (`source/kc/darwiche/draft.tex`): the constructive
+  without Determinism*, CoRR abs/1709.07092, 2017 ([OD17]): the constructive
   counterpart, compiling a non-deterministic DNNF by forgetting auxiliary
   variables from a deterministic one.
 * **`Tseitin/`** — a *fourth paper*, de Colnet–Mengel, *Characterizing
-  Tseitin-formulas with short regular resolution refutations*
-  (`source/kc/decolnet/main.tex`): the parity system `T(G, c)` of a charged
+  Tseitin-formulas with short regular resolution refutations*, SAT 2021,
+  LNCS 12831, pp. 116–133 ([dCM21]): the parity system `T(G, c)` of a charged
   graph, whose lower-bound engine is the *branchwidth* of `G`.  See
-  `Tseitin/ROADMAP.md`.
+  `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md`.
 * **`Probabilistic/`** — a *different kind of circuit*.  V-trees with finite leaf
   domains, structured arithmetic circuits over ℝ whose scope decomposition is the
   v-tree, and pairs of circuits over a shared v-tree.  These are not the Boolean
@@ -58,7 +64,7 @@ would silently prove a weaker theorem than the paper's.  See the docstring of
 **Imported results are hypotheses, never axioms.** The paper's headline theorems
 rest on results proved elsewhere (Göös–Jain–Watson, Knop, de Colnet–Mengel).
 Those enter as explicit hypotheses on the theorems that consume them, so that
-what is and is not proved here is visible in the statement.  See `ROADMAP.md`,
+what is and is not proved here is visible in the statement.  See `docs/dev/KnowledgeCompilation-ROADMAP.md`,
 §"Imported results".
 
 ## Modules
@@ -109,37 +115,6 @@ what is and is not proved here is visible in the statement.  See `ROADMAP.md`,
   paper's hypothesis, and once from *determinism*, which is the version Part D
   uses and the reason Part D imports nothing.  Records that the paper's
   `def: AC` contradicts the section built on it.
-
-### Communication
-
-* `Communication.Rectangle` — `VarPartition` and balancedness, Π-rectangles as
-  pairs of predicates each local to its side of the partition, and the closure
-  property `mem_cross` that every rectangle argument runs on.
-* `Communication.Measures` — `fixedCov`/`fixedPar` and their best-partition
-  counterparts, together with the per-partition unfolded form in which a lower
-  bound is actually consumed.
-* `Communication.NonnegRank` — nonnegative rank, and `Par₁(F) ≥ rk⁺(F)`: a
-  rectangular *partition* of `F⁻¹(1)` is a decomposition of `F` into that many
-  non-negative rank-one pieces.  Both halves of `Partitions` are needed, which is
-  why the inequality is about `Par₁` and not `Cov₁`.
-* `Communication.ConicalJunta` — the one *new* theorem in the chain behind
-  `Imported.UnionHard`, proved rather than cited: Göös–Kiefer–Yuan's Lemma 14,
-  that `∨` is at least as hard as `¬` for approximate conical juntas.  Contains
-  conical juntas and their closure properties, dual certificates and **weak
-  duality** (proved), the negated tensor product of their Claim 15, and the
-  powering trick of their Claim 16 — the latter with the source's logarithmic
-  parameters replaced by the three inequalities its proof actually uses.  Also
-  `deg⁺(f) ≤ UC₁(f)`, linking the file to `Circuits.DNF`.
-* `Communication.TwoParty` — rectangles, covers, partitions and non-negative rank
-  for a bare `F : X → Y → Bool` on two arbitrary types, with no ambient Boolean
-  cube.  The shape `Arlib.Automata` needs, where the split is at a position in a
-  word rather than at a variable, and where sparse set disjointness lives on the
-  `k`-subsets of `[n]`.
-* `Communication.Gadget` — composing a Boolean function with a two-party gadget,
-  the construction lifting theorems are about, and the exactly-balanced partition
-  it induces.  Stated for a general variable type, so that taking it to be
-  `ι ⊕ ι` gives the composition of the *doubled* function `f^∨` for free — which
-  is how the union argument's four-block bookkeeping disappears.
 
 ### LowerBounds
 
@@ -193,10 +168,22 @@ what is and is not proved here is visible in the statement.  See `ROADMAP.md`,
 * `LowerBounds.AffinePerms` — the Wegman–Carter family `x ↦ ax+b` over a finite
   field, and its pairwise independence.  This **discharges** import I3: the paper
   cites it, we prove it.
+* `LowerBounds.ConicalJunta` — the one *new* theorem in the chain behind
+  `Imported.UnionHard`, proved rather than cited: Göös–Kiefer–Yuan's Lemma 14,
+  that `∨` is at least as hard as `¬` for approximate conical juntas.  Contains
+  conical juntas and their closure properties, dual certificates and **weak
+  duality** (proved), the negated tensor product of their Claim 15, and the
+  powering trick of their Claim 16 — the latter with the source's logarithmic
+  parameters replaced by the three inequalities its proof actually uses.  Also
+  `deg⁺(f) ≤ UC₁(f)`, linking the file to `Circuits.DNF`.  It sat under
+  `Communication/` while that was a subdirectory here, but it is not about
+  communication: it is about conical juntas of *DNF terms*, its only library
+  imports are `Circuits.DNF` and `Circuits.DNFMap`, and it did not follow the
+  rectangle machinery out into `Arlib.Communication`.
 * `LowerBounds.UnionDerived` — `Imported.UnionHard` *derived* from the two results
   Göös–Kiefer–Yuan themselves import, rather than assumed.  Contains the gadget
   as a DNF at one coordinate, the composed DNF, and the assembly of the whole
-  chain; see `ROADMAP.md` §3, "Unwinding I1′".
+  chain; see `docs/dev/KnowledgeCompilation-ROADMAP.md` §3, "Unwinding I1′".
 * `LowerBounds.Imported` — the results the paper genuinely imports, as named
   bundles of data and hypotheses rather than axioms.  Every downstream theorem
   takes one as a parameter, so what a statement is conditional on is visible in
@@ -224,7 +211,7 @@ simulation is essentially tight.
   Razgon's unproved "every set contains an independent subset of size
   `|S|/(x+1)`" is proved here.
 * `BranchingPrograms.NROBP` — the model (a DAG with literal-labelled edges, size
-  measured in nodes), `t`-nodes, and Lemma `tnodecut`: if `mw(G) ≥ t` then the
+  measured in nodes), `t`-nodes, and Lemma `exists_split_isTNode`: if `mw(G) ≥ t` then the
   `t`-nodes form a root–leaf cut.  Uniformity is an explicit hypothesis; the
   reduction of an arbitrary NROBP to a uniform one is the paper's Appendix B and
   is not formalized.
@@ -233,8 +220,8 @@ simulation is essentially tight.
   degree, treewidth and vertex-count bounds for `T_r(P_{2p})`.  Two steps of the
   paper's proof needed repair rather than transcription; see the module
   docstring.
-* `BranchingPrograms.Separation` — Theorem `nrobplbdmw` with its covering
-  hypothesis discharged, and Theorem `maintheor`.
+* `BranchingPrograms.Separation` — Theorem `le_size_of_matchingWidthGe` with its covering
+  hypothesis discharged, and Theorem `Razgon.two_rpow_le_size_binTree_pathGraph`.
 * `BranchingPrograms.Uniformize` — Appendix A: an arbitrary read-once NROBP is
   turned into a *uniform* one of explicitly bounded size, which **discharges the
   `Uniform` hypothesis** — `uniformize_two_rpow_le_size` is the lower bound with
@@ -243,24 +230,24 @@ simulation is essentially tight.
   textbook two-leaf guessing-node NROBP compute the same functions, forwards at
   no cost and backwards at an explicit blow-up.  The paper's "not constantly
   false" proviso turns out to be unnecessary.
-* `BranchingPrograms.Asymptotics` — Theorems `dmwtw` and `maintheor` in the
+* `BranchingPrograms.Asymptotics` — Theorems `razgonGraph_bounds` and `numVertices_rpow_le_size` in the
   paper's own `n^{k/c}` shape, and Lemma `separ`, with every "sufficiently
   large" step replaced by an explicit threshold.  Several of the paper's are
   vacuous and its `k ≥ 50` is not needed at all; the one constant that genuinely
-  changes (`maintheor`'s `c`) is a `Nat.log`-rounding artefact.
+  changes (`numVertices_rpow_le_size`'s `c`) is a `Nat.log`-rounding artefact.
 * `BranchingPrograms.DecisionDNNF` — decision-DNNF as a predicate on the NNF DAG,
   the containment decision-DNNF ⊆ d-DNNF (which needs no decomposability), FBDD
-  as the deterministic fragment of NROBP, and Theorem `separ2`: the
+  as the deterministic fragment of NROBP, and Theorem `decisionDNNF_robp_separation`: the
   FBDD/decision-DNNF quasi-polynomial separation, conditional on the imported
   Oztok–Darwiche compilation bound.
 * `BranchingPrograms.DecisionDNNFCompile` — towards Oztok–Darwiche, *On compiling
-  CNF into decision-DNNF* (CP 2014, `source/kc/darwiche/CP-45.pdf`): a finite
+  CNF into decision-DNNF* (CP 2014, [OD14]): a finite
   rooted tree decomposition `RootedTD` and the running-intersection
   "decomposability engine" (`sibling_absent`) on which their compiler's
   `∧`-decomposition rests — a variable forgotten strictly below a child is absent
   from every sibling's subtree.
 * `BranchingPrograms.OztokDarwicheBundle` — the Oztok–Darwiche compilation bound
-  that `DecisionDNNF.separ2` imports, **discharged on the concrete class**
+  that `DecisionDNNF.decisionDNNF_robp_separation` imports, **discharged on the concrete class**
   `T_r(P_{2p})`.  The general bundle would need an infinite→finite rooting of an
   arbitrary tree decomposition, which Mathlib's lack of a treewidth API rules
   out; instead the explicit finite decomposition of
@@ -272,7 +259,7 @@ simulation is essentially tight.
   `separ2_quintic_unconditional`: Razgon's separation for `T_r(P_{2r})` with
   *both* sides discharged inside Lean — the `O(n⁵)` decision-DNNF upper bound with
   no Oztok–Darwiche oracle, and the `n^{Ω(log n)}` read-once lower bound from
-  `Razgon.maintheor` — leaving `1 ≤ r` as the only hypothesis.
+  `Razgon.two_rpow_le_size_binTree_pathGraph` — leaving `1 ≤ r` as the only hypothesis.
 
 ### Probabilistic
 
@@ -286,7 +273,6 @@ simulation is essentially tight.
   execution object.
 -/
 
-import Arlib.KnowledgeCompilation.Basic
 import Arlib.KnowledgeCompilation.Circuits.NNF
 import Arlib.KnowledgeCompilation.Circuits.VTree
 import Arlib.KnowledgeCompilation.Circuits.SDD
@@ -298,11 +284,7 @@ import Arlib.KnowledgeCompilation.Circuits.DNFMux
 import Arlib.KnowledgeCompilation.Circuits.Arithmetic
 import Arlib.KnowledgeCompilation.Circuits.Figure1
 import Arlib.KnowledgeCompilation.Probabilistic
-import Arlib.KnowledgeCompilation.Communication.Rectangle
-import Arlib.KnowledgeCompilation.Communication.Measures
-import Arlib.KnowledgeCompilation.Communication.NonnegRank
-import Arlib.KnowledgeCompilation.Communication.ConicalJunta
-import Arlib.KnowledgeCompilation.Communication.Gadget
+import Arlib.KnowledgeCompilation.LowerBounds.ConicalJunta
 import Arlib.KnowledgeCompilation.LowerBounds.Copies
 import Arlib.KnowledgeCompilation.LowerBounds.BalancedCut
 import Arlib.KnowledgeCompilation.LowerBounds.RectangleLemma
@@ -318,7 +300,6 @@ import Arlib.KnowledgeCompilation.LowerBounds.Imported
 import Arlib.KnowledgeCompilation.LowerBounds.UnionDerived
 import Arlib.KnowledgeCompilation.Forgetting
 import Arlib.KnowledgeCompilation.Tseitin
-import Arlib.KnowledgeCompilation.Communication.TwoParty
 import Arlib.KnowledgeCompilation.BranchingPrograms.Basic
 import Arlib.KnowledgeCompilation.BranchingPrograms.Covering
 import Arlib.KnowledgeCompilation.BranchingPrograms.NROBP

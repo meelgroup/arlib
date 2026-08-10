@@ -32,10 +32,10 @@ import Arlib.Probability.CondExpProd
 import Arlib.Probability.Markov
 import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
-open Finset Arlib Arlib.FinProb
+open Finset Arlib Arlib.Probability Arlib.Probability.FinProb
 
 /-! ### Elementary real-analysis lemmas -/
 
@@ -315,5 +315,5 @@ theorem chernoff_relative (hpos : ∀ i c, 0 < C.coinMass i c) (hB : 0 < b)
         add_le_add hu hl
     _ = 2 * Real.exp (-(γ ^ 2 * C.toFinProb.Ex (S C g)) / (4 * b)) := by ring
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights
 

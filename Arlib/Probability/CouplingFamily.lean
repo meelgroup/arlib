@@ -81,12 +81,12 @@ import Arlib.Probability.CouplingFinProb
 import Arlib.Probability.CondEvent
 import Arlib.Probability.SequentialCond
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
-open MarkovChains (FinDist Coupling tvDist tvDist_nonneg maximalCoupling
-  maximalCoupling_disagree)
+open FinDist (tvDist tvDist_nonneg)
+open Coupling (maximalCoupling maximalCoupling_disagree)
 
 namespace FinProb
 
@@ -144,16 +144,17 @@ mass is the product, so the construction is exactly "draw the label, then draw
 the coupled pair from the coupling attached to that label". -/
 noncomputable def couplingFamilySpace (π : FinDist κ) (μ ν : κ → FinDist α) : FinProb where
   Ω := κ × (α × α)
-  mass ω := π ω.1 * (maximalCoupling (μ ω.1) (ν ω.1)).joint ω.2
-  mass_nonneg ω :=
-    mul_nonneg (π.coe_nonneg _) ((maximalCoupling (μ ω.1) (ν ω.1)).joint.coe_nonneg _)
-  mass_sum := by
-    rw [Fintype.sum_prod_type]
-    calc ∑ w : κ, ∑ q : α × α, π w * (maximalCoupling (μ w) (ν w)).joint q
-        = ∑ w : κ, π w := by
-          refine Finset.sum_congr rfl fun w _ => ?_
-          rw [← Finset.mul_sum, (maximalCoupling (μ w) (ν w)).joint.sum_coe, mul_one]
-      _ = 1 := π.sum_coe
+  μ :=
+    { p := fun ω => π ω.1 * (maximalCoupling (μ ω.1) (ν ω.1)).joint ω.2
+      p_nonneg := fun ω =>
+        mul_nonneg (π.coe_nonneg _) ((maximalCoupling (μ ω.1) (ν ω.1)).joint.coe_nonneg _)
+      p_sum := by
+        rw [Fintype.sum_prod_type]
+        calc ∑ w : κ, ∑ q : α × α, π w * (maximalCoupling (μ w) (ν w)).joint q
+            = ∑ w : κ, π w := by
+              refine Finset.sum_congr rfl fun w _ => ?_
+              rw [← Finset.mul_sum, (maximalCoupling (μ w) (ν w)).joint.sum_coe, mul_one]
+          _ = 1 := π.sum_coe }
 
 @[simp] theorem couplingFamilySpace_mass (π : FinDist κ) (μ ν : κ → FinDist α)
     (ω : κ × (α × α)) :
@@ -301,7 +302,7 @@ theorem condPr_famNe_ne_tvDist_of_null (π : FinDist κ) (μ ν : κ → FinDist
         (univ.filter fun ω => famX π μ ν ω ≠ famY π μ ν ω) (fiber (famW π μ ν) w)
       ≠ tvDist (μ w) (ν w) := by
   rw [condPr_famNe_of_null π μ ν w hw]
-  exact fun h => hμν ((MarkovChains.tvDist_eq_zero_iff (μ w) (ν w)).mp h.symm)
+  exact fun h => hμν ((FinDist.tvDist_eq_zero_iff (μ w) (ν w)).mp h.symm)
 
 /-- The hypotheses of `condPr_famNe_ne_tvDist_of_null` are simultaneously
 satisfiable, so the refutation is not vacuous: take the label law to be the point
@@ -390,16 +391,6 @@ single coupling of `exists_finProb_coupling` — is the right primitive. -/
 section Extend
 
 variable {α : Type} [Fintype α] [DecidableEq α]
-
-/-- The mass function of a finite probability space, read as a distribution on
-its outcome type.  This is the bridge that lets a space be used as the fiber law
-of `couplingFamilySpace`. -/
-def toFinDist (P : FinProb) : FinDist P.Ω where
-  p := P.mass
-  p_nonneg := P.mass_nonneg
-  p_sum := P.mass_sum
-
-@[simp] theorem toFinDist_apply (P : FinProb) (ω : P.Ω) : P.toFinDist ω = P.mass ω := rfl
 
 /-- **A space whose fibers carry the right masses pushes forward correctly.**
 
@@ -503,9 +494,10 @@ the two laws attached to the joint history so far. -/
 noncomputable def seqCouplingSpace
     (μ ν : (i : Fin q) → (Fin i.val → α × α) → FinDist α) : FinProb where
   Ω := Fin q → α × α
-  mass := seqWeight (seqCouplingKernel μ ν)
-  mass_nonneg := seqWeight_nonneg _ (seqCouplingKernel_nonneg μ ν)
-  mass_sum := sum_seqWeight _ (sum_seqCouplingKernel μ ν)
+  μ :=
+    { p := seqWeight (seqCouplingKernel μ ν)
+      p_nonneg := seqWeight_nonneg _ (seqCouplingKernel_nonneg μ ν)
+      p_sum := sum_seqWeight _ (sum_seqCouplingKernel μ ν) }
 
 /-- The **joint history** before level `i`: the first `i` letters of the pair
 trajectory.  This is the conditioning variable at level `i`. -/
@@ -787,4 +779,4 @@ theorem exists_finProb_coupling_tower_le
 end Tower
 
 end FinProb
-end Arlib
+end Arlib.Probability

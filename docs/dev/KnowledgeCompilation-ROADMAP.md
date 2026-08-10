@@ -1,7 +1,7 @@
 # `Arlib.KnowledgeCompilation` — roadmap
 
 Entry point for anyone picking this area up. Read this file, then
-[`PAPER-INVENTORY.md`](PAPER-INVENTORY.md) for the statement-by-statement catalogue
+[`KnowledgeCompilation-PAPER-INVENTORY.md`](KnowledgeCompilation-PAPER-INVENTORY.md) for the statement-by-statement catalogue
 of the source paper.
 
 **Source.** Harry Vinall-Smeeth, *Structured d-DNNF Is Not Closed Under Negation*,
@@ -97,7 +97,12 @@ Three directories, mirroring the shape of the argument.
 | `DNFMux` | `muxDNF`, `existsFresh`, `∃x f_C ≡ f ∨ g` — the upper-bound ingredients of `thm: ex`, muxed at the DNF level rather than by gluing circuits | **done** |
 | `Arithmetic` | AC, monotone/positive AC, `supp`, the relabelling `φ` and its converse `ψ`, `supp(C) = sat(φ(C))` proved twice | **done** — PSDD and p-decomposition deliberately absent, see §7 |
 
-### `Communication/` — the tool
+### `Arlib/Communication/` — the tool
+
+*(These modules used to live at `Arlib/KnowledgeCompilation/Communication/`. They were
+promoted to their own area, `Arlib.Communication`, so that `Arlib.Automata` and
+`Arlib.KnowledgeCompilation` can both depend on them without depending on each other.
+See `MIGRATION.md`.)*
 
 | Module | Contents | Status |
 | --- | --- | --- |
@@ -158,12 +163,12 @@ links, most of which are theorems here:
 | link | status |
 | --- | --- |
 | hardness of `¬` for approximate conical juntas — GJPW18, Lemma 8 | **imported** (paper not in repo) |
-| `∨` at least as hard as `¬` — GKY, Lemma 14 | **proved**, `Communication/ConicalJunta.lean` |
+| `∨` at least as hard as `¬` — GKY, Lemma 14 | **proved**, `LowerBounds/ConicalJunta.lean` |
 | weak LP duality — certificate ⟹ no approximation | **proved**, same file |
-| strong LP duality — no approximation ⟹ certificate | **proved**, `Communication/ConicalJunta.lean` |
+| strong LP duality — no approximation ⟹ certificate | **proved**, `LowerBounds/ConicalJunta.lean` |
 | lifting `deg⁺` to nonnegative rank — GLMWZ16, Kothari21 | **imported** (papers not in repo) |
-| `Par₁ ≥ rk⁺` | **proved**, `Communication/NonnegRank.lean` |
-| `deg⁺(f) ≤ UC₁(f)` | **proved**, `Communication/ConicalJunta.lean` |
+| `Par₁ ≥ rk⁺` | **proved**, `Arlib/Communication/NonnegRank.lean` |
+| `deg⁺(f) ≤ UC₁(f)` | **proved**, `LowerBounds/ConicalJunta.lean` |
 | the gadget composition `F = f ∘ gⁿ` and the width-`2bm` upper bound on `F` | **proved**, `Circuits/DNFSubst.lean`, `Circuits/DNFMap.lean`, `LowerBounds/UnionDerived.lean` |
 
 Lemma 14 is the one link Göös–Kiefer–Yuan prove themselves — their §4 opens by saying "there
@@ -182,7 +187,7 @@ they rest on two named, widely cited theorems, with everything in between checke
 The three constructions that closed the gap: `Circuits/DNFSubst.lean` (minterm expansion, and
 substituting a DNF for each variable of a DNF, preserving unambiguity), `Circuits/DNFMap.lean`
 (renaming variables, to place a gadget's expansion at one coordinate), and
-`Communication/Gadget.lean` (the composition and its exactly balanced partition).
+`Arlib/Communication/Gadget.lean` (the composition and its exactly balanced partition).
 
 **On strong duality — proved, and Farkas is not needed.** The two claims of Lemma 14 sit on
 opposite sides of the LP: Claim 15 is about dual certificates and builds one, Claim 16 is
@@ -247,7 +252,7 @@ conversion step is unnecessary and `φ` applies to the original circuit.
 Two things follow, both visible in the statements. Part D is conditional on I1′ alone, the
 same bundle as `thm: union`. And `cor: add`'s lower bound holds for *every* deterministic
 structured decomposable AC — `AC.IsdSD`, no fragment condition — which is strictly stronger
-than the paper's dSD-`AC_p` statement; `cor_add_positive` specializes back for comparison.
+than the paper's dSD-`AC_p` statement; `Separation.exists_dSDACp_pair_hard_sum` specializes back for comparison.
 
 ---
 
@@ -310,7 +315,7 @@ The one place asymptotics are unavoidable is the final separation, `n^Ω̃(log n
 statement genuinely is about a family indexed by `k`. Keep that packaging in
 `LowerBounds/Separation.lean` and nowhere else.
 
-**What came out.** `Separation.thm_main` states both halves explicitly and neither mentions
+**What came out.** `Separation.exists_dSDNNF_hard_negation` states both halves explicitly and neither mentions
 `O(·)`: with `H : FixedPartitionHard univ k termBound coverBound`, `m` copies, the field `F`
 and the `z`-index type `Zι`,
 
@@ -355,7 +360,7 @@ Two corrections to this entry's own earlier account:
   break. What was actually broken was the SDD ⊆ d-SDNNF containment, whose unconditional form
   was **false** as formalized.
 
-Worth naming for symmetry: the *upper*-bound half of `thm_main` now asserts a formally weaker
+Worth naming for symmetry: the *upper*-bound half of `Separation.exists_dSDNNF_hard_negation` now asserts a formally weaker
 property of the circuit it builds. No content is lost — `dnfCircuit` satisfies the all-indices
 version and the paper's claim is the reachable one — but that is the price of making both
 halves speak about the paper's classes rather than about two different ones.
@@ -456,7 +461,8 @@ and apply the old bound to `T'`. `NNF.Respects.exists_graft` packages this, and 
 construction building a well-formed v-tree over an arbitrary `Finset`, which is worth having
 anyway.
 
-The hypothesis is **gone** from the lower-bound halves of `thm_main` and `thm_sep`, and from
+The hypothesis is **gone** from the lower-bound halves of `Separation.exists_dSDNNF_hard_negation` and
+`Separation.exists_dSDNNF_hard_sdd`, and from
 their instantiated corollaries. It is deliberately *kept* on the upper-bound halves, where
 the v-tree is *prescribed* — "for every v-tree there is a small circuit respecting it" is the
 paper's statement there, and is a feature rather than a restriction.
@@ -465,8 +471,8 @@ paper's statement there, and is a feature rather than a restriction.
 closed, in `LowerBounds/Instance.lean`.)* `thm: main` takes `|F| ≥ 8|Zι|`, `|F|² ≤ 2^{|Zι|}`
 (through `rep`), an injection `ι × Fin m ↪ F` and `6|ι| < m`. All four now hold simultaneously
 in Lean, for every `n`, at `|ι| = n`, `m = 6n + 1`, `F = GaloisField 2 t` and `|Zι| = 2t` with
-`t = 7 + ⌈log₂(n(6n+1))⌉` (`Instance.params_satisfiable`); `Instance.thm_main_instance` and
-`Instance.thm_sep_instance` apply the headline theorems to them, leaving
+`t = 7 + ⌈log₂(n(6n+1))⌉` (`Instance.params_satisfiable`); `Instance.exists_dSDNNF_hard_negation` and
+`Instance.exists_dSDNNF_hard_sdd` apply the headline theorems to them, leaving
 `Imported.FixedPartitionHard` — and, for `thm: sep`, `SDDComplementation` — as the only
 hypotheses. The `t ≥ 7` is sharp (`16t ≤ 2^t` fails at `t = 6`), but "any `t` with
 `2^t ≥ n(6n+1)`" is *not* good enough: `t` must be **logarithmic**, since the upper bound
@@ -488,11 +494,11 @@ The spine — `thm: main` and `thm: sep`, both halves, both bounds explicit — 
 remains, in the order it is worth doing:
 
 1. ~~**Instantiate the parameters**~~ (G6) — *done*, `LowerBounds/Instance.lean`. What is left
-   of it is the asymptotic packaging: turning the two explicit bounds of `thm_main` into the
+   of it is the asymptotic packaging: turning the two explicit bounds of `Separation.exists_dSDNNF_hard_negation` into the
    paper's `n^{Ω̃(log n)}`. This is the only remaining asymptotic step in the area, and it now
    depends on a *family* version of `Imported.FixedPartitionHard` carrying `n = k^{O(1)}`,
    `termBound = 2^{Õ(k)}` and `coverBound = 2^{Ω̃(k²)}`, not on anything about the witness.
-2. ~~**`thm: union`**~~ (T11) — *done*, `LowerBounds/Union.lean`, plus `thm_union_instance`.
+2. ~~**`thm: union`**~~ (T11) — *done*, `LowerBounds/Union.lean`, plus `Instance.exists_dSDNNF_pair_hard_disjunction`.
    It was indeed the `thm: main` assembly with `Par₁` for `Cov₀`, and it compiled first try:
    both halves of the rectangle lemma and both halves of the lifting had been proved when
    they were written, so the file is the composition and nothing else. One thing did have to
@@ -501,7 +507,7 @@ remains, in the order it is worth doing:
    draw two unrelated permutations from Claim `perm`, and the pair of conclusions would say
    nothing about the union. The construction never looked at a formula in the first place, so
    this cost nothing.
-   ~~**`thm: ex`**~~ (T12) — *done* too, `Separation.thm_ex`, on `Circuits/DNFMux`. The paper
+   ~~**`thm: ex`**~~ (T12) — *done* too, `Separation.exists_dSDNNF_hard_existsFresh`, on `Circuits/DNFMux`. The paper
    glues two *circuits*; we do the mux at the *DNF* level and reuse
    `exists_isdSDNNF_of_unambiguous_kDNF`, which avoids index-shifting machinery for
    straight-line programs that the area needs nowhere else. Quantifying `∃x` away lands back
@@ -510,8 +516,9 @@ remains, in the order it is worth doing:
 3. ~~**Gap G1**~~ and ~~**Gap G5**~~ — both closed; see §6. G5 left behind a residual
    `var(C) ⊆ var(T)` on the lower bounds, and that is now gone too: the graft targets
    `Finset.univ`, so over a `Fintype` of variables the inclusion is `Finset.subset_univ` and
-   never needed to be a hypothesis. Removed from `thm_main`, `thm_sep`, `thm_union`,
-   `thm_ex` and their instances.
+   never needed to be a hypothesis. Removed from `Separation.exists_dSDNNF_hard_negation`,
+   `Separation.exists_dSDNNF_hard_sdd`, `Separation.exists_dSDNNF_pair_hard_disjunction`,
+   `Separation.exists_dSDNNF_hard_existsFresh` and their instances.
 4. ~~**Part D**~~ — *done* for `Circuits/Arithmetic` and `cor: add` (T15), the last of the
    paper's four transformation results. Two things are worth recording.
 
@@ -557,7 +564,7 @@ file.
 **What it proves.** For each `k ≥ 3` there are CNFs of primal-graph treewidth `≤ k` whose
 smallest non-deterministic read-once branching program has size `n^{Ω(k)}` — so the known
 `O(n^k)` upper bound cannot be improved to a fixed-parameter `g(k)·n^c`. The payoff for this
-area is `separ2` (`:1082`): a quasi-polynomial separation between FBDD and decision-DNNF,
+area is `decisionDNNF_robp_separation` (`:1082`): a quasi-polynomial separation between FBDD and decision-DNNF,
 showing that the Beame–Li–Roy–Suciu simulation is essentially tight.
 
 It sits in this area because it is about how large a representation of a Boolean function
@@ -571,22 +578,22 @@ probabilistic covering bound.
 | --- | --- | --- |
 | `Basic` | `phi` (φ(G), semantically), `IsVertexCover`, Observation 1, `CrossMatching`, `VertexOrder`, `prefixSet`, `MatchingWidthGe` | **done** |
 | `Covering` | `lbengine` (`:651`): a `t`-cover of `VC(H)` has `≥ 2^{t/f(x)}` members | **done**, unconditional |
-| `NROBP` | the model, `t`-nodes, `tnodecut` (`:600`), `nrobplbdmw` (`:515`) | **done**, conditional on `Uniform` — discharged in `Uniformize` |
+| `NROBP` | the model, `t`-nodes, `exists_split_isTNode` (`:600`), `le_size_of_matchingWidthGe` (`:515`) | **done**, conditional on `Uniform` — discharged in `Uniformize` |
 | `TreeProduct` | `T_r(H)`, `matchontheway`, `mincase`, `dmwtwstruct` (`:891`), and the bounds for `T_r(P_{2p})` | **done** |
-| `Separation` | `nrobplbdmw` discharged (of `hEngine`), and `maintheor` (`:476`) with explicit `r`, `p` | **done** |
-| `Uniformize` | Appendix A (`:1208`): arbitrary read-once NROBP → uniform, and `nrobplbdmw` with `Uniform` **removed** | **done** |
+| `Separation` | `NROBP.le_size_of_matchingWidthGe` discharged (of `hEngine`), and `Razgon.two_rpow_le_size_binTree_pathGraph` (`:476`) with explicit `r`, `p` | **done** |
+| `Uniformize` | Appendix A (`:1208`): arbitrary read-once NROBP → uniform, and `NROBP.le_size_of_matchingWidthGe` with `Uniform` **removed** | **done** |
 | `Equivalence` | Appendix B (`:1360`): AROSRN ⟷ textbook two-leaf NROBP, both directions | **done** |
-| `Asymptotics` | `dmwtw` (`:525`), `maintheor` as `n^{k/c}`, `separ` (`:1063`), every threshold made explicit | **done** |
-| `DecisionDNNF` | decision-DNNF, ⊆ d-DNNF, FBDD ⊆ NROBP, `separ2` (`:1082`) | **done** |
+| `Asymptotics` | `razgonGraph_bounds` (`:525`), `numVertices_rpow_le_size` as `n^{k/c}`, `binTreePathNumVertices_rpow_le_size` (`:1063`), every threshold made explicit | **done** |
+| `DecisionDNNF` | decision-DNNF, ⊆ d-DNNF, FBDD ⊆ NROBP, `decisionDNNF_robp_separation` (`:1082`) | **done** |
 | `DecisionDNNFCompile` | Oztok–Darwiche CP 2014 Thm 1: `RootedTD`→decision-DNNF, sharp `2^w·n` (`exists_decisionDNNF_of_rootedTD_sharp`) | **done** |
-| `OztokDarwicheBundle` | explicit `RootedTD (T_r □ P_{2r})` via heap indexing; `separ2_quintic_unconditional` (both sides internal) | **done** |
+| `OztokDarwicheBundle` | explicit `RootedTD (T_r □ P_{2r})` via heap indexing; `decisionDNNF_robp_separation_quintic_unconditional` (both sides internal) | **done** |
 
 ### 8.2 Three deliberate choices
 
 **Matching width is a predicate, not a number.** `mw(G)` is a min over orderings of a max
 over prefixes. We define only `MatchingWidthGe G t` — "every ordering has a prefix carrying a
 cross matching of size `t`". Every statement in the paper about matching width is a lower
-bound, and this is the form both the producer (`dmwtwstruct`) and the consumer (`tnodecut`)
+bound, and this is the form both the producer (`dmwtwstruct`, the paper's own label) and the consumer (`exists_split_isTNode`)
 want. A numeric `mw` would sit between them as a `sSup` needing a boundedness side condition
 at each use, and would be unfolded to this predicate anyway.
 
@@ -623,7 +630,7 @@ Recorded because someone will otherwise re-derive them.
 - **The base case needs a discrete intermediate-value step.** "Just choose a prefix of size
   `p²`" presumes the region-intersection count hits `p²` exactly, which needs that it starts
   at `0` and grows by at most `1` per step.
-- **`tnodecut` needs the matching-width index clamped.** `MatchingWidthGe` hands back an
+- **`exists_split_isTNode` needs the matching-width index clamped.** `MatchingWidthGe` hands back an
   arbitrary `i : ℕ`; a path can only be cut at depth `≤ |V|`.
 - **`Path.split` is taken for granted** (`:614`, "let `a` be the head of the edge of `P`
   whose label is a literal of `u`"). Unlabelled edges make "the node after the `i`-th
@@ -634,7 +641,7 @@ Recorded because someone will otherwise re-derive them.
 The four modules added after the core all correspond to steps the paper leaves to prose or
 to an appendix. Each closed an open end and each turned up something.
 
-- **Uniformity, discharged** (`Uniformize`, Appendix A `:1208`). `nrobplbdmw`'s `Uniform`
+- **Uniformity, discharged** (`Uniformize`, Appendix A `:1208`). `NROBP.le_size_of_matchingWidthGe`'s `Uniform`
   hypothesis is now removed: `uniformize_exists` turns an arbitrary read-once NROBP into a
   uniform one of size `(size+2)·((size+2)·(2|V|+1)·(|V|+1)+1)`, and
   `uniformize_two_rpow_le_size` is the lower bound with no uniformity assumption. The paper
@@ -654,33 +661,37 @@ to an appendix. Each closed an open end and each turned up something.
   unreachable junk and the `false` leaf need not be deleted. `Uniform` transports forwards
   but not backwards (a subdivision-node reflection lemma nothing consumes); flagged in the
   module docstring.
-- **The `n^{k/c}` repackaging** (`Asymptotics`). `dmwtw`, `maintheor` and `separ` in the
+- **The `n^{k/c}` repackaging** (`Asymptotics`). `razgonGraph_bounds`, `numVertices_rpow_le_size` and
+  `binTreePathNumVertices_rpow_le_size` in the
   paper's asymptotic shape, with every "sufficiently large" step made an explicit,
   verified threshold. Findings, all in the module header: the paper's `k ≥ 50` is **not
   needed** (`k ≥ 3` suffices, `b = 32` unchanged); two of its "sufficiently large `r`" steps
-  are **vacuous** (`log₂ n ≥ r` always); its `separ` chain **loses a factor of eight** by
+  are **vacuous** (`log₂ n ≥ r` always); its `binTreePathNumVertices_rpow_le_size` chain **loses a factor of eight** by
   substituting `r ≥ log n/2` too early, recovered by feeding the bound in directly; and
-  `maintheor`'s constant is `c = 64·f(5)`, **not** the paper's `32·f(5)` — a `Nat.log`
+  `numVertices_rpow_le_size`'s constant is `c = 64·f(5)`, **not** the paper's `32·f(5)` — a `Nat.log`
   rounding artefact, since with real logarithms throughout the paper's constant is right.
-- **`separ2`, assembled** (`DecisionDNNF`). decision-DNNF as a predicate on the NNF DAG;
+- **`decisionDNNF_robp_separation`, assembled** (`DecisionDNNF`). decision-DNNF as a predicate on the NNF DAG;
   decision-DNNF ⊆ d-DNNF, which needs **no decomposability** (the decision condition alone
-  forces determinism); FBDD as the deterministic fragment of `NROBP`; and `separ2` two-sided,
-  its lower half from `maintheor` and its upper half from the Oztok–Darwiche bound.
-  Note the paper *names* the class `φ(T_r(P_r))` in both `separ` and `separ2` but both proofs
+  forces determinism); FBDD as the deterministic fragment of `NROBP`; and
+  `decisionDNNF_robp_separation` two-sided, its lower half from
+  `Razgon.two_rpow_le_size_binTree_pathGraph` and its upper half from the Oztok–Darwiche bound.
+  Note the paper *names* the class `φ(T_r(P_r))` in both `binTreePathNumVertices_rpow_le_size` and `decisionDNNF_robp_separation` but both proofs
   compute with `T_r(P_{2r})`; we follow the proofs.
 - **The Oztok–Darwiche bound, proved** (`DecisionDNNFCompile`). CP 2014 Theorem 1 is now
-  formalized constructively, so the upper half of `separ2` no longer depends on an imported
+  formalized constructively, so the upper half of `decisionDNNF_robp_separation` no longer depends on an imported
   bundle. From a rooted tree decomposition `RootedTD G` of width `≤ w`, the separator-shared
   Shannon-cascade compilation `compileNNFSharp` yields a decision-DNNF for `φ(G)` of size
   `≤ 15·2^{w+1}·n + 1` (`exists_decisionDNNF_of_rootedTD_sharp`) — single-exponential in the
   width, **linear** in the number of tree nodes, matching the paper's `2^{tw}·|V|`. A loose
   `O(2^{2w}·n²)` variant (`exists_decisionDNNF_of_rootedTD`) is kept as the simpler artefact.
-- **`separ2_quintic`, unconditional** (`OztokDarwicheBundle`). Feeding an explicit
+- **`decisionDNNF_robp_separation_quintic`, unconditional** (`OztokDarwicheBundle`). Feeding an explicit
   `RootedTD (T_r □ P_{2r})` — obtained by wrapping `treewidthLe_binTree_boxProd` through the
   binary-heap indexing bijection `BinTreeNode r ≃ Fin(2^{r+1}−1)` — to the sharp compiler
   gives an unconditional decision-DNNF for the separating class
-  (`exists_decisionDNNF_binTree_boxProd`). Combined with `maintheor`, this discharges **both**
-  sides of the separation: `separ2_quintic_unconditional` (hypothesis `1 ≤ r` only) exhibits a
+  (`exists_decisionDNNF_binTree_boxProd`). Combined with
+  `Razgon.two_rpow_le_size_binTree_pathGraph`, this discharges **both** sides of the
+  separation: `decisionDNNF_robp_separation_quintic_unconditional` (hypothesis `1 ≤ r` only)
+  exhibits a
   decision-DNNF of size `≤ 15·16·n⁵ + 1` against every uniform read-once NROBP of real size
   `≥ 2^{((r+1−⌈log₂r⌉)·r/2)/f(5)}`.
 
@@ -693,12 +704,14 @@ to an appendix. Each closed an open end and each turned up something.
    The generic `DecisionDNNF.OztokDarwiche` bundle over an arbitrary graph is *not* discharged
    — that would need a general tree-decomposition→`RootedTD` normalization plus an `O(|V|)`
    node bound, and Mathlib (v4.15) has no treewidth API to build on. It is not needed: for the
-   actual separating class, `OztokDarwicheBundle.separ2_quintic_unconditional` bypasses the
+   actual separating class,
+   `OztokDarwicheBundle.decisionDNNF_robp_separation_quintic_unconditional` bypasses the
    bundle entirely by constructing the `RootedTD` explicitly, and is fully unconditional.
 2. **Backward uniformity transport** (`Equivalence`). `Uniform` does not cross the
    AROSRN→traditional direction; nothing currently needs it, so it was left.
-3. `maintheor` exists in both shapes: `Separation.maintheor` (explicit `r`, `p`) and
-   `Asymptotics.maintheor` (`n^{k/c}`). Both are kept; §5 explains why the explicit one is
+3. The bound exists in both shapes: `Razgon.two_rpow_le_size_binTree_pathGraph` in
+   `Separation.lean` (explicit `r`, `p`) and `Asymptotics.numVertices_rpow_le_size`
+   (`n^{k/c}`). Both are kept; §5 explains why the explicit one is
    primary.
 
 ---
@@ -715,10 +728,10 @@ compile a DNNF for `f(X)`, find `g(X,Y)` with `f(X) ≡ ∃Y. g(X,Y)`, compile `
 
 | Module | Contents | Status |
 | --- | --- | --- |
-| `Basic` | `forgetNNF` (⊤-substitution), `decomposable_forgetNNF`, `eval_forgetNNF_iff`, `forgetFun`, `forgetNNF_spec` (a d-DNNF for `g` forgets to a DNNF for `∃Y.g`, no larger), `emf`, determinism-loss witness | **done** |
+| `Basic` | `forgetNNF` (⊤-substitution), `decomposable_forgetNNF`, `eval_forgetNNF_iff`, `forgetFun`, `forgetNNF_spec` (a d-DNNF for `g` forgets to a DNNF for `∃Y.g`, no larger), `EquivModForget`, determinism-loss witness | **done** |
 | `Treewidth` | `Jointree`, `JointreeWidthLe`, `thm:width` (BVA raises treewidth by ≤ `k`), `thm:bva` clause (ii) | **done** |
 | `MinDegree` | finite-tree-leaf lemma, `min-degree ≤ treewidth` for jointrees, `thm:bva` clause (i) `treewidth(Δⁿₐ) ≥ n` (`jointreeWidthLe_deltaA_ge`) | **done** — closes §9.3 |
-| `Separation` | `sauerhoff`/`gFun`, `emf_sauerhoff_gFun`, `thm:sep`, `cor_forgetting` | **done**, `thm:sep` conditional on two inhabited bundles |
+| `Separation` | `sauerhoffFn`/`gFun`, `equivModForget_sauerhoffFn_gFun`, `thm:sep` (`forgetting_separation`), `exists_dDNNF_gFun_hard_forget` | **done**, `thm:sep` conditional on two inhabited bundles |
 
 ### 9.2 Where decomposability is used
 
@@ -735,8 +748,8 @@ it, `⊤`-substitution computes something strictly above `∃Y. g`. This is writ
 - **`thm:sep` rests on two imports**, both inhabited structures (§3 style), never axioms:
   `SauerhoffdDNNFLowerBound` (Bova–Capelli–Mengel–Slivovsky: `f_n` needs exponential d-DNNF)
   and `GndDNNFUpperBound` (`row_n`, `col_n` have polynomial OBDDs, so `g_n` a polynomial
-  d-DNNF). The *provable heart* — that `f_n` is emf to `g_n` through a single variable — is
-  proved outright (`emf_sauerhoff_gFun`), and turns only on `row_n`/`col_n` ignoring `Z`.
+  d-DNNF). The *provable heart* — that `f_n` is equivalent modulo forgetting a single variable to
+  `g_n` — is proved outright (`equivModForget_sauerhoffFn_gFun`), and turns only on `row_n`/`col_n` ignoring `Z`.
 
 - **`thm:bva` clause (i) is now proved** (`Forgetting/MinDegree.lean`,
   `jointreeWidthLe_deltaA_ge`), closing what was the one place in the whole

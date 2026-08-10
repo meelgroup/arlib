@@ -7,7 +7,9 @@ Authors: Kuldeep S. Meel
 # Local to global: telescoping the variance down the levels
 
 `Techniques.LevelVariance` proves the *one-step* local-to-global identity
-(`lem:diff-var`, §6.6, line 2208 of the monograph),
+(`lem:diff-var`, §6.6 of the monograph — Chen–Štefankovič–Vigoda,
+*Spectral Independence and Local-to-Global Techniques for Optimal Mixing of
+Markov Chains*, arXiv:2307.13826 (2023), cited below as [CSV23]),
 
   `Var_{π_{k+1}}(g) = Var_{π_k}(U_k g) + ℰ_{P^{∨∧}_k}(g)`,
 

@@ -28,7 +28,7 @@ import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Data.Fintype.Prod
 import Mathlib.Data.Fintype.BigOperators
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset FinProb
 
@@ -55,12 +55,13 @@ variable (C : CoinSpace)
 `ω : ∀ i, Coin i`, with `mass ω = ∏ i, coinMass i (ω i)`. -/
 noncomputable def toFinProb : FinProb where
   Ω := ∀ i, C.Coin i
-  mass := fun ω => ∏ i, C.coinMass i (ω i)
-  mass_nonneg := fun ω => Finset.prod_nonneg (fun i _ => C.coinMass_nonneg i (ω i))
-  mass_sum := by
-    rw [← Fintype.prod_sum]
-    rw [Finset.prod_congr rfl (fun i _ => C.coinMass_sum i)]
-    exact Finset.prod_const_one
+  μ :=
+    { p := fun ω => ∏ i, C.coinMass i (ω i)
+      p_nonneg := fun ω => Finset.prod_nonneg (fun i _ => C.coinMass_nonneg i (ω i))
+      p_sum := by
+        rw [← Fintype.prod_sum]
+        rw [Finset.prod_congr rfl (fun i _ => C.coinMass_sum i)]
+        exact Finset.prod_const_one }
 
 @[simp] theorem toFinProb_Ω : C.toFinProb.Ω = (∀ i, C.Coin i) := rfl
 
@@ -440,4 +441,4 @@ theorem condCE_forgetSet_pair (hpos : ∀ i c, 0 < C.coinMass i c)
     _ = _ := C.condCE_const_of_pos hpos _ _ ω
 
 end CoinSpace
-end Arlib
+end Arlib.Probability

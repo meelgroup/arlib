@@ -23,7 +23,7 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Khintchine
 import Arlib.Approximation.LewisWeights.LinAlg
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -123,4 +123,4 @@ theorem avg_sum_row_pow_le (hL : IsLewis w a) (hw : ∀ i, 0 < w i) {U : ℝ}
     _ = (Fintype.card ι : ℝ) * (2 * Real.exp 1 * (k : ℝ) * U) ^ k := by
         rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

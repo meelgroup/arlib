@@ -1,7 +1,7 @@
 # `Arlib.KnowledgeCompilation.Tseitin` — roadmap
 
 Entry point for anyone picking up the Tseitin area. Read this file, then the
-area-wide [`../ROADMAP.md`](../ROADMAP.md) §1 (design principles) and §9 (house
+area-wide [`KnowledgeCompilation-ROADMAP.md`](KnowledgeCompilation-ROADMAP.md) §1 (design principles) and §9 (house
 style), which this area follows to the letter.
 
 **Source.** Florent de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas
@@ -23,7 +23,7 @@ headline is the branchwidth characterization, `:main_result`.
 
 ## 1. Design commitments
 
-This area inherits the three commitments of [`../ROADMAP.md`](../ROADMAP.md) §1.
+This area inherits the three commitments of [`KnowledgeCompilation-ROADMAP.md`](KnowledgeCompilation-ROADMAP.md) §1.
 Two matter here from the first line.
 
 ### 1.1 The formula is semantic. No CNF datatype.
@@ -56,17 +56,17 @@ linear algebra makes implicitly.
 
 The area splits into the parity/graph foundation, the DNNF lower-bound spine
 (the paper's own contribution), and the Step-1 resolution reduction that feeds
-it. **The main theorem, Theorem 1 (`Main.theorem1`), is delivered** — assembled
-from Step 1 (`UnsatToSat.theorem5`) and Step 2 (`DNNFLowerBound.dnnf_lower`),
+it. **The main theorem, Theorem 1 (`Main.two_pow_le_refutationLen_mul_card`), is delivered** — assembled
+from Step 1 (`UnsatToSat.dnnfSizeLe_of_regRefutationLen`) and Step 2 (`DNNFLowerBound.dnnf_lower`),
 resting on named imports for the deep BP/game sub-results.
 
 | Module | Contents | Status |
 | --- | --- | --- |
 | `Basic` | `Assignment`, `incEdges`, `chi`, `chiBar`, `Tseitin`; `deleteEdge`, `condChargeNeg`, `condChargePos`; `componentFinset`; **Proposition 3** (easy direction proved, converse imported) and **Proposition 4** (imported) | **done** (this session) |
 | `Splitting` | §5: sub-constraints (`chiSub`), **Lemma 15** proved (`rectangle_induces_subConstraint`); vertex splitting defined (`splitGraph`); **Lemmas 16–19** imported with explicit counts and inhabited (`:534`–`:617`) | **done** (this session) |
-| `Branchwidth` | §2: branch decompositions as v-trees over `E(G)` (`order`, `BranchwidthLe`), **Lemma 2** (`HarveyWood`, imported) bridging to `TreeProduct.TreewidthLe` (`:321`–`:329`) | **done** (this session) |
-| `RectangleGame` | §4: the adversarial multi-partition game `aRLe` (`inducedPartition`), **Theorem 12** (`DNNFtoRectangleGame`, imported) (`:494`–`:526`) | **done** (this session) |
-| `ThreeConnected` | §6: `formulaBool`/`DNNFSizeLe`, reductions to charge 0 / 3-connected — **Lemmas 6, 20, 21, 23** imported (`ReduceToZeroCharge`, `SafeSeparators`, `TopMinorDNNF`, `ThreeConnectedTopMinor`), `IsTopMinor` stand-in; reuses `Splitting.IsThreeConnected` (`:620`–`:668`) | **done** (this session) |
+| `Branchwidth` | §2: branch decompositions as v-trees over `E(G)` (`order`, `BranchwidthLe`), **Lemma 2** (`Imported.HarveyWood`, imported) bridging to `TreeProduct.TreewidthLe` (`:321`–`:329`) | **done** (this session) |
+| `RectangleGame` | §4: the adversarial multi-partition game `aRLe` (`inducedPartition`), **Theorem 12** (`Imported.DNNFtoRectangleGame`, imported) (`:494`–`:526`) | **done** (this session) |
+| `ThreeConnected` | §6: `formulaBool`/`DNNFSizeLe`, reductions to charge 0 / 3-connected — **Lemmas 6, 20, 21, 23** imported (`Imported.ReduceToZeroCharge`, `Imported.SafeSeparators`, `Imported.TopMinorDNNF`, `Imported.ThreeConnectedTopMinor`), `IsTopMinor` stand-in; reuses `Splitting.IsThreeConnected` (`:620`–`:668`) | **done** (this session) |
 | `DNNFLowerBound` | §7: **the headline Lemma 22** `dnnf_lower`, explicit `2^{2·tw/(9Δ)} ≤ |D|` — arithmetic chain `k_ge_of_chain` and pigeonhole `pow_le_of_total_le_mul` proved, structural facts consumed from boxes (`:670`–`:685`) | **done** (this session) |
 
 Step-1 resolution modules (the reduction feeding the DNNF bound):
@@ -75,11 +75,11 @@ Step-1 resolution modules (the reduction feeding the DNNF bound):
 | --- | --- | --- |
 | `Regular` | §3: resolution refutations (`Clause`, `IsResolvent`, `Refutation`, `IsRegular`) and `RegRefutationLen` — the length Theorem 1 bounds (`:384`–`:389`) | **done** (this session) |
 | `Search` | §3: `SearchClause`/`SearchVertex` (concrete), opaque 1-BP carriers, **LovászNNW95**, **Corollary 8**, **Lemma 10** imported (`:370`–`:445`) | **done** (this session) |
-| `UnsatToSat` | §3 Step 1: **Lemma 11** (`WellStructuredToDNNF`) imported; **Theorem 5** (`theorem5`) proved by composition (`:449`–`:492`) | **done** (this session) |
-| `Main` | §1: **Theorem 1** (`theorem1`), explicit `2^{2·tw/(9Δ)} ≤ c₀·S·|V|`, proved by composing Theorem 5 with `dnnf_lower`; `AlekhnovichR11` upper bound imported (`:304`) | **done** (this session) |
+| `UnsatToSat` | §3 Step 1: **Lemma 11** (`Imported.WellStructuredToDNNF`) imported; **Theorem 5** (`dnnfSizeLe_of_regRefutationLen`) proved by composition (`:449`–`:492`) | **done** (this session) |
+| `Main` | §1: **Theorem 1** (`two_pow_le_refutationLen_mul_card`), explicit `2^{2·tw/(9Δ)} ≤ c₀·S·|V|`, proved by composing Theorem 5 with `dnnf_lower`; `Imported.AlekhnovichRegRefutationUpper` upper bound imported (`:304`) | **done** (this session) |
 
 The full paper `Theorem 1`'s **characterization** (poly refutation length ⟺
-`tw = O(log|V|)`) — the comparison of `Main.theorem1` with `AlekhnovichR11` across
+`tw = O(log|V|)`) — the comparison of `Main.two_pow_le_refutationLen_mul_card` with `Imported.AlekhnovichRegRefutationUpper` across
 a family — is an asymptotic statement over families, left as documented intended
 reading. Two Step-1 objects stay opaque (`Search`'s `Has(WS)1BPForSearchVertexLe`):
 the `V`-labelled BP model and well-structuredness are not built, so
@@ -113,7 +113,7 @@ direction is genuinely axiom-free.
 Two results are carried as inhabited `structure`s rather than proved. Both
 inhabitations are at the foot of `Basic`.
 
-**Proposition 3, the converse** (`TseitinSatisfiabilityConverse`): even charge on
+**Proposition 3, the converse** (`Imported.TseitinSatisfiabilityConverse`): even charge on
 every component implies satisfiability. The honest proof is a spanning-forest
 construction — pick a spanning tree of each component, set the non-tree edges to
 `0`, and propagate the tree edges inward from the leaves; the root constraint
@@ -125,7 +125,7 @@ proof would use is developed anyway. Inhabited at `c = 0` on any graph (the
 all-zero assignment satisfies `T(G, 0)`), which is degenerate but genuine —
 enough to show the hypothesis shape is satisfiable.
 
-**Proposition 4, the model count** (`TseitinModelCount`): a satisfiable
+**Proposition 4, the model count** (`Imported.TseitinModelCount`): a satisfiable
 `T(G, c)` has exactly `2^{|E| − |V| + K}` models, `K` the number of components.
 This is a GF(2)-rank fact — the solution set of the parity system is an affine
 subspace of dimension `|E| − rank` with `rank = |V| − K` — and proving it needs
@@ -148,7 +148,7 @@ In dependency order:
 1. **`Splitting`** — the semantic conditioning correspondence and the
    assignment-level relation between `G` and `G − e`. This unblocks a from-scratch
    proof of Proposition 3's converse, which would then discharge
-   `TseitinSatisfiabilityConverse`.
+   `Imported.TseitinSatisfiabilityConverse`.
 2. **`Branchwidth`**, **`ThreeConnected`** — the graph-side vocabulary.
 3. **`RectangleGame`**, **`DNNFLowerBound`** — the paper's new lower-bound engine
    and the branchwidth characterization.

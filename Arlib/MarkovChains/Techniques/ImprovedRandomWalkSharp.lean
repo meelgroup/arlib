@@ -7,13 +7,18 @@ Authors: Kuldeep S. Meel
 # The Improved Random Walk Theorem with the sharp factor `γ/(2 - γ)`
 
 `Techniques.ImprovedRandomWalk` proves the Improved Random Walk Theorem with the
-level factor `2γ_j - 1`.  That factor is the monograph's, but the monograph says
-twice — at `main.tex` line 1987 and in the closing remark of the proof of
-`lem:improved-technical` — that it is *not* the best its own argument gives:
+level factor `2γ_j - 1`.  That factor is the monograph's — Zongchen Chen, Daniel
+Štefankovič, Eric Vigoda, *Spectral Independence and Local-to-Global Techniques
+for Optimal Mixing of Markov Chains*, arXiv:2307.13826 (2023), cited below as
+[CSV23] — but the monograph says twice, the second time in the closing remark of
+the proof of `lem:improved-technical`, that it is *not* the best its own argument
+gives:
 keeping the bound `1/(1 - γ_{k-1}/2)` in `missing-step` instead of weakening it
 to `2γ_{k-1}` replaces `2γ_j - 1` by **`γ_j/(2 - γ_j)`** throughout, which is the
-form of `[CLV21, Fact A.8 and Theorem A.9]`.  This module carries out that
-replacement.
+form of `[CLV21, Fact A.8 and Theorem A.9]` — Zongchen Chen, Kuikui Liu, Eric
+Vigoda, *Optimal Mixing of Glauber Dynamics: Entropy Factorization via
+High-Dimensional Expanders*, STOC 2021 (arXiv:2011.02075).  This module carries
+out that replacement.
 
 **Why it matters, and where.**  The induction of the Improved Random Walk Theorem
 multiplies through by its level factor, so the factor must be nonnegative.  With

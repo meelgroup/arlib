@@ -19,10 +19,10 @@ Lemma 8) and `Imported.NonnegLifting` (GLMWZ16 and Kothari) and produces an
 `Imported.UnionHard`.  Everything between them is proved:
 
 * Göös–Kiefer–Yuan's own Lemma 14, that `∨` is at least as hard as `¬` for
-  approximate conical juntas — `Communication/ConicalJunta.lean`, both claims and
+  approximate conical juntas — `LowerBounds/ConicalJunta.lean`, both claims and
   the strong-duality step that composes them;
-* `Par₁ ≥ rk⁺` — `Communication/NonnegRank.lean`;
-* the gadget composition and its balanced partition — `Communication/Gadget.lean`;
+* `Par₁ ≥ rk⁺` — `Arlib/Communication/NonnegRank.lean`;
+* the gadget composition and its balanced partition — `Arlib/Communication/Gadget.lean`;
 * the upper-bound half, that the composed function has an unambiguous DNF of
   width `2bm` — `Circuits/DNFSubst.lean` and `Circuits/DNFMap.lean`, below.
 
@@ -34,7 +34,7 @@ rather than one extraction from the middle of a proof.
 
 The source works with four blocks: `L₁`, `L₂` over words `xx'yy'`, Alice holding
 `xx'` and Bob `yy'`.  Here the doubling is `κ := ι ⊕ ι` and the composition is
-`Communication/Gadget.lean`'s, which is stated for an arbitrary variable type.
+`Arlib/Communication/Gadget.lean`'s, which is stated for an arbitrary variable type.
 The four blocks are then `(side, copy)` — the *side* is the partition and the
 *copy* is the `Sum` — and the partition is "Alice gets side `0`" with no further
 bookkeeping.  `Gadget.compose_or` is what makes `ψ ∨ φ` the composition of `f^∨`,
@@ -55,6 +55,7 @@ import Arlib.KnowledgeCompilation.Circuits.DNFMap
 namespace Arlib.KnowledgeCompilation
 namespace UnionDerived
 
+open Arlib.Communication
 open Gadget ConicalJunta
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι] {b : ℕ}
@@ -183,7 +184,7 @@ def orFn (χ : DNF ι) : ((ι ⊕ ι) → Bool) → Bool :=
   fun β => DNF.eval χ (fun i => β (Sum.inl i)) || DNF.eval χ (fun i => β (Sum.inr i))
 
 /-- The real-valued `orExt` of an indicator is the indicator of the Boolean `∨`.
-This is where `Communication/ConicalJunta.lean`'s arithmetic `∨` meets the
+This is where `LowerBounds/ConicalJunta.lean`'s arithmetic `∨` meets the
 Boolean one the lifting theorem is stated for. -/
 theorem orExt_indicator (χ : DNF ι) (β : (ι ⊕ ι) → Bool) :
     orExt (fun α => if DNF.eval χ α then (1 : ℝ) else 0) β
@@ -270,15 +271,15 @@ noncomputable def unionHard_of_imports
 /-! ## End to end
 
 `thm: union` with no `UnionHard` hypothesis anywhere.  This is not new
-mathematics — it is `Separation.thm_union` applied to `unionHard_of_imports` —
-but writing the composed bounds out is the point: it is the only place where one
-can read off, in one statement, what the disjunction theorem actually costs in
-terms of the two primitive imports.
+mathematics — it is `Separation.exists_dSDNNF_pair_hard_disjunction` applied to
+`unionHard_of_imports` — but writing the composed bounds out is the point: it is the only
+place where one can read off, in one statement, what the disjunction theorem actually costs
+in terms of the two primitive imports.
 
 The upper bound is the compiler's `|𝒫|·(ℓ·m^k)·(2(|Zι| + km) + 2) + 1` with
 `k = m₀·2b` the composed width and `ℓ = |ψ|·(2^{2b})^{m₀}` the composed term
 count; the lower bound is the lifting theorem's `liftBound d` verbatim. -/
-theorem thm_union_of_primitive_imports
+theorem exists_dSDNNF_pair_hard_disjunction_of_imports
     {ι₀ : Type} [Fintype ι₀] [DecidableEq ι₀] {b m₀ degBound : ℕ} {δ : ℝ}
     (H : Imported.HardnessOfNegation ι₀ m₀ degBound δ)
     {k d : ℕ} {ε ε' εrank : ℝ} {liftBound : ℕ → ℕ}
@@ -306,7 +307,7 @@ theorem thm_union_of_primitive_imports
         C.Respects T → C.Deterministic →
         C.Computes (fun α => DNF.eval ψ' α || DNF.eval φ' α) →
           liftBound d ≤ C.size) :=
-  Separation.thm_union
+  Separation.exists_dSDNNF_pair_hard_disjunction
     (unionHard_of_imports H L hε hε4 hk1 hk2 hε'0 hε'lt hrank hd) he hrep hm hz
 
 end Assembly

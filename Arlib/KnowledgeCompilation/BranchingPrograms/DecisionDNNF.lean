@@ -10,10 +10,10 @@ import Mathlib.Data.Fin.VecNotation
 import Mathlib.Data.Nat.Log
 
 /-!
-# decision-DNNF, ROBP, and Razgon's Theorem `separ2`
+# decision-DNNF, ROBP, and Razgon's Theorem `decisionDNNF_robp_separation`
 
 The last theorem of Igor Razgon, *On the read-once property of branching programs and
-CNFs of bounded treewidth* (`source/kc/razgon/FBDDJOURN.tex:1082`):
+CNFs of bounded treewidth*, Algorithmica 75(2):277–294, 2016 ([Raz16, `separ2`]):
 
 > There is an infinite class of CNF formulas such that the complexity of decision-DNNF
 > on this class is `O(n⁵)` while the complexity of ROBP is `Ω(n^{log n / c})` for some
@@ -23,7 +23,7 @@ The class is `φ(T_r(P_{2r}))`, the monotone 2-CNF of a complete binary tree of 
 with a path on `2r` vertices hung at each node.  The theorem has two halves that share
 nothing but the graph:
 
-* the **lower bound** is Lemma `separ` (`:1063`) — the matching-width machinery of
+* the **lower bound** is Lemma `binTreePathNumVertices_rpow_le_size` ([Raz16, `separ`]) — the matching-width machinery of
   `BranchingPrograms/NROBP.lean` and `BranchingPrograms/TreeProduct.lean` — together with
   the one-line observation that an ROBP is a special case of an NROBP;
 * the **upper bound** is Oztok–Darwiche's `O(2^t·n)` compilation bound for CNFs of primal
@@ -31,7 +31,7 @@ nothing but the graph:
   `TreeProduct.treewidthLe_binTree_boxProd` (and hence
   `TreeProduct.binTree_pathGraph_bounds`) already supplies.
 
-Razgon's closing remark (`:1100`) is what the theorem is for: it shows that the
+Razgon's closing remark ([Raz16, §7]) is what the theorem is for: it shows that the
 quasi-polynomial simulation of decision-DNNF by ROBP (Beame–Li–Roy–Suciu) is essentially
 tight.
 
@@ -41,7 +41,7 @@ A **decision node** is an `∨`-node whose two children are `∧`-nodes, one of 
 literal `x` among its two children and the other the literal `¬x`, for one and the same
 variable `x`; a **decision-DNNF** is a DNNF all of whose `∨`-nodes are decision nodes.  In
 the encoding of `Circuits/NNF.lean` — nodes are indices `Fin size`, `gate i` labels node
-`i`, and size is the *vertex count of a DAG*, never of a tree (`ROADMAP.md` §1.1) — that
+`i`, and size is the *vertex count of a DAG*, never of a tree (`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.1) — that
 is `IsDecisionNode` and `IsDecisionDNNF` below.  No new circuit datatype is introduced:
 decision-DNNF is a *predicate* on `NNF`, in the same idiom as `IsDNNF` and `IsdDNNF`, so
 that the containment below is a statement about one and the same object.
@@ -73,8 +73,8 @@ no assignment does both.  Decomposability is not used at all, and is simply carr
 `IsDecisionDNNF` is `Decomposable ∧ IsDecision`, and the second conjunct alone yields
 `Deterministic` (`DecisionFrom.deterministicFrom`).
 
-Nothing below claims the converse, and `separ2` should not be misread as proving it:
-`separ2` compares decision-DNNF with *ROBP*, and in that comparison decision-DNNF is the
+Nothing below claims the converse, and `decisionDNNF_robp_separation` should not be misread as proving it:
+`decisionDNNF_robp_separation` compares decision-DNNF with *ROBP*, and in that comparison decision-DNNF is the
 **stronger** model — it represents `φ(T_r(P_{2r}))` in `O(n⁵)` nodes where every ROBP needs
 `n^{Ω(log n)}`.  The containment above and the separation below therefore pull in opposite
 directions, which is exactly why the pair is interesting: decision-DNNF sits strictly
@@ -83,37 +83,37 @@ between ROBP and d-DNNF.
 ## ROBP as a special case of an NROBP
 
 `ROBP.Deterministic` is "an NROBP without guessing nodes", spelled out on Razgon's AROSRN
-encoding (Definition `arosrn`, `:262`): no unlabelled edge leaves any node, all edges
+encoding (Definition `arosrn`): no unlabelled edge leaves any node, all edges
 leaving a node test the same variable, and no two edges leaving a node carry the same
 literal.  That is exactly the traditional FBDD — a node labelled by a variable with one
-out-edge per value — read through the translation of Razgon's Appendix C (`:1360`), after
+out-edge per value — read through the translation of Razgon's Appendix C ([Raz16, §B]), after
 the `false` leaf and the nodes that cannot reach the `true` leaf have been deleted, which
 is why a node may end up with fewer than two out-edges and the definition is phrased as
 three negative conditions rather than as "exactly two out-edges".
 
-Only the **cheap direction** is here, and it is all `separ2` needs: a deterministic NROBP
+Only the **cheap direction** is here, and it is all `decisionDNNF_robp_separation` needs: a deterministic NROBP
 is an NROBP, so every lower bound on NROBP size applies a fortiori
 (`ROBP.size_ge_of_nrobp`, whose determinism hypothesis is deliberately unused — that is the
 whole point).  The equivalence of the AROSRN and the traditional guessing-node definition
-(Appendix C, `ROADMAP.md` §8.4 item 4) is *not* attempted here.
+(Appendix C, `docs/dev/KnowledgeCompilation-ROADMAP.md` §8.4 item 4) is *not* attempted here.
 `ROBP.Deterministic.next_unique` is included so that the predicate is visibly about
 something: under an assignment, a deterministic node has at most one consistent out-edge.
 
 ## Why the Oztok–Darwiche bound is imported, and what would discharge it
 
 Razgon cites Umut Oztok and Adnan Darwiche, *On compiling CNF into decision-DNNF*, CP 2014,
-Theorem 1: a CNF of primal treewidth `t` has a decision-DNNF of size `O(2^t·n)`.  **That
-paper is not in this repository** — `source/kc/darwiche` holds a different Oztok–Darwiche
-paper, *On Compiling DNNFs without Determinism*, which does not contain this bound — so the
+LNCS 8656, pp. 42–57 ([OD14]), Theorem 1: a CNF of primal treewidth `t` has a decision-DNNF of size `O(2^t·n)`.  **That
+paper is not formalized here** — the other Oztok–Darwiche paper used in this area,
+[OD17], *On Compiling DNNFs without Determinism*, does not contain this bound — so the
 result is an import, and it is treated exactly as `LowerBounds/Imported.lean` treats the
-imports of the other paper in this area (`ROADMAP.md` §1.3): a `structure` carrying explicit
+imports of the other paper in this area (`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.3): a `structure` carrying explicit
 data and hypotheses, threaded into the theorem that consumes it, never an `axiom`.
 
 Three things are made explicit.
 
 *The constants.*  `O(2^t·n)` hides a multiplicative and possibly an additive constant, so
 the bundle is parameterized by `mulConst` and `addConst` and concludes
-`|C| ≤ mulConst·(2^t·n) + addConst` (`ROADMAP.md` §5: state the explicit bound, never the
+`|C| ≤ mulConst·(2^t·n) + addConst` (`docs/dev/KnowledgeCompilation-ROADMAP.md` §5: state the explicit bound, never the
 asymptotic class).
 
 *The formula.*  This area builds no CNF datatype — `Basic.lean` replaces `φ(G)` by its
@@ -121,10 +121,10 @@ semantics immediately — so the bundle is stated for `φ(G)`, whose primal grap
 itself: the variables are the vertices and there is one clause `(u ∨ v)` per edge, so two
 variables share a clause exactly when the corresponding vertices are adjacent.  "Primal
 treewidth at most `t`" is therefore literally `TreeProduct.TreewidthLe G t`.  This is the
-only instance of the import that `separ2` uses, and stating the bundle at exactly its point
+only instance of the import that `decisionDNNF_robp_separation` uses, and stating the bundle at exactly its point
 of use is what keeps it honest.
 
-*The parameter.*  Razgon notes (`:1096`) that Oztok–Darwiche's theorem is in fact stated
+*The parameter.*  Razgon notes ([Raz16, §7]) that Oztok–Darwiche's theorem is in fact stated
 for a different parameter of a CNF, which is shown there never to exceed the primal
 treewidth; the bundle records the consequence Razgon uses, at the treewidth, which is the
 weaker and hence safer form.
@@ -135,7 +135,7 @@ circuit it emits is decomposable, has only decision nodes, computes `φ(G)`, and
 stated size.  Anyone who supplies that deletes the bundle and every statement below becomes
 unconditional with no other change.
 
-*Non-vacuity.*  A bundle whose fields were jointly unsatisfiable would make `separ2`
+*Non-vacuity.*  A bundle whose fields were jointly unsatisfiable would make `decisionDNNF_robp_separation`
 vacuously true while `#print axioms` reported nothing wrong, so — following the non-vacuity
 section of `LowerBounds/Imported.lean` — the bundle is inhabited, at
 `oztokDarwiche_witness : OztokDarwiche (Fin 2) 0 7`.  The witness is honest about what it
@@ -148,7 +148,7 @@ for `x₀ ∨ x₁` containing an actual decision node.
 
 ## `O(n⁵)`, made explicit
 
-`separ2_quintic` is Razgon's arithmetic (`:1097`) with every step spelled out and no
+`decisionDNNF_robp_separation_quintic` is Razgon's arithmetic ([Raz16, §7]) with every step spelled out and no
 "sufficiently large `r`".  For `G = T_r(P_{2r})` with `1 ≤ r`:
 
 * `n = (2^{r+1} − 1)·2r` and `tw(G) ≤ 2·(2r) − 1 = 4r − 1`
@@ -161,24 +161,24 @@ for `x₀ ∨ x₁` containing an actual decision node.
 
 That last number *is* the paper's `O(n⁵)`.
 
-One discrepancy in the paper is worth flagging: the statements of `separ` (`:1063`) and
-`separ2` (`:1082`) both name the class `φ(T_r(P_r))`, while both proofs compute
-throughout with `T_r(P_{2r})`.  We follow the proofs; `separ2_treeProduct` is stated for
-`T_r(P_{2p})` with `p` free, and `separ2_quintic` specializes to `p = r`, which is the
+One discrepancy in the paper is worth flagging: the statements of `binTreePathNumVertices_rpow_le_size` ([Raz16, `separ`]) and
+`decisionDNNF_robp_separation` ([Raz16, `separ2`]) both name the class `φ(T_r(P_r))`, while both proofs compute
+throughout with `T_r(P_{2r})`.  We follow the proofs; `decisionDNNF_robp_separation_binTree_pathGraph` is stated for
+`T_r(P_{2p})` with `p` free, and `decisionDNNF_robp_separation_quintic` specializes to `p = r`, which is the
 instance the paper's arithmetic is about.
 
 ## The lower bound is a hypothesis
 
-`separ2` takes the NROBP lower bound as the explicit parameter `hLower` rather than
-importing it.  This is the same discipline as `NROBP.nrobplbdmw`'s `hEngine`: the two
+`decisionDNNF_robp_separation` takes the NROBP lower bound as the explicit parameter `hLower` rather than
+importing it.  This is the same discipline as `NROBP.le_size_of_matchingWidthGe`'s `hEngine`: the two
 halves of the separation share no vocabulary, and a reader of the statement can see exactly
-what it is conditional on.  `Razgon.maintheor` in `BranchingPrograms/Separation.lean` is
+what it is conditional on.  `Razgon.two_rpow_le_size_binTree_pathGraph` in `BranchingPrograms/Separation.lean` is
 what discharges it, at `lowerBound = ⌈2^{((r+1−⌈log₂ r⌉)·r/2)/f(5)}⌉₊`.
 
 ## Bounds are explicit
 
 There is no asymptotic notation anywhere below.  Every size bound is a closed-form natural
-number in the parameters, and `separ2` concludes a two-sided statement: a decision-DNNF of
+number in the parameters, and `decisionDNNF_robp_separation` concludes a two-sided statement: a decision-DNNF of
 size at most an explicit polynomial exists, and every ROBP has at least `lowerBound` nodes.
 -/
 
@@ -256,7 +256,7 @@ theorem DecisionFrom.deterministicFrom {C : NNF V} {r : Fin C.size} (h : Decisio
   fun _ _ _ hr hg α => (h hr hg).not_both hg α
 
 /-- **A decision-DNNF**: a DNNF — a decomposable NNF — every one of whose `∨`-nodes is a
-decision node (Razgon `:1082`; Darwiche–Marquis's language, as compiled by Oztok–Darwiche,
+decision node ([Raz16, `separ2`]; Darwiche–Marquis's language, as compiled by Oztok–Darwiche,
 CP 2014).
 
 Decomposability is stated first so that `IsDecisionDNNF` reads as `IsDNNF` plus the
@@ -267,12 +267,12 @@ def IsDecisionDNNF [DecidableEq V] (C : NNF V) : Prop := C.Decomposable ∧ IsDe
 theorem IsDecisionDNNF.isDNNF [DecidableEq V] {C : NNF V} (h : IsDecisionDNNF C) : C.IsDNNF :=
   h.1
 
-/-- **decision-DNNF ⊆ d-DNNF.**  The containment lemma that `ROADMAP.md` §8 asks of every
+/-- **decision-DNNF ⊆ d-DNNF.**  The containment lemma that `docs/dev/KnowledgeCompilation-ROADMAP.md` §8 asks of every
 new language: it places decision-DNNF in the hierarchy.
 
 It is unconditional and needs no decomposability — determinism comes from the decision
 condition alone (`DecisionFrom.deterministicFrom`), and decomposability is carried across
-untouched.  The converse fails, and `separ2` below is a quantitative form of its failure. -/
+untouched.  The converse fails, and `decisionDNNF_robp_separation` below is a quantitative form of its failure. -/
 theorem IsDecisionDNNF.isdDNNF [DecidableEq V] {C : NNF V} (h : IsDecisionDNNF C) :
     C.IsdDNNF :=
   ⟨h.1, h.2.deterministicFrom⟩
@@ -291,7 +291,7 @@ namespace ROBP
 variable {V : Type*} {size : ℕ}
 
 /-- **`Z` has no guessing nodes** — i.e. `Z` is an ROBP (an FBDD), presented inside
-Razgon's AROSRN model (Definition `arosrn`, `source/kc/razgon/FBDDJOURN.tex:262`).
+Razgon's AROSRN model (Definition `arosrn`, [Raz16]).
 
 Three clauses, all negative:
 
@@ -305,10 +305,10 @@ Together these say that the out-edges of a node are the two branches `x = 1`, `x
 single variable test — the traditional FBDD — except that a node may have *fewer* than two
 out-edges.  That slack is not laxity: the AROSRN attached to a traditional ROBP is obtained
 by deleting the `false` leaf and every node from which the `true` leaf is unreachable
-(Appendix C, `:1360`), which is exactly what removes out-edges.
+(Appendix C, [Raz16, §B]), which is exactly what removes out-edges.
 
 See the module docstring: only the a-fortiori direction is developed here, which is all
-`separ2` needs. -/
+`decisionDNNF_robp_separation` needs. -/
 structure Deterministic (Z : NROBP V size) : Prop where
   /-- No unlabelled ("guessing") edge. -/
   no_guess : ∀ {a b : Fin size}, ¬ Z.edge a b none
@@ -324,7 +324,7 @@ structure Deterministic (Z : NROBP V size) : Prop where
 
 This is the operational content of `Deterministic` — the reason it deserves the name — and
 it is recorded here so that the predicate is visibly not vacuous.  Nothing below uses it:
-`separ2` needs only that a deterministic NROBP is an NROBP. -/
+`decisionDNNF_robp_separation` needs only that a deterministic NROBP is an NROBP. -/
 theorem Deterministic.next_unique {Z : NROBP V size} (hZ : Deterministic Z)
     {a b b' : Fin size} {x y : Lit V} (α : V → Bool)
     (he : Z.edge a b (some x)) (he' : Z.edge a b' (some y))
@@ -336,14 +336,14 @@ theorem Deterministic.next_unique {Z : NROBP V size} (hZ : Deterministic Z)
   subst hxy
   exact ⟨rfl, hZ.succ_unique he he'⟩
 
-/-- **An ROBP is a special case of an NROBP** (`source/kc/razgon/FBDDJOURN.tex:1088`):
+/-- **An ROBP is a special case of an NROBP** ([Raz16, §7]):
 any lower bound on the number of nodes of a uniform read-once NROBP realising `φ(G)`
 applies to an ROBP a fortiori.
 
 The determinism hypothesis is named `_hdet` because it is *deliberately unused*: that it
 can be dropped is the entire content of the lemma, and this is the half of the
 AROSRN/traditional correspondence that costs nothing.  The other half — Razgon's
-Appendix C (`:1360`), turning a traditional guessing-node NROBP into an AROSRN and back —
+Appendix C ([Raz16, §B]), turning a traditional guessing-node NROBP into an AROSRN and back —
 is not formalized here. -/
 theorem size_ge_of_nrobp {V : Type*} [Fintype V] [DecidableEq V] {G : SimpleGraph V}
     {lowerBound size : ℕ}
@@ -497,7 +497,7 @@ theorem decisionOr_isDecisionDNNF : IsDecisionDNNF decisionOr := by
 
 /-- **The Oztok–Darwiche compilation bound** [IMPORTED — Umut Oztok and Adnan Darwiche,
 *On compiling CNF into decision-DNNF*, CP 2014, Theorem 1], quoted by Razgon at
-`source/kc/razgon/FBDDJOURN.tex:1094`:
+[Raz16, §7]:
 
 > the space complexity of decision-DNNF on a CNF formula with primal graph treewidth `t` is
 > `O(2^t n)`.
@@ -505,7 +505,7 @@ theorem decisionOr_isDecisionDNNF : IsDecisionDNNF decisionOr := by
 Stated for the formulas this area actually has: `φ(G)`, whose primal graph is `G` itself.
 The `O(·)` is unfolded into the two parameters `mulConst` and `addConst`, so that a
 downstream theorem relates the constants it is given to the constants it produces, with no
-asymptotic notation anywhere (`ROADMAP.md` §5).
+asymptotic notation anywhere (`docs/dev/KnowledgeCompilation-ROADMAP.md` §5).
 
 The circuit is required to be a *decision-DNNF* (`IsDecisionDNNF`) and to compute `φ(G)`
 stated as an `iff` on `C.eval` rather than through a `decide`, so that no decidability
@@ -532,7 +532,7 @@ the treewidth hypothesis is not needed and `mulConst` may be taken to be `0`.
 `LowerBounds/Imported.lean`: it says nothing about the `2^t·n` growth, which is the
 imported theorem of Oztok and Darwiche.  It is a consistency check on the *shape* of the
 bundle — no field contradicts another, and in particular a decision-DNNF really can compute
-a `φ(G)` — so that `separ2` is known to be conditional on a hypothesis about something
+a `φ(G)` — so that `decisionDNNF_robp_separation` is known to be conditional on a hypothesis about something
 rather than about nothing. -/
 def oztokDarwiche_witness : OztokDarwiche (Fin 2) 0 7 where
   compile := by
@@ -558,9 +558,9 @@ def oztokDarwiche_witness : OztokDarwiche (Fin 2) 0 7 where
         · exact hadj
         · exact fun h => hadj (G.symm h))
 
-/-! ## `separ2` -/
+/-! ## `decisionDNNF_robp_separation` -/
 
-/-- **The arithmetic behind `O(n⁵)`** (`source/kc/razgon/FBDDJOURN.tex:1097`): if the
+/-- **The arithmetic behind `O(n⁵)`** ([Raz16, §7]): if the
 treewidth `t` is at most `4·⌊log₂ n⌋ + 4`, then `2^t·n ≤ 16·n⁵`.
 
 This is Razgon's "substituting `4 log n + 4` instead of `t` in `O(2^t n)` results in
@@ -580,7 +580,7 @@ theorem pow_mul_le_of_log_le {n t : ℕ} (hn : n ≠ 0) (ht : t ≤ 4 * Nat.log 
     _ ≤ (16 * n ^ 4) * n := Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ h3)
     _ = 16 * n ^ 5 := by ring
 
-/-- **Theorem `separ2`** (`source/kc/razgon/FBDDJOURN.tex:1082`), in its general form:
+/-- **Theorem `decisionDNNF_robp_separation`** ([Raz16, `separ2`]), in its general form:
 for a graph `G` of treewidth at most `t`, the CNF `φ(G)` has
 
 * a decision-DNNF with at most `mulConst·(2^t·|V|) + addConst` nodes, and
@@ -589,14 +589,15 @@ for a graph `G` of treewidth at most `t`, the CNF `φ(G)` has
 Both halves are relative to explicit hypotheses, and that is the point of the statement:
 the upper bound comes from the imported bundle `OD` (Oztok–Darwiche, CP 2014, Theorem 1)
 and the treewidth input `htw`, and the lower bound comes from `hLower`, which is Razgon's
-own `maintheor` and is discharged in `BranchingPrograms/Separation.lean`.  No asymptotics
+own `two_rpow_le_size_binTree_pathGraph` and is discharged in `BranchingPrograms/Separation.lean`.  No asymptotics
 appear on either side.
 
 The ROBP half is `hLower` with a determinism hypothesis added and immediately dropped: an
-ROBP is a special case of an NROBP (`ROBP.size_ge_of_nrobp`, `:1088`).  The reason the
-theorem is interesting is the *gap* between the two numbers, which `separ2_quintic`
+ROBP is a special case of an NROBP (`ROBP.size_ge_of_nrobp`, [Raz16, §7]).  The reason the
+theorem is interesting is the *gap* between the two numbers, which `decisionDNNF_robp_separation_quintic`
 exhibits for `T_r(P_{2r})`: polynomial against quasi-polynomial. -/
-theorem separ2 {V : Type*} [Fintype V] [DecidableEq V] {mulConst addConst t lowerBound : ℕ}
+theorem decisionDNNF_robp_separation {V : Type*} [Fintype V] [DecidableEq V]
+    {mulConst addConst t lowerBound : ℕ}
     (OD : OztokDarwiche V mulConst addConst) (G : SimpleGraph V)
     (htw : TreeProduct.TreewidthLe G t)
     (hLower : ∀ (s : ℕ) (Z : NROBP V s), Z.ReadOnce → Z.Uniform → Z.Realises G →
@@ -608,8 +609,8 @@ theorem separ2 {V : Type*} [Fintype V] [DecidableEq V] {mulConst addConst t lowe
   ⟨OD.compile G t htw, fun _s Z hro hu hdet hR => ROBP.size_ge_of_nrobp hLower Z hro hu hdet hR⟩
 
 open SimpleGraph in
-/-- **`separ2` for the class `T_r(P_{2p})`** — the graphs of Razgon's Lemma `separ`
-(`source/kc/razgon/FBDDJOURN.tex:1063`), a complete binary tree of height `r` with a path
+/-- **`decisionDNNF_robp_separation` for the class `T_r(P_{2p})`** — the graphs of Razgon's Lemma `binTreePathNumVertices_rpow_le_size`
+([Raz16, `separ`]), a complete binary tree of height `r` with a path
 on `2p` vertices at every node.
 
 The treewidth input is discharged by `TreeProduct.treewidthLe_binTree_boxProd`, which gives
@@ -618,10 +619,10 @@ decision-DNNF bound is fully explicit in `r` and `p`:
 
 `mulConst·(2^{4p−1}·(2^{r+1} − 1)·2p) + addConst`.
 
-The paper names the class `φ(T_r(P_r))` in the statement of `separ2` but computes with
+The paper names the class `φ(T_r(P_r))` in the statement of `decisionDNNF_robp_separation` but computes with
 `T_r(P_{2r})` in both proofs; `p` is left free here and specialized to `p = r` in
-`separ2_quintic`. -/
-theorem separ2_treeProduct {p r mulConst addConst lowerBound : ℕ}
+`decisionDNNF_robp_separation_quintic`. -/
+theorem decisionDNNF_robp_separation_binTree_pathGraph {p r mulConst addConst lowerBound : ℕ}
     (OD : OztokDarwiche (TreeProduct.BinTreeNode r × Fin (2 * p)) mulConst addConst)
     (hLower : ∀ (s : ℕ) (Z : NROBP (TreeProduct.BinTreeNode r × Fin (2 * p)) s),
       Z.ReadOnce → Z.Uniform →
@@ -638,12 +639,13 @@ theorem separ2_treeProduct {p r mulConst addConst lowerBound : ℕ}
   have htw : TreeProduct.TreewidthLe
       (TreeProduct.binTree r □ SimpleGraph.pathGraph (2 * p)) (2 * (2 * p) - 1) := by
     simpa using TreeProduct.treewidthLe_binTree_boxProd r (SimpleGraph.pathGraph (2 * p))
-  have h := separ2 OD (TreeProduct.binTree r □ SimpleGraph.pathGraph (2 * p)) htw hLower
+  have h := decisionDNNF_robp_separation OD
+    (TreeProduct.binTree r □ SimpleGraph.pathGraph (2 * p)) htw hLower
   rw [hcard] at h
   exact h
 
 open SimpleGraph in
-/-- **Theorem `separ2`, as the paper states it** (`source/kc/razgon/FBDDJOURN.tex:1082`):
+/-- **Theorem `decisionDNNF_robp_separation`, as the paper states it** ([Raz16, `separ2`]):
 on the class `φ(T_r(P_{2r}))`, decision-DNNF is polynomial while every ROBP is large.
 
 With `n = (2^{r+1} − 1)·2r` the number of variables and `1 ≤ r`:
@@ -651,7 +653,7 @@ With `n = (2^{r+1} − 1)·2r` the number of variables and `1 ≤ r`:
 * there is a decision-DNNF for `φ(T_r(P_{2r}))` with at most `mulConst·(16·n⁵) + addConst`
   nodes — the paper's `O(n⁵)`;
 * every uniform read-once ROBP realising it has at least `lowerBound` nodes, whatever
-  `lowerBound` the hypothesis `hLower` supplies; `Razgon.maintheor` supplies
+  `lowerBound` the hypothesis `hLower` supplies; `Razgon.two_rpow_le_size_binTree_pathGraph` supplies
   `⌈2^{((r+1−⌈log₂ r⌉)·r/2)/f(5)}⌉₊`, which is the paper's `n^{Ω(log n)}`.
 
 Razgon's derivation of the exponent `5` is `t ≤ 4r ≤ 4 log n + 4` "for a sufficiently large
@@ -660,10 +662,10 @@ tree alone contributes `2^{r+1} − 1` vertices and each carries at least two pa
 The hypothesis `1 ≤ r` is genuinely needed — at `r = 0` the graph has no vertices at all
 and `n = 0`.
 
-This is the assembled statement `ROADMAP.md` §8.4 item 1 asks for.  It remains conditional
+This is the assembled statement `docs/dev/KnowledgeCompilation-ROADMAP.md` §8.4 item 1 asks for.  It remains conditional
 on exactly two things, both visible in the binders: the imported Oztok–Darwiche bound `OD`,
 and the NROBP lower bound `hLower`. -/
-theorem separ2_quintic {r mulConst addConst lowerBound : ℕ} (hr : 1 ≤ r)
+theorem decisionDNNF_robp_separation_quintic {r mulConst addConst lowerBound : ℕ} (hr : 1 ≤ r)
     (OD : OztokDarwiche (TreeProduct.BinTreeNode r × Fin (2 * r)) mulConst addConst)
     (hLower : ∀ (s : ℕ) (Z : NROBP (TreeProduct.BinTreeNode r × Fin (2 * r)) s),
       Z.ReadOnce → Z.Uniform →
@@ -674,7 +676,8 @@ theorem separ2_quintic {r mulConst addConst lowerBound : ℕ} (hr : 1 ≤ r)
       ∀ (s : ℕ) (Z : NROBP (TreeProduct.BinTreeNode r × Fin (2 * r)) s),
         Z.ReadOnce → Z.Uniform → ROBP.Deterministic Z →
         Z.Realises (TreeProduct.binTree r □ SimpleGraph.pathGraph (2 * r)) → lowerBound ≤ s := by
-  obtain ⟨⟨C, hC, hcomp, hsize⟩, hrobp⟩ := separ2_treeProduct OD hLower
+  obtain ⟨⟨C, hC, hcomp, hsize⟩, hrobp⟩ :=
+    decisionDNNF_robp_separation_binTree_pathGraph OD hLower
   refine ⟨⟨C, hC, hcomp, le_trans hsize ?_⟩, hrobp⟩
   set n : ℕ := (2 ^ (r + 1) - 1) * (2 * r) with hn
   -- `2^{r+1} ≤ n`: the tree has `2^{r+1} - 1` nodes and each carries `2r ≥ 2` path vertices.

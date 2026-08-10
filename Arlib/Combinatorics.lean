@@ -33,6 +33,7 @@ whole set, or import a single module for just one piece.
 
 import Arlib.Combinatorics.Atoms
 import Arlib.Combinatorics.Finset
+import Arlib.Combinatorics.FinSnoc
 import Arlib.Combinatorics.BigOperators
 import Arlib.Combinatorics.ListFold
 import Arlib.Combinatorics.DistinctSamples

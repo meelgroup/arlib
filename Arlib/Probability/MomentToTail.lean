@@ -84,7 +84,7 @@ precisely the "`k`-wise independence suffices" condition `k ≥ γ² μ` (resp.
 No `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -328,4 +328,4 @@ theorem exp_tail_relative_of_moment_bound_one {P : FinProb} (X : P.Ω → ℝ) {
   intro t ht0 ht2
   simpa using hmom t ht0 ht2
 
-end Arlib
+end Arlib.Probability

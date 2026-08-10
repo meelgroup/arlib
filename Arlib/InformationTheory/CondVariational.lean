@@ -72,6 +72,7 @@ with no side conditions and the identity is `ring`.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

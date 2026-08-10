@@ -67,7 +67,7 @@ import Mathlib.Data.Fin.Tuple.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Base
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
-namespace Arlib
+namespace Arlib.Combinatorics
 
 open Finset
 
@@ -387,4 +387,4 @@ theorem prob_lt_distinct_le_rpow (S : Finset α) (hS : S.Nonempty) (N B : ℕ)
     _ ≤ (N : ℝ) * (N : ℝ) ^ (-β) := mul_le_mul_of_nonneg_left h3 (Nat.cast_nonneg _)
     _ = (N : ℝ) ^ (1 - β) := h4
 
-end Arlib
+end Arlib.Combinatorics

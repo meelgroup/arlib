@@ -81,7 +81,9 @@ def NoEC : Prop := ∀ C : Finset (S × A), M.IsEC C → ∀ p ∈ C, M.isTerm p
 `SAnt`: there is a finite sequence of positive-probability transitions from
 `M.init` to `s`, each taken at a non-terminal state along an enabled action.
 Those are precisely the transitions the algorithm's walk can make: at a terminal
-state the episode ends (line 15) and the next one restarts at `s₀` (line 7). -/
+state the episode ends and the next one restarts at `s₀` (lines 15 and 7 of the
+source paper's pseudocode; the paper is not identified in this library — see
+`Arlib/MDP.lean`). -/
 def Reachable (s : S) : Prop := M.ReachIn M.SAnt M.init s
 
 /-- `s₀` is reachable from itself. -/

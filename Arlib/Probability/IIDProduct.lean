@@ -34,7 +34,7 @@ import Arlib.Probability.KWiseChernoff
 import Arlib.Probability.ProductSpace
 import Arlib.Probability.Markov
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset FinProb
@@ -115,4 +115,4 @@ theorem kwiseIndep_coord (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ μ j x) (h
   intro j _
   exact (Ex_apply μ h0 h1 j (f j)).symm
 
-end Arlib
+end Arlib.Probability

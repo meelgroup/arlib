@@ -11,7 +11,9 @@ import Arlib.Probability.FinProb
 `Arlib.Probability.Conditioning` builds the conditioned *space* `P.cond B hB`,
 which needs `0 < Pr B` in order to exist at all.  That is the wrong interface for
 the arguments this file serves.  A layered randomized algorithm — the `#NFA`
-FPRAS of PODS 2024 is the motivating example — is analysed one level at a time,
+FPRAS of [MCM24] (Kuldeep S. Meel ⓡ Sourav Chakraborty ⓡ Umang Mathur, *A Faster
+FPRAS for #NFA*, PODS 2024, arXiv:2312.13320) is the motivating example — is
+analysed one level at a time,
 and each level's estimate is bounded *conditionally on the entire history*:
 "given that the samples drawn below level `ℓ` were exactly `ω`, the level-`ℓ`
 estimate is off by more than `ε` with probability at most `η`".  The conclusion
@@ -55,7 +57,7 @@ arguments free of measurability side goals.
 Everything is proved from first principles with no `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -298,4 +300,4 @@ theorem Pr_biUnion_inter_le {ι : Type*} [DecidableEq ι] (s : Finset ι) (E : �
 end CondUnionBound
 
 end FinProb
-end Arlib
+end Arlib.Probability

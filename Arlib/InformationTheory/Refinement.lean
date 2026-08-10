@@ -58,6 +58,7 @@ because it is the one that is used.
 -/
 
 open scoped BigOperators
+open Arlib.Probability
 
 namespace Arlib
 

@@ -35,7 +35,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.MeasureTheory.Integral.Prod
 
-namespace Arlib
+namespace Arlib.Probability
 
 open MeasureTheory
 open scoped BigOperators
@@ -940,4 +940,4 @@ theorem condCE_reduceStep_data (C : MixedCoinSpace) {T : Finset C.ι} {j : C.ι}
   rw [hfr, havg]
 
 end MixedCoinSpace
-end Arlib
+end Arlib.Probability

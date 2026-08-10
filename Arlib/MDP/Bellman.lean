@@ -15,9 +15,11 @@ and the greedy value `max_{a'} Q(s',a')` on a non-terminal.  Then
     H Q (s,a) = kernel.act (extVal Q) (s,a) = ∑ s', P(s' ∣ s,a) · extVal Q s'
 
 which is the `FinKernel.act` verbatim, so the algebra of the operator
-(`act_sub`, `act_const`) is inherited.  `H_eq_paper` proves this agrees with the
-paper's two-sum display, so the reader can audit the definition against
-the Bellman optimality operator without unfolding anything.
+(`act_sub`, `act_const`) is inherited.  `H_eq_sum_target_add_sum_nonterm`
+proves this agrees with the two-sum display of the source paper (not identified
+in this library; see `Arlib/MDP.lean`), so the reader can audit
+the definition against the Bellman optimality operator without unfolding
+anything.
 -/
 import Arlib.MDP.Basic
 
@@ -61,7 +63,7 @@ theorem H_apply (Q : S → A → ℝ) (s : S) (a : A) :
 the standard display:
 
     (H Q)(s,a) = ∑_{s' ∈ S_T} P(s'∣s,a) + ∑_{s' ∈ Sₙₜ} P(s'∣s,a)·max_{a'} Q(s',a'). -/
-theorem H_eq_paper (Q : S → A → ℝ) (s : S) (a : A) :
+theorem H_eq_sum_target_add_sum_nonterm (Q : S → A → ℝ) (s : S) (a : A) :
     M.H Q s a =
       (∑ s' ∈ M.targetSet, M.P s a s')
         + ∑ s' ∈ M.nontermSet, M.P s a s' * M.vmax Q s' := by

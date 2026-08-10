@@ -6,8 +6,8 @@ Authors: Kuldeep S. Meel
 /-
 # `Arlib.KnowledgeCompilation.Forgetting` — compiling DNNF by forgetting
 
-Umut Oztok and Adnan Darwiche, *On Compiling DNNFs without Determinism*
-(`source/kc/darwiche/draft.tex`).
+Umut Oztok and Adnan Darwiche, *On Compiling DNNFs without Determinism*,
+CoRR abs/1709.07092, 2017 ([OD17]).
 
 A third paper in the area, and the constructive counterpart to the lower-bound
 work.  Its idea: to compile a DNNF for `f(X)`, first find `g(X,Y)` *equivalent
@@ -30,8 +30,8 @@ docstring of `Forgetting.Basic`.
 ## Modules
 
 * `Forgetting.Basic` — `forgetNNF`, the `⊤`-substitution, and that on a
-  decomposable NNF it computes `∃Y`; `forgetFun`; `emf`; and the algorithm's
-  correctness, that forgetting a d-DNNF for `g` yields a DNNF for `∃Y. g` no
+  decomposable NNF it computes `∃Y`; `forgetFun`; `EquivModForget`; and the
+  algorithm's correctness, that forgetting a d-DNNF for `g` yields a DNNF for `∃Y. g` no
   larger than it.  Includes a witness that forgetting genuinely loses
   determinism.
 * `Forgetting.Treewidth` — jointrees and the primal treewidth of a CNF;
@@ -44,10 +44,10 @@ docstring of `Forgetting.Basic`.
   (in fact `2n`), by leaf-pruning a tree decomposition to confine a variable's
   closed neighbourhood inside one cluster.
 * `Forgetting.Separation` — the Sauerhoff function `f_n = row_n ∨ col_n` and
-  `g_n = (Z ∧ row_n) ∨ (¬Z ∧ col_n)`, the proof that `f_n` is emf to `g_n` by a
-  single forgotten variable, and `thm: sep` — exponential separation of DNNF
-  from deterministic DNNF — conditional on the two imported hardness facts, both
-  inhabited.
+  `g_n = (Z ∧ row_n) ∨ (¬Z ∧ col_n)`, the proof that `f_n` is equivalent modulo
+  forgetting the single auxiliary variable `Z` to `g_n`, and `thm: sep` —
+  exponential separation of DNNF from deterministic DNNF — conditional on the
+  two imported hardness facts, both inhabited.
 -/
 
 import Arlib.KnowledgeCompilation.Forgetting.Basic

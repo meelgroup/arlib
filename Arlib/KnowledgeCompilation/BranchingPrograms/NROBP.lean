@@ -10,10 +10,10 @@ import Arlib.KnowledgeCompilation.Circuits.DNF
 # Nondeterministic read-once branching programs, and Razgon's matching-width lower bound
 
 The branching-program half of Igor Razgon, *On the read-once property of branching
-programs and CNFs of bounded treewidth* (`source/kc/razgon/FBDDJOURN.tex`): the
-{\sc nrobp} model of its Definition 1 (`source/kc/razgon/FBDDJOURN.tex:262`), the
-notion of a `t`-node, the cut lemma `tnodecut` (`source/kc/razgon/FBDDJOURN.tex:600`),
-and the lower bound `nrobplbdmw` (`source/kc/razgon/FBDDJOURN.tex:668`).
+programs and CNFs of bounded treewidth* ([Raz16]): the
+{\sc nrobp} model of its Definition 1 ([Raz16, `arosrn`]), the
+notion of a `t`-node, the cut lemma `exists_split_isTNode` ([Raz16, `tnodecut`]),
+and the lower bound `le_size_of_matchingWidthGe` ([Raz16, §4]).
 
 Everything here is stated over a graph `G` on a finite vertex type `V`, whose vertices
 double as the variables of the monotone 2-CNF `φ(G)`.  The vertex-cover vocabulary,
@@ -25,7 +25,7 @@ double as the variables of the monotone 2-CNF `φ(G)`.  The vertex-cover vocabul
 Razgon's {\sc nrobp} is *a directed acyclic graph with one root, one leaf, possibly
 multiple edges, and some edges labelled by literals*, such that no directed path carries
 two literals of the same variable.  Following the house rule of this area
-(`Arlib/KnowledgeCompilation/ROADMAP.md` §1.1, and the module docstring of
+(`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.1, and the module docstring of
 `Arlib/KnowledgeCompilation/Circuits/NNF.lean`), the object is a **DAG, never a tree**:
 nodes are the indices `Fin size`, and `size` — a node count — is the quantity the lower
 bound is about.  An inductive tree would silently prove a weaker theorem, since unfolding
@@ -76,33 +76,33 @@ here needs that, because "the path passes through `a`" is always used in its spl
 
 ## Uniformity is a hypothesis, and it is load-bearing
 
-The paper declares (`source/kc/razgon/FBDDJOURN.tex:347`, and again at line 355) that
+The paper declares ([Raz16, §2], and again at line 355) that
 *all* {\sc nrobp}s in its Sections 3-6 are **uniform**:
 
 * any two root-to-`a` paths are labelled by literals of the same set of variables; and
 * every root-leaf path reads every variable of `F`.
 
 `NROBP.Uniform` is exactly those two clauses.  It is carried as an explicit hypothesis of
-every statement that needs it, never assumed silently, because the proof of `tnodecut`
+every statement that needs it, never assumed silently, because the proof of `exists_split_isTNode`
 uses it twice and would be false without it: once to turn a root-leaf path into a genuine
 *permutation* of `V(G)` (so that `MatchingWidthGe` can be applied to it), and once to
 know that a variable read before `a` on one path is read before `a` on every path
 through `a`.
 
-Razgon's Appendix B (`source/kc/razgon/FBDDJOURN.tex:1208`) shows that an arbitrary
+Razgon's Appendix B ([Raz16, §A]) shows that an arbitrary
 {\sc nrobp} can be made uniform at the price of an `O(n)` factor in the number of edges.
-**That reduction is not formalized here.**  Consequently `nrobplbdmw` below is a lower
+**That reduction is not formalized here.**  Consequently `le_size_of_matchingWidthGe` below is a lower
 bound for uniform {\sc nrobp}s, which is what Razgon's Sections 3-6 prove; deducing the
 bound for arbitrary {\sc nrobp}s needs Appendix B.
 
 ## The `lbengine` hypothesis
 
-Razgon's Theorem `lbengine` (`source/kc/razgon/FBDDJOURN.tex:651`) — a `t`-cover of the family of
+Razgon's Theorem `lbengine` ([Raz16]) — a `t`-cover of the family of
 all vertex covers of a graph of max-degree `x` has at least `2^{t/f(x)}` members — is
 proved by a probabilistic argument in a separate file of this development.  Following the
-discipline of `Arlib/KnowledgeCompilation/ROADMAP.md` §1.3 (*imported results are
+discipline of `docs/dev/KnowledgeCompilation-ROADMAP.md` §1.3 (*imported results are
 hypotheses, never axioms*), it is **not** imported and **not** `axiom`-ed: it enters
-`nrobplbdmw` as the named hypothesis `hEngine`, with the numeric bound `2^{t/f(x)}`
+`le_size_of_matchingWidthGe` as the named hypothesis `hEngine`, with the numeric bound `2^{t/f(x)}`
 abstracted to a parameter `bound`.  A reader of the statement can therefore see exactly
 what the theorem is conditional on, and the coordinator discharges `hEngine` by supplying
 the covering theorem, obtaining `2^{t/f(x)} ≤ size` with no further work.
@@ -114,14 +114,14 @@ across the file boundary.
 
 ## Bounds are explicit
 
-There is no asymptotic notation anywhere below.  `nrobplbdmw` concludes `bound ≤ size`
+There is no asymptotic notation anywhere below.  `le_size_of_matchingWidthGe` concludes `bound ≤ size`
 with `size` the node count of the program and `bound` whatever number `hEngine` supplies.
 -/
 
 namespace Arlib.KnowledgeCompilation
 
 /-- **A nondeterministic read-once branching program** over the variables `V`, on `size`
-nodes (paper Definition 1, `source/kc/razgon/FBDDJOURN.tex:262`).
+nodes (paper Definition 1, [Raz16, `arosrn`]).
 
 Nodes are the indices `Fin size`; `edge a b l` says there is an edge `a → b` carrying the
 label `l`, which is `none` for an unlabelled edge and `some (x, p)` for the literal `x`
@@ -174,7 +174,7 @@ variable {Z : NROBP V size}
 /-- **Splicing.**  Concatenating a path `a → b` with a path `b → c` gives a path `a → c`
 reading the concatenated literal list.  This is the paper's `Q₁ + Q₂`, and it is the
 operation that manufactures the contradictory path `Q* = Q²ₐ + ¬Q¹ₐ` in the proof of
-`tnodecut`. -/
+`exists_split_isTNode`. -/
 theorem Path.append {a b : Fin size} {ls : List (Lit V)} (h₁ : Z.Path a b ls) :
     ∀ {c : Fin size} {ms : List (Lit V)}, Z.Path b c ms → Z.Path a c (ls ++ ms) := by
   induction h₁ with
@@ -213,7 +213,7 @@ theorem Path.split {a c : Fin size} {ls : List (Lit V)} (h : Z.Path a c ls) :
         Path.step he h₁, h₂⟩
 
 /-- **The read-once property** (paper Definition 1,
-`source/kc/razgon/FBDDJOURN.tex:264`): no directed path of `Z` — not merely no root-leaf
+[Raz16, `arosrn`]): no directed path of `Z` — not merely no root-leaf
 path — carries two literals of the same variable. -/
 def ReadOnce (Z : NROBP V size) : Prop :=
   ∀ {a b : Fin size} {ls : List (Lit V)}, Z.Path a b ls → (ls.map Prod.fst).Nodup
@@ -229,7 +229,7 @@ variable {V : Type*} [DecidableEq V]
 /-- `Var(A(P))`: the set of variables whose literals occur in a literal list. -/
 def varSet (ls : List (Lit V)) : Finset V := (ls.map Prod.fst).toFinset
 
-/-- `VC(P)` (paper §5, `source/kc/razgon/FBDDJOURN.tex:575`): the set of vertices
+/-- `VC(P)` ([Raz16, §4]): the set of vertices
 occurring **positively** in a literal list.  Observation 1 of the paper is the statement
 that, for a root-leaf path, this is a vertex cover; see `NROBP.vcOf_isVertexCover`. -/
 def vcOf (ls : List (Lit V)) : Finset V := ((ls.filter fun p => p.2).map Prod.fst).toFinset
@@ -294,12 +294,12 @@ section Semantics
 variable {V : Type*} [Fintype V] [DecidableEq V] {size : ℕ} {Z : NROBP V size}
 variable {G : SimpleGraph V}
 
-/-- **Uniformity** (paper §2, `source/kc/razgon/FBDDJOURN.tex:347`).  Two clauses:
+/-- **Uniformity** (paper §2, [Raz16]).  Two clauses:
 all root-to-`a` paths read the same *set* of variables, and every root-leaf path reads
 *every* variable.
 
 Razgon assumes this throughout his Sections 3-6 and discharges it in Appendix B
-(`source/kc/razgon/FBDDJOURN.tex:1208`) at the cost of an `O(n)` factor in the edge
+([Raz16, §A]) at the cost of an `O(n)` factor in the edge
 count.  Appendix B is **not** formalized here, so every theorem below that mentions
 `Uniform` is a statement about uniform programs only.  See the module docstring. -/
 structure Uniform (Z : NROBP V size) : Prop where
@@ -310,7 +310,7 @@ structure Uniform (Z : NROBP V size) : Prop where
   full_vars : ∀ {ls : List (Lit V)}, Z.Path Z.root Z.leaf ls → varSet ls = Finset.univ
 
 /-- **`Z` implements `φ(G)`** (paper Definition 1,
-`source/kc/razgon/FBDDJOURN.tex:262`).  Two clauses, exactly the paper's:
+[Raz16, `arosrn`]).  Two clauses, exactly the paper's:
 
 * *soundness*: every total assignment extending the literals of a root-leaf path
   satisfies `φ(G)` — the paper's "any set of literals `A ⊇ A(P)` with `Var(A) = Var(F)`
@@ -324,7 +324,7 @@ structure Realises (Z : NROBP V size) (G : SimpleGraph V) : Prop where
   /-- Every satisfying assignment extends some root-leaf path. -/
   complete : ∀ α : V → Bool, phi G α → ∃ ls, Z.Path Z.root Z.leaf ls ∧ Agree ls α
 
-/-- **`basicobs`, first half** (paper §5, `source/kc/razgon/FBDDJOURN.tex:568`):
+/-- **`basicobs`, first half** (paper §5, [Raz16]):
 the vertices read positively on a root-leaf path form a vertex cover of `G`.
 
 Uniformity is *not* needed: the canonical assignment of the path already extends it, by
@@ -345,7 +345,7 @@ theorem exists_path_vcOf_subset (hR : Z.Realises G) {C : Finset V} (hC : IsVerte
   have := hag _ (mem_vcOf.mp hv)
   simpa using this
 
-/-- **`basicobs`, second half** (paper §5, `source/kc/razgon/FBDDJOURN.tex:570`):
+/-- **`basicobs`, second half** (paper §5, [Raz16]):
 `V'` is the set of vertices occurring positively on a root-leaf path *if and only if* `V'`
 is a vertex cover.  The forward direction is `vcOf_isVertexCover`; this is the converse,
 and here uniformity is genuinely needed — without it a path may simply not read a vertex
@@ -381,7 +381,7 @@ theorem length_of_nodup_of_mem (l : List V) (hnd : l.Nodup) (hall : ∀ v : V, v
 
 /-- **The ordering read off a root-leaf path**: a duplicate-free list of all vertices is a
 `VertexOrder`, i.e. the paper's permutation `SV` of `V(G)`
-(`source/kc/razgon/FBDDJOURN.tex:608`).
+([Raz16, §4]).
 
 This is the object `MatchingWidthGe` is applied to, and producing it is precisely where
 the two hypotheses on the path are spent: read-onceness gives `Nodup`, uniformity gives
@@ -447,22 +447,22 @@ section TNode
 variable {V : Type*} [Fintype V] [DecidableEq V] {size : ℕ} {Z : NROBP V size}
 variable {G : SimpleGraph V} {t : ℕ}
 
-/-- **A `t`-node** (paper §5, `source/kc/razgon/FBDDJOURN.tex:594`): a node `a` for which
+/-- **A `t`-node** ([Raz16, §4]): a node `a` for which
 there is a set `S(a)` of at least `t` vertices contained in `VC(P)` for *every* root-leaf
 path `P` through `a`.
 
 "Path through `a`" is written in its split form — a root-to-`a` path `ms` followed by an
 `a`-to-leaf path `ns` — because that is how every consumer uses it and how the splice in
-`tnodecut` produces one. -/
+`exists_split_isTNode` produces one. -/
 def IsTNode (Z : NROBP V size) (t : ℕ) (a : Fin size) : Prop :=
   ∃ S : Finset V, t ≤ S.card ∧
     ∀ ms ns : List (Lit V), Z.Path Z.root a ms → Z.Path a Z.leaf ns → S ⊆ vcOf (ms ++ ns)
 
-/-- **Step 1 of `tnodecut`**: a root-leaf path of a uniform read-once program induces a
+/-- **Step 1 of `exists_split_isTNode`**: a root-leaf path of a uniform read-once program induces a
 vertex ordering, and matching width at least `t` therefore hands back a node `a` on the
 path such that the variables read *before* `a` carry a cross matching of size `t`.
 
-Splitting this out of `tnodecut` keeps the ordering bookkeeping — which is where all of
+Splitting this out of `exists_split_isTNode` keeps the ordering bookkeeping — which is where all of
 `Basic.lean`'s `prefixSet`/`VertexOrder` machinery is consumed — separate from the
 read-once splicing argument, which needs none of it.
 
@@ -509,7 +509,7 @@ theorem exists_split_crossMatching (hro : Z.ReadOnce) (hu : Z.Uniform)
   rw [hpre] at hMi
   exact hMi
 
-/-- **`tnodecut`** (paper §5, `source/kc/razgon/FBDDJOURN.tex:600`).
+/-- **`exists_split_isTNode`** (paper §5, [Raz16, `tnodecut`]).
 If the matching width of `G` is at least `t`, then every root-leaf path of a uniform
 read-once program implementing `φ(G)` passes through a `t`-node — equivalently, the
 `t`-nodes form a root-leaf cut.
@@ -528,7 +528,7 @@ The chosen representatives are pairwise distinct — the left endpoints are dist
 right endpoints are distinct, and no left endpoint is a right endpoint since one side lies
 inside the cut and the other outside — so the witnessing set really does have `t`
 elements. -/
-theorem tnodecut (hro : Z.ReadOnce) (hu : Z.Uniform) (hR : Z.Realises G)
+theorem exists_split_isTNode (hro : Z.ReadOnce) (hu : Z.Uniform) (hR : Z.Realises G)
     (hmw : MatchingWidthGe G t) {ls : List (Lit V)} (hls : Z.Path Z.root Z.leaf ls) :
     ∃ (a : Fin size) (ls₁ ls₂ : List (Lit V)), ls₁ ++ ls₂ = ls ∧
       Z.Path Z.root a ls₁ ∧ Z.Path a Z.leaf ls₂ ∧ Z.IsTNode t a := by
@@ -628,23 +628,23 @@ section LowerBound
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
-/-- **`nrobplbdmw`** (paper §5, `source/kc/razgon/FBDDJOURN.tex:515`):
+/-- **`le_size_of_matchingWidthGe`** (paper §5, [Raz16, `nrobplbdmw`]):
 a uniform read-once nondeterministic branching program implementing `φ(G)`, for a graph
 `G` of matching width at least `t`, has at least `bound` **nodes**, where `bound` is any
 lower bound on the size of a `t`-cover of the family of vertex covers of `G`.
 
 The covering bound — Razgon's Theorem 4, which supplies `bound = 2^{t/f(x)}` for `x` the
 max-degree of `G` — enters as the hypothesis `hEngine` rather than as an import or an
-axiom; see `Arlib/KnowledgeCompilation/ROADMAP.md` §1.3 and the module docstring.
+axiom; see `docs/dev/KnowledgeCompilation-ROADMAP.md` §1.3 and the module docstring.
 Uniformity likewise remains a hypothesis: Razgon's Appendix B, which removes it at an
 `O(n)` factor in the edge count, is not formalized here.
 
 The proof is Razgon's.  Choose, for each `t`-node `a`, one witnessing set `S(a)`; the
 family of these sets covers every vertex cover, since a vertex cover is `VC(P)` for some
-root-leaf path `P` (Observation 1) and `P` meets a `t`-node (`tnodecut`).  So `hEngine`
+root-leaf path `P` (Observation 1) and `P` meets a `t`-node (`exists_split_isTNode`).  So `hEngine`
 bounds the number of *distinct* witnessing sets from below, and that number is at most the
 number of `t`-nodes, hence at most `size`. -/
-theorem nrobplbdmw {G : SimpleGraph V} {t bound size : ℕ} (Z : NROBP V size)
+theorem le_size_of_matchingWidthGe {G : SimpleGraph V} {t bound size : ℕ} (Z : NROBP V size)
     (hro : Z.ReadOnce) (hu : Z.Uniform) (hR : Z.Realises G) (hmw : MatchingWidthGe G t)
     (hEngine : ∀ A : Finset (Finset V), (∀ S ∈ A, t ≤ S.card) →
       (∀ C : Finset V, IsVertexCover G C → ∃ S ∈ A, S ⊆ C) → bound ≤ A.card) :
@@ -671,7 +671,7 @@ theorem nrobplbdmw {G : SimpleGraph V} {t bound size : ℕ} (Z : NROBP V size)
     exact (hW a (by simpa [hN] using ha)).1
   · intro C hC
     obtain ⟨ls, hls, hsub⟩ := exists_path_vcOf_subset hR hC
-    obtain ⟨a, ls₁, ls₂, hcat, hp₁, hp₂, hta⟩ := tnodecut hro hu hR hmw hls
+    obtain ⟨a, ls₁, ls₂, hcat, hp₁, hp₂, hta⟩ := exists_split_isTNode hro hu hR hmw hls
     refine ⟨W a, Finset.mem_image.mpr ⟨a, by simpa [hN] using hta, rfl⟩, ?_⟩
     have := (hW a hta).2 ls₁ ls₂ hp₁ hp₂
     rw [hcat] at this

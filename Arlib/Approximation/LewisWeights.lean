@@ -11,8 +11,11 @@ Authors: Kuldeep S. Meel
 The `Coresets/` area takes the ℓ¹ subspace-embedding guarantee (Lewis-weight row
 sampling) as an *explicit hypothesis*: it develops what one may do with such a
 reduction once one has it.  This area supplies the reduction itself, following
-Cohen–Peng, "ℓ_p Row Sampling by Lewis Weights" (specialised to `p = 1`), with
-its elementary concentration proof (their Section 6 / Appendix reduction).
+[CP15] — Michael B. Cohen, Richard Peng, *ℓ_p Row Sampling by Lewis Weights*,
+STOC 2015, pp. 183–192 (arXiv:1412.0588) — specialised to `p = 1`, with its
+elementary concentration proof (their Section 6 / Appendix reduction).  Its
+statements are cited below by the labels they carry in the paper; that source is
+not distributed with this library.
 
 The end goal is to inhabit a *size-carrying* sparsification guarantee: a
 randomised procedure that, from a weighted point set of `N` points with features
@@ -68,7 +71,7 @@ sign process — is proved for the **sampling moment** (`MomentReduct`,
 importance-sampling embedding is the *supremum-level* contraction (uniform over all
 queries), which needs suprema-of-stochastic-processes infrastructure absent from
 Mathlib, and (for `log n → log d`) Talagrand's iterative row-halving.  See
-`ROUTE_A_PLAN.md`.
+`docs/dev/LewisWeights-ROUTE_A_PLAN.md`.
 
 | Module | Content | Status |
 | --- | --- | --- |

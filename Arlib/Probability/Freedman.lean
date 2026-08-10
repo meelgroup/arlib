@@ -52,7 +52,7 @@ import Arlib.Probability.IIDProduct
 import Arlib.Probability.Chernoff
 import Mathlib.Data.Complex.Exponential
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -163,7 +163,7 @@ theorem sumMGF_le (μ : Fin n → X → ℝ) (h0 : ∀ k x, 0 ≤ μ k x)
 /-- **Exponential Markov inequality.**  For `θ > 0`,
 `Pr[a ≤ c] ≤ E[exp(θ·c)]/exp(θ·a)`.  (This is the `markov_exp_upper` step of
 `Arlib.Chernoff`, which is `private` there, reproven for reuse.) -/
-theorem pr_le_exp_mgf (P : Arlib.FinProb) (c : P.Ω → ℝ) {θ a : ℝ} (hθ : 0 < θ) :
+theorem pr_le_exp_mgf (P : Arlib.Probability.FinProb) (c : P.Ω → ℝ) {θ a : ℝ} (hθ : 0 < θ) :
     P.Pr (Finset.univ.filter fun ω => a ≤ c ω)
       ≤ P.Ex (fun ω => Real.exp (θ * c ω)) / Real.exp (θ * a) := by
   have hsub : (Finset.univ.filter fun ω => a ≤ c ω)
@@ -863,4 +863,4 @@ theorem freedman_tail_prev_of_pathwise (ν : ℕ → X → ℝ) (hν0 : ∀ m x,
   rw [hev]
   exact hpw
 
-end Arlib
+end Arlib.Probability

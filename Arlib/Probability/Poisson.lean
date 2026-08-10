@@ -80,7 +80,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.Calculus.MeanValue
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped Nat
 
@@ -624,4 +624,4 @@ theorem poissonPMF_conv (mu nu : ℝ) (k : ℕ) :
   field_simp
   ring
 
-end Arlib
+end Arlib.Probability

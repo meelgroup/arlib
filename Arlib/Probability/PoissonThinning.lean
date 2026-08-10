@@ -39,7 +39,7 @@ No `sorry`.
 -/
 import Arlib.Probability.Poisson
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 open scoped BigOperators
@@ -298,4 +298,4 @@ theorem tsum_convPMF_mul_exp {p q : ℕ → ℝ} {A B : ℕ}
   rw [← hexp]
   ring
 
-end Arlib
+end Arlib.Probability

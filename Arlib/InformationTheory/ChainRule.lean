@@ -37,6 +37,7 @@ Two ingredients make the induction go through.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

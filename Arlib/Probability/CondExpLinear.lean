@@ -16,7 +16,7 @@ addition, scalar multiplication, and finite sums.  These are pure algebra of
 -/
 import Arlib.Probability.CondExpConstruction
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -87,4 +87,4 @@ theorem condCE_sum_transport {ι : Type*} [DecidableEq ι] (π : P.Ω → P.Ω) 
   rw [h i hi]
 
 end FinProb
-end Arlib
+end Arlib.Probability

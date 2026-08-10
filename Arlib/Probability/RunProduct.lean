@@ -27,7 +27,7 @@ No `sorry`.  Single-file, depends only on `ProductSpace`.
 -/
 import Arlib.Probability.ProductSpace
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 
@@ -98,4 +98,4 @@ theorem dependsOn_runCoins_of_firstComp {α : Type*} (C : CoinSpace) (μ : ℕ) 
   refine hf ω ω' (fun p hp => h p ?_)
   rw [mem_runCoins]; exact hp
 
-end Arlib
+end Arlib.Probability

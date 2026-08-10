@@ -30,7 +30,7 @@ The two results are independent.  The metric throughout is the `Pi` sup-norm
 
 open Finset
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 /-! ### Net ⇒ sup transfer for a Lipschitz function -/
 
@@ -201,4 +201,4 @@ theorem exists_net_unit_ball {ι : Type*} [Fintype ι] {ε : ℝ} (hε : 0 < ε)
       rw [Real.norm_eq_abs] at this
       exact le_trans this hx
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

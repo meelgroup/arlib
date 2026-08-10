@@ -27,7 +27,7 @@ Everything rests on the coordinate-subset **marginal** (`sum_forgetSet_cell` +
 import Arlib.Probability.ProductSpace
 import Arlib.Probability.Independence
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators Classical
 open Finset FinProb
@@ -260,4 +260,4 @@ theorem indepEvents_of_disjoint (hpos : ∀ i c, 0 < C.coinMass i c) {B : ℕ}
         ih, Finset.prod_insert hi₀]
 
 end CoinSpace
-end Arlib
+end Arlib.Probability

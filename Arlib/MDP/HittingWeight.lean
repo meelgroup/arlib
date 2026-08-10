@@ -32,10 +32,11 @@ positivity/well-definedness invariant baked in up front.
 -/
 import Arlib.MDP.Basic
 
-namespace Arlib
+namespace Arlib.MDP
 
 open scoped BigOperators
 open Finset
+open Arlib.Combinatorics
 
 variable {S A : Type*} [Fintype S] [DecidableEq S] [Fintype A] [DecidableEq A]
 
@@ -118,4 +119,4 @@ theorem sub_one_le_beta_mul {s : S} (h : M.isTerm s = false) :
 
 end HittingWeight
 
-end Arlib
+end Arlib.MDP

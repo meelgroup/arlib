@@ -47,7 +47,7 @@ open scoped BigOperators
 
 open Finset
 
-namespace Arlib
+namespace Arlib.GameTheory
 
 /-- The `Γ`-average of the randomized cost equals the `r`-average of the
 deterministic costs. This is the computation underlying `yao_minimax`. -/
@@ -87,4 +87,4 @@ theorem yao_minimax {I D : Type*} [Fintype I] [Fintype D]
   rw [← Finset.sum_mul, hΓ1, one_mul] at hlt
   exact absurd key (not_le.mpr hlt)
 
-end Arlib
+end Arlib.GameTheory

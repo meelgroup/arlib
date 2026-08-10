@@ -9,8 +9,8 @@ Authors: Kuldeep S. Meel
 A fourth paper in the area, and its lower-bound engine is neither communication
 complexity nor matching width but the *branchwidth* of the underlying graph:
 Florent de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas with short
-regular resolution refutations* (arXiv:2103.09609),
-`source/kc/decolnet/main.tex`.
+regular resolution refutations*, SAT 2021, LNCS 12831, pp. 116–133
+(arXiv:2103.09609) — cited below as [dCM21].
 
 ## What the paper proves
 
@@ -33,11 +33,11 @@ the two structural facts every later part rests on — Proposition 3
 (satisfiability ⟺ even charge on every component) and Proposition 4 (the model
 count `2^{|E| − |V| + K}`).
 
-Following the area's conventions (`../ROADMAP.md`): the formula is a **semantic**
+Following the area's conventions (`docs/dev/KnowledgeCompilation-ROADMAP.md`): the formula is a **semantic**
 predicate on assignments, no CNF datatype; and **imported results are
 hypotheses, never axioms** — Proposition 3's converse and Proposition 4 are
 carried as inhabited `structure`s, so what is and is not proved here is visible
-in each statement.  See `Tseitin/ROADMAP.md` for the full planned module
+in each statement.  See `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` for the full planned module
 breakdown and this session's status.
 
 ## Modules
@@ -77,11 +77,11 @@ breakdown and this session's status.
 * `Tseitin.Search` — §3, the search relations `SearchClause`/`SearchVertex`, opaque
   1-BP size carriers, and **LovászNNW95**, **Corollary 8**, **Lemma 10** imported.
 * `Tseitin.UnsatToSat` — §3 Step 1: **Lemma 11** (`WellStructuredToDNNF`) imported,
-  and **Theorem 5** (`theorem5`) proved by composition.
-* `Tseitin.Main` — §1, **the headline Theorem 1** (`theorem1`): unsatisfiable
+  and **Theorem 5** (`dnnfSizeLe_of_regRefutationLen`) proved by composition.
+* `Tseitin.Main` — §1, **the headline Theorem 1** (`two_pow_le_refutationLen_mul_card`): unsatisfiable
   `T(G,c)`, `G` connected, max degree `≤ Δ` ⟹ regular refutation length `S` obeys
   `2^{2·tw/(9Δ)} ≤ c₀·S·|V|`, proved by composing Theorem 5 with `dnnf_lower`.
-  Also imports the `AlekhnovichR11` upper bound.
+  Also imports the `Imported.AlekhnovichRegRefutationUpper` upper bound.
 -/
 
 import Arlib.KnowledgeCompilation.Tseitin.Basic

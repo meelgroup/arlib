@@ -15,7 +15,7 @@ or strictly — as soon as it bounds the default and every element (`le_foldr_mi
 import Mathlib.Data.List.Basic
 import Mathlib.Order.MinMax
 
-namespace Arlib
+namespace Arlib.Combinatorics
 
 variable {α : Type*} [LinearOrder α]
 
@@ -51,4 +51,4 @@ theorem lt_foldr_min {m : α} :
       lt_min (h b (List.mem_cons_self b s))
         (lt_foldr_min s a ha (fun x hx => h x (List.mem_cons_of_mem b hx)))
 
-end Arlib
+end Arlib.Combinatorics

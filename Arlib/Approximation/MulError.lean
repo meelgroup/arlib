@@ -58,6 +58,18 @@ combined, which is what the second half of this file supplies:
 Nothing here mentions any particular data structure: this is the arithmetic every
 relative-error guarantee in the area runs on, which is why it sits at area level
 rather than under `Coresets/`.  No `sorry`.
+
+## Source
+
+Three statements below (`relErr_div_same`, `relErr_div_counterexample`,
+`tol_absorb`) record corrections to, and calibrations of, the analysis of
+[ACJR21]: Marcelo Arenas, Luis Alberto Croquevielle, Rajesh Jayaram, Cristian
+Riveros, *#NFA Admits an FPRAS: Efficient Enumeration, Counting, and Uniform
+Generation for Logspace Classes*, J. ACM **68**(6), art. 48, 2021
+(arXiv:1906.09226), together with its conjunctive-query companion *When Is
+Approximate Counting for Conjunctive Queries Tractable?*, STOC 2021
+(arXiv:2005.10029).  That work is cited here by the labels of the authors'
+manuscript, which is not distributed with this library.
 -/
 import Arlib.Prelude
 import Mathlib.Algebra.Order.Ring.Pow
@@ -215,7 +227,7 @@ theorem prod {ι : Type*} (s : Finset ι) (f g : ι → ℝ) (hlo : 0 ≤ lo)
 /-- **Quotients.**  Dividing a window by a window *crosses* the endpoints: the
 smallest possible quotient is the smallest numerator over the largest denominator.
 
-This is the shape that makes the paper's `fpras2.tex:283` step wrong — see
+This is the shape that makes [ACJR21]'s ratio-of-estimates step wrong — see
 `relErr_div` and `relErr_div_counterexample`.  The denominator window must be
 bounded away from `0` (`0 < lo'`, `0 < b'`), which is what guarantees `a' > 0`. -/
 theorem div {a' b' : ℝ} (hlo : 0 ≤ lo) (hb : 0 ≤ b) (hlo' : 0 < lo') (hb' : 0 < b')
@@ -523,7 +535,7 @@ theorem relErr_div {ε ε' a b a' b' : ℝ} (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
 /-- **The step the paper writes as `(1±ε)`.**  A ratio of two `(1±ε)` quantities
 is `(1 ± 2ε/(1-ε))`.
 
-This is the corrected form of `fpras2.tex:283` (`ALGORITHM-SPEC.md` §6.2), where
+This is the corrected form of [ACJR21]'s ratio-of-estimates step, where
 the ratio `p̃ⱼ = Ñ(sⁱ,tⱼ)/Ñ(sⁱ,tⱼ₋₁)` of two `(1±ε₁)` estimates is asserted to be
 `(1±ε₁)`.  It is not; the true tolerance is `2ε₁/(1-ε₁) = 2ε₁ + O(ε₁²)`, a factor
 two larger.  `relErr_div_counterexample` shows the naive form genuinely fails. -/
@@ -537,7 +549,7 @@ theorem relErr_div_same {ε a b a' b' : ℝ} (hε : 0 ≤ ε) (hε1 : ε < 1)
 `b = b' = 1`, `a = 3/2` and `a' = 1/2`, both numerator and denominator lie in
 `(1 ± 1/2)·1`, but the ratio is `3`, well outside `(1 ± 1/2)·1 = [1/2, 3/2]`.
 
-The witness for `ALGORITHM-SPEC.md` §6.2. -/
+The witness for the correction to [ACJR21] recorded above. -/
 theorem relErr_div_counterexample :
     (3 / 2 : ℝ) ∈ relErr (1 / 2) 1 ∧ (1 / 2 : ℝ) ∈ relErr (1 / 2) 1 ∧
       (3 / 2 : ℝ) / (1 / 2) ∉ relErr (1 / 2) (1 / 1) := by
@@ -572,8 +584,8 @@ composing the tolerances `ε/(200r³)` and `ε/(200r⁴)` stays inside `ε/(100r
 
 `ε/(200r³) + ε/(200r⁴) + ε/(200r³)·ε/(200r⁴) ≤ ε/(100r³)`.
 
-This is the shape of the "absorb a small additive slack" steps in
-`partition-size2.tex`; `r ≥ 4` (`partition-size2.tex:483`) is exactly what makes
+This is the shape of the "absorb a small additive slack" steps in [ACJR21]'s
+partition-size analysis; the hypothesis `r ≥ 4` there is exactly what makes
 the `r⁴` term fit in the room left by doubling `200r³` to `100r³`. -/
 theorem tol_absorb {ε r : ℝ} (hr : 4 ≤ r) (hε : 0 ≤ ε) (hε1 : ε ≤ 1) :
     ε / (200 * r ^ 3) + ε / (200 * r ^ 4)

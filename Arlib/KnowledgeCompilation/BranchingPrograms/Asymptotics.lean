@@ -8,15 +8,15 @@ Authors: Kuldeep S. Meel
 
 The last three statements of Igor Razgon, *On the read-once property of
 branching programs and CNFs of bounded treewidth*
-(`source/kc/razgon/FBDDJOURN.tex`) are that paper's own asymptotic repackaging of
+([Raz16]) are that paper's own asymptotic repackaging of
 results proved elsewhere in this directory:
 
-* Theorem `dmwtw` (`:525`) — a family of degree-`5`, treewidth-`≤ k` graphs with
+* Theorem `razgonGraph_bounds` ([Raz16, `dmwtw`]) — a family of degree-`5`, treewidth-`≤ k` graphs with
   `mw ≥ (log n · k)/b`;
-* Theorem `maintheor` (`:476`) — the `n^{k/c}` lower bound on NROBP size;
-* Lemma `separ` (`:1063`) — the `n^{log n/c}` bound for `T_r(P_{2r})`.
+* Theorem `numVertices_rpow_le_size` ([Raz16, `maintheor`]) — the `n^{k/c}` lower bound on NROBP size;
+* Lemma `binTreePathNumVertices_rpow_le_size` ([Raz16, `separ`]) — the `n^{log n/c}` bound for `T_r(P_{2r})`.
 
-`Arlib/KnowledgeCompilation/ROADMAP.md` §5 says to state explicit bounds and not
+`docs/dev/KnowledgeCompilation-ROADMAP.md` §5 says to state explicit bounds and not
 asymptotic classes, and §8.4 records that this last step had deliberately not
 been taken.  It is taken here, and the convention is kept in the only way it can
 be for statements whose whole content *is* the repackaging: **no `O`, `Ω`, `Θ`
@@ -27,11 +27,11 @@ sufficiently large `r`" of the paper has become a hypothesis with a number in it
 ## `Nat.log` and `Nat.clog`, not `Real.log`
 
 The paper writes `log` for both the floor and the ceiling of the binary
-logarithm and switches between them silently — `:1010` uses `⌈log(·)⌉`, `:1014`
-plain `log`, and `:1076` mixes the two inside a single displayed formula.  Here:
+logarithm and switches between them silently — [Raz16, §5] uses `⌈log(·)⌉`, [Raz16, §5]
+plain `log`, and [Raz16, §7] mixes the two inside a single displayed formula.  Here:
 
 * `n`, `k`, `p`, `r` are natural numbers and every *matching-width* bound is a
-  natural number, so `dmwtw` and the matching-width half of `separ` use
+  natural number, so `razgonGraph_bounds` and the matching-width half of `binTreePathNumVertices_rpow_le_size` use
   `Nat.log 2` (floor) and `Nat.clog 2` (ceiling).  This is forced anyway:
   `TreeProduct.binTree_boxProd_matchingWidthGe` is stated with `Nat.clog 2 p`,
   because the induction behind it consumes `p ≤ 2 ^ ⌈log p⌉`
@@ -50,47 +50,47 @@ plain `log`, and `:1076` mixes the two inside a single displayed formula.  Here:
 
 Four places in the source hand-wave a threshold.  Each is accounted for.
 
-1. **`:1020`, "in the rest of the proof we assume that `k ≥ 50`."**  *Not
-   needed.*  `dmwtw` below is proved for every `k ≥ 3` — the range the theorem
+1. **[Raz16, §5], "in the rest of the proof we assume that `k ≥ 50`."**  *Not
+   needed.*  `razgonGraph_bounds` below is proved for every `k ≥ 3` — the range the theorem
    statement itself announces — with the paper's constant `b = 32` unchanged.
    The paper spends `k ≥ 50` on two detours.  The first is the chain
    `(k-y+1)/8 ≥ k/16`; it is avoided by never passing through `k` on the right,
    since the graph is `T_r(P_{2p})` and the available bound is `16·p`-shaped, so
    that the single inequality `5·k ≤ 48·p` — a consequence of `k ≤ 4p+2` and
    `p ≥ 1`, hence valid from `k = 3` on — replaces it (`numerator_bound`).  The
-   second is the argument at `:1026`–`:1030` that `r ≥ 5⌈log k⌉` forces
+   second is the argument at [Raz16, §5] that `r ≥ 5⌈log k⌉` forces
    `log n ≥ 5⌈log k⌉`, routed through `log(n/20+1)` and `n ≥ 50`; it is replaced
    by `n = (2^{r+1}-1)·2p ≥ 2^r`, whence `Nat.log 2 n ≥ r` outright
    (`le_log_numVertices`), needing only `p ≥ 1`.
 
-2. **`:1067`, "for a sufficiently large `r`, `r ≥ log r + 2`."**  *Not used.*
+2. **[Raz16, §7], "for a sufficiently large `r`, `r ≥ log r + 2`."**  *Not used.*
    The paper needs it to extract `r ≥ log n / 2` from `r = log((n+2r)/4r)`; the
    direct estimate `Nat.log 2 n ≥ r` is stronger and free.  For the record the
    claim is not vacuous: `r ≥ Nat.log 2 r + 2` first holds at `r = 3` and
    `r ≥ Nat.clog 2 r + 2` first holds at `r = 4`, and both fail at `r = 2`.
 
-3. **`:1073`, "for a sufficiently large `r` (and hence sufficiently large `n`),
+3. **[Raz16, §7], "for a sufficiently large `r` (and hence sufficiently large `n`),
    `mw(T_r(P_{2r})) ≥ log²n/16`."**  The honest threshold is **`r ≥ 1`**, with
-   the paper's constant `16` unchanged: see `matchingWidth_separ`.  The paper's
-   displayed chain at `:1076` throws away far more than it must by substituting
+   the paper's constant `16` unchanged: see `log_binTreePathNumVertices_sq_div_le`.  The paper's
+   displayed chain at [Raz16, §7] throws away far more than it must by substituting
    `r ≥ log n/2` *before* estimating; feeding
    `Nat.log 2 n ≤ r + Nat.log 2 r + 2` into the matching-width bound instead
    leaves a factor of eight in hand, which is why no real threshold survives.
 
-4. **`:1029`, "for a sufficiently large `r`"**, inside the `log(n/20+1)` detour.
+4. **[Raz16, §5], "for a sufficiently large `r`"**, inside the `log(n/20+1)` detour.
    Deleted along with the detour, by item 1.
 
 The one place a genuine threshold *is* unavoidable is the passage from the
 natural-number matching-width bound to the real-valued `n^{k/c}` and
 `n^{log n/c}`.  `Nat.log 2 n` undershoots the real `log₂ n` by up to `1`, and
 `Nat` division by `32` (resp. `16`) undershoots by up to another `1`; the paper's
-"replacing `2^{log n}` by `n`" (`:544`) is exact only for the real logarithm.
+"replacing `2^{log n}` by `n`" ([Raz16, §3]) is exact only for the real logarithm.
 Absorbing the two roundings costs a factor of two in the constant and forces a
 threshold:
 
-* `maintheor` below has `c = 64 · TCover.f 5` where the paper's chain gives
+* `numVertices_rpow_le_size` below has `c = 64 · TCover.f 5` where the paper's chain gives
   `c = 32 · f(5)`, together with the hypothesis `r ≥ 23`;
-* `separ` below has `c = 32 · TCover.f 5` together with the hypothesis `r ≥ 7`.
+* `binTreePathNumVertices_rpow_le_size` below has `c = 32 · TCover.f 5` together with the hypothesis `r ≥ 7`.
 
 These are the least thresholds this route supports.  Neither is claimed tight,
 and neither weakens anything, since both theorems are statements about an
@@ -98,8 +98,8 @@ infinite family indexed by `r`.
 
 ## Relation to `Separation.lean`
 
-`Razgon.maintheor` there is the same theorem in explicit-`r`-and-`p` form, and is
-the sharper statement.  `Asymptotics.maintheor` below is the paper's shape,
+`Razgon.two_rpow_le_size_binTree_pathGraph` there is the same theorem in explicit-`r`-and-`p` form, and is
+the sharper statement.  `Asymptotics.numVertices_rpow_le_size` below is the paper's shape,
 proved *from* the explicit form; the two are kept apart so that the loss incurred
 by the repackaging is visible as a lemma (`log_add_one_bound`) rather than hidden
 inside a constant.
@@ -115,7 +115,7 @@ open SimpleGraph TreeProduct
 /-! ## Three arithmetic facts about `Nat.log` and `Nat.clog` -/
 
 /-- `2n ≤ 2ⁿ`.  Used to turn `2 ^ ⌊log₂ r⌋ ≤ r` into `2·⌊log₂ r⌋ ≤ r`, which is
-the form the quadratic estimate behind `separ` wants. -/
+the form the quadratic estimate behind `binTreePathNumVertices_rpow_le_size` wants. -/
 theorem two_mul_le_two_pow : ∀ n : ℕ, 2 * n ≤ 2 ^ n
   | 0 => by norm_num
   | 1 => by norm_num
@@ -140,7 +140,7 @@ theorem clog_le_log_succ (r : ℕ) : Nat.clog 2 r ≤ Nat.log 2 r + 1 :=
   (Nat.le_pow_iff_clog_le (by norm_num)).1 (Nat.lt_pow_succ_log_self (by norm_num) r).le
 
 /-- `2^r ≤ 2^{r+1} - 1`.  This one estimate replaces the whole of the paper's
-`log(n/20+1)` detour (`source/kc/razgon/FBDDJOURN.tex:1022`–`:1025`). -/
+`log(n/20+1)` detour ([Raz16, §5]). -/
 theorem pow_le_pred_pow (r : ℕ) : 2 ^ r ≤ 2 ^ (r + 1) - 1 := by
   have h1 : 1 ≤ 2 ^ r := Nat.one_le_two_pow
   have h2 : 2 ^ (r + 1) = 2 * 2 ^ r := by ring
@@ -150,7 +150,7 @@ theorem pow_le_pred_pow (r : ℕ) : 2 ^ r ≤ 2 ^ (r + 1) - 1 := by
 so `n ^ y ≤ 2 ^ ((L+1)·y)` for every `y ≥ 0`.
 
 This is the substitute for the paper's "replacing `2^{log n}` by `n`"
-(`source/kc/razgon/FBDDJOURN.tex:544`), which is an identity for the real
+([Raz16, §3]), which is an identity for the real
 logarithm and an inequality — in the unhelpful direction — for the floor.  Using
 it as a bound on *bases* rather than on exponents keeps `Real.logb` out of the
 file entirely. -/
@@ -170,7 +170,7 @@ theorem log_add_one_bound {n : ℕ} (hn : n ≠ 0) {y : ℝ} (hy : 0 ≤ y) :
         rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
 
 /-- `0 < TCover.f 5`.  `Covering.lean` records the positivity of `f x` for
-`x ≥ 1` in prose (`source/kc/razgon/FBDDJOURN.tex:709`) but does not state it;
+`x ≥ 1` in prose ([Raz16, §4.1]) but does not state it;
 the `n^{k/c}` shape needs it, since `c = 64·f(5)` must be a positive real for the
 comparison of exponents to be an equivalence. -/
 theorem tcover_f_five_pos : 0 < TCover.f 5 := by
@@ -186,18 +186,18 @@ theorem tcover_f_five_pos : 0 < TCover.f 5 := by
   · nlinarith
   · exact hlog
 
-/-! ## The class `𝐆` of Theorem `dmwtw`
+/-! ## The class `𝐆` of Theorem `razgonGraph_bounds`
 
-The paper (`:989`) takes `G = T_r(P_{(k-y+1)/2})` where `0 ≤ y ≤ 3` is chosen so
-that `4 ∣ k-y+1`, and then writes `p = (k-y+1)/4` (`:1008`).  Rather than carry
+The paper ([Raz16, §5]) takes `G = T_r(P_{(k-y+1)/2})` where `0 ≤ y ≤ 3` is chosen so
+that `4 ∣ k-y+1`, and then writes `p = (k-y+1)/4` ([Raz16, §5]).  Rather than carry
 `y` we name `p` directly: `p = ⌊(k+1)/4⌋` *is* that quotient, and the two
 inequalities `4p ≤ k+1` and `k ≤ 4p+2` — i.e. `k-2 ≤ 4p ≤ k+1`, which is exactly
 `4p = k-y+1` for some `0 ≤ y ≤ 3` — are all the proof ever uses about it. -/
 
 /-- **The path parameter** `p = ⌊(k+1)/4⌋`
-(`source/kc/razgon/FBDDJOURN.tex:1008`).
+([Raz16, §5]).
 
-The graph of Theorem `dmwtw` is `T_r(P_{2p})`; the paper writes the path as
+The graph of Theorem `razgonGraph_bounds` is `T_r(P_{2p})`; the paper writes the path as
 `P_{(k-y+1)/2}`, which is the same thing. -/
 def pathParam (k : ℕ) : ℕ := (k + 1) / 4
 
@@ -212,7 +212,7 @@ theorem le_four_mul_pathParam (k : ℕ) : k ≤ 4 * pathParam k + 2 := by
   unfold pathParam; omega
 
 /-- `p ≥ 1` as soon as `k ≥ 3`.  This is the *only* lower bound on `k` that
-`dmwtw` needs; in particular the paper's `k ≥ 50` (`:1020`) is never used. -/
+`razgonGraph_bounds` needs; in particular the paper's `k ≥ 50` ([Raz16, §5]) is never used. -/
 theorem one_le_pathParam {k : ℕ} (hk : 3 ≤ k) : 1 ≤ pathParam k := by
   unfold pathParam; omega
 
@@ -220,13 +220,13 @@ theorem one_le_pathParam {k : ℕ} (hk : 3 ≤ k) : 1 ≤ pathParam k := by
 tree paired with a vertex of the path. -/
 abbrev Vertex (k r : ℕ) : Type := BinTreeNode r × Fin (2 * pathParam k)
 
-/-- **The graph `T_r(P_{2p})`** of Theorem `dmwtw`
-(`source/kc/razgon/FBDDJOURN.tex:989`), as a box product. -/
+/-- **The graph `T_r(P_{2p})`** of Theorem `razgonGraph_bounds`
+([Raz16, §5]), as a box product. -/
 abbrev razgonGraph (k r : ℕ) : SimpleGraph (Vertex k r) :=
   binTree r □ SimpleGraph.pathGraph (2 * pathParam k)
 
 /-- **`n = (2^{r+1} - 1)·2p`**, the vertex count of `T_r(P_{2p})`
-(`source/kc/razgon/FBDDJOURN.tex:1014`, where it appears as
+([Raz16, §5], where it appears as
 `n = (2^{r+1}-1)(k-y+1)/2`). -/
 def numVertices (k r : ℕ) : ℕ := (2 ^ (r + 1) - 1) * (2 * pathParam k)
 
@@ -244,7 +244,7 @@ theorem numVertices_ne_zero {k : ℕ} (hk : 3 ≤ k) (r : ℕ) : numVertices k r
   omega
 
 /-- `n` is strictly increasing in `r`, so the family `{T_r(P_{2p})}_r` really is
-infinite — the "infinite class `𝐆`" of `source/kc/razgon/FBDDJOURN.tex:525`. -/
+infinite — the "infinite class `𝐆`" of [Raz16, `dmwtw`]. -/
 theorem numVertices_strictMono {k : ℕ} (hk : 3 ≤ k) {r r' : ℕ} (h : r < r') :
     numVertices k r < numVertices k r' := by
   have hp : 1 ≤ 2 * pathParam k := by have := one_le_pathParam hk; omega
@@ -255,15 +255,14 @@ theorem numVertices_strictMono {k : ℕ} (hk : 3 ≤ k) {r r' : ℕ} (h : r < r'
 
 /-! ## The two logarithmic estimates
 
-`source/kc/razgon/FBDDJOURN.tex:1014`–`:1018` in one direction and `:1026`–`:1030`
-in the other. -/
+The two estimates of [Raz16, §5], one in each direction. -/
 
-/-- **`r ≤ ⌊log₂ n⌋`** — the paper's `:1030` ("`r ≥ 5⌈log k⌉` implies
+/-- **`r ≤ ⌊log₂ n⌋`** — the paper's §5 ("`r ≥ 5⌈log k⌉` implies
 `log n ≥ 5⌈log k⌉`"), obtained directly instead of through `log(n/20+1)`.
 
 `n = (2^{r+1}-1)·2p ≥ 2^{r+1}-1 ≥ 2^r` as soon as `p ≥ 1`.  Nothing else is
 needed, which is why the paper's `k ≥ 50` and its "sufficiently large `r`" at
-`:1029` both disappear. -/
+[Raz16, §5] both disappear. -/
 theorem le_log_numVertices {k : ℕ} (hk : 3 ≤ k) (r : ℕ) :
     r ≤ Nat.log 2 (numVertices k r) := by
   refine (Nat.pow_le_iff_le_log (by norm_num) (numVertices_ne_zero hk r)).1 ?_
@@ -273,7 +272,7 @@ theorem le_log_numVertices {k : ℕ} (hk : 3 ≤ k) (r : ℕ) :
     _ ≤ (2 ^ (r + 1) - 1) * (2 * pathParam k) := Nat.mul_le_mul le_rfl hp
     _ = numVertices k r := rfl
 
-/-- **`⌊log₂ n⌋ ≤ r + 1 + ⌈log₂ k⌉`** — the paper's `:1016`, "`r+1 ≥ log n - log k`".
+/-- **`⌊log₂ n⌋ ≤ r + 1 + ⌈log₂ k⌉`** — the paper's §5, "`r+1 ≥ log n - log k`".
 
 From `n < 2^{r+1}·2^{⌊log₂ 2p⌋+1}` together with `2p ≤ k`. -/
 theorem log_numVertices_le {k : ℕ} (hk : 3 ≤ k) (r : ℕ) :
@@ -295,9 +294,9 @@ theorem log_numVertices_le {k : ℕ} (hk : 3 ≤ k) (r : ℕ) :
   have := Nat.log_lt_of_lt_pow (numVertices_ne_zero hk r) hlt
   omega
 
-/-! ## The arithmetic of `dmwtw`
+/-! ## The arithmetic of `razgonGraph_bounds`
 
-All of `source/kc/razgon/FBDDJOURN.tex:1005`–`:1031` reduces to one inequality
+All of [Raz16, §5] reduces to one inequality
 between natural numbers. -/
 
 /-- **The core inequality.**  With `L = ⌊log₂ n⌋`, `c = ⌈log₂ k⌉` and
@@ -305,10 +304,10 @@ between natural numbers. -/
 `5c ≤ L`.
 
 The paper arrives at the lower bound `(log n - 2⌈log k⌉)·k/16` and wants
-`≥ (log n · k)/32`, which follows from `log n ≥ 5⌈log k⌉` (`:1018`).  Here `p`,
+`≥ (log n · k)/32`, which follows from `log n ≥ 5⌈log k⌉` ([Raz16, §5]).  Here `p`,
 not `k`, is kept on the right, so that the only fact about `k` required is
 `5k ≤ 48p`, and *that* holds from `p ≥ 1` and `k ≤ 4p+2` alone — i.e. from
-`k = 3` on.  This is precisely where the paper's `k ≥ 50` (`:1020`) evaporates. -/
+`k = 3` on.  This is precisely where the paper's `k ≥ 50` ([Raz16, §5]) evaporates. -/
 theorem numerator_bound {L c p k D : ℕ} (hp : 1 ≤ p) (hk : k ≤ 4 * p + 2)
     (hc : 5 * c ≤ L) (hD : D = L - 2 * c) : L * k ≤ 16 * (D * p) := by
   have hD3 : 3 * L ≤ 5 * D := by omega
@@ -323,7 +322,7 @@ theorem numerator_bound {L c p k D : ℕ} (hp : 1 ≤ p) (hk : k ≤ 4 * p + 2)
       _ = 5 * (16 * (D * p)) := by ring
   omega
 
-/-- **The matching-width bound of `dmwtw` as a natural-number inequality**:
+/-- **The matching-width bound of `razgonGraph_bounds` as a natural-number inequality**:
 
 `⌊log₂ n⌋ · k / 32 ≤ (r + 1 - ⌈log₂ p⌉) · p / 2`,
 
@@ -360,9 +359,38 @@ theorem treewidthLe_mono {V : Type*} {G : SimpleGraph V} {j k : ℕ}
   obtain ⟨ι, D, hD⟩ := h
   exact ⟨ι, D, fun i => le_trans (hD i) (by omega)⟩
 
-/-! ## Theorem `dmwtw` -/
+/-! ## Theorem `razgonGraph_bounds` -/
 
-/-- **Theorem `dmwtw`** (`source/kc/razgon/FBDDJOURN.tex:525`), with the paper's
+/-- **`T_r(P_{2p})` has max degree at most `5`** — the degree half of
+`razgonGraph_bounds`, with no hypothesis at all. -/
+theorem maxDegreeLe_razgonGraph (k r : ℕ) : MaxDegreeLe (razgonGraph k r) 5 :=
+  maxDegreeLe_binTree_pathGraph r (2 * pathParam k)
+
+/-- **`T_r(P_{2p})` has treewidth at most `k`** — the treewidth half of
+`razgonGraph_bounds`.
+
+`TreeProduct.treewidthLe_binTree_pathGraph` gives `4p - 1`, and `4p ≤ k + 1`
+(`four_mul_pathParam_le`) turns that into `k`. -/
+theorem treewidthLe_razgonGraph (k r : ℕ) : TreewidthLe (razgonGraph k r) k := by
+  have h4 := four_mul_pathParam_le k
+  exact treewidthLe_mono (treewidthLe_binTree_pathGraph (pathParam k) r) (by omega)
+
+/-- **`mw(T_r(P_{2p})) ≥ ⌊log₂ n⌋ · k / 32`** — the matching-width half of
+`razgonGraph_bounds`, and the only half with any content.
+
+`TreeProduct.matchingWidthGe_binTree_pathGraph` supplies
+`(r + 1 - ⌈log₂ p⌉)·p/2`, and `matchingWidth_arith` is the arithmetic that
+compares it with the paper's `⌊log₂ n⌋ · k / 32`. -/
+theorem matchingWidthGe_razgonGraph {k r : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.clog 2 k ≤ r) :
+    MatchingWidthGe (razgonGraph k r) (Nat.log 2 (numVertices k r) * k / 32) := by
+  have hp1 : 1 ≤ pathParam k := one_le_pathParam hk
+  have h4 := four_mul_pathParam_le k
+  have hqc : Nat.clog 2 (pathParam k) ≤ Nat.clog 2 k := Nat.clog_mono_right 2 (by omega)
+  have hrq : Nat.clog 2 (pathParam k) ≤ r := by omega
+  exact (matchingWidthGe_binTree_pathGraph (pathParam k) r hrq).mono
+    (matchingWidth_arith hk hr)
+
+/-- **Theorem `razgonGraph_bounds`** ([Raz16, `dmwtw`]), with the paper's
 constant `b = 32` and *without* its `k ≥ 50`:
 
 for every `k ≥ 3` and every `r ≥ 5⌈log₂ k⌉`, the graph `T_r(P_{2p})` with
@@ -376,28 +404,29 @@ for every `k ≥ 3` and every `r ≥ 5⌈log₂ k⌉`, the graph `T_r(P_{2p})` w
 The paper's "infinite class `𝐆`" is the family indexed by `r`; it is infinite
 because `n` is strictly increasing in `r` (`numVertices_strictMono`).
 
-Two departures from `source/kc/razgon/FBDDJOURN.tex:1005`–`:1031`, both argued in
-the module header.  First, the standing assumption `k ≥ 50` (`:1020`) is
+Two departures from [Raz16, §5], both argued in
+the module header.  First, the standing assumption `k ≥ 50` ([Raz16, §5]) is
 unnecessary: the argument runs from `k = 3`, the smallest value the theorem
 mentions.  Second, the route from `r ≥ 5⌈log k⌉` to `log n ≥ 5⌈log k⌉`
-(`:1026`–`:1030`, via `log(n/20+1)` and a "sufficiently large `r`") is replaced
-by `n ≥ 2^r`, which needs only `p ≥ 1`. -/
-theorem dmwtw {k r : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.clog 2 k ≤ r) :
+([Raz16, §5], via `log(n/20+1)` and a "sufficiently large `r`") is replaced
+by `n ≥ 2^r`, which needs only `p ≥ 1`.
+
+This is a **derived convenience**: it is the conjunction of `card_vertex`,
+`maxDegreeLe_razgonGraph`, `treewidthLe_razgonGraph` and
+`matchingWidthGe_razgonGraph`, each of which is available separately.  It is
+kept because it is the paper's theorem statement in one place; a call site that
+wants only some of the four should use the components. -/
+theorem razgonGraph_bounds {k r : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.clog 2 k ≤ r) :
     Fintype.card (Vertex k r) = numVertices k r ∧
       MaxDegreeLe (razgonGraph k r) 5 ∧
       TreewidthLe (razgonGraph k r) k ∧
-      MatchingWidthGe (razgonGraph k r) (Nat.log 2 (numVertices k r) * k / 32) := by
-  have hp1 : 1 ≤ pathParam k := one_le_pathParam hk
-  have h4 := four_mul_pathParam_le k
-  have hqc : Nat.clog 2 (pathParam k) ≤ Nat.clog 2 k := Nat.clog_mono_right 2 (by omega)
-  have hrq : Nat.clog 2 (pathParam k) ≤ r := by omega
-  obtain ⟨hcard, hdeg, htw, hmw⟩ := binTree_pathGraph_bounds (pathParam k) r hrq
-  exact ⟨card_vertex k r, hdeg, treewidthLe_mono htw (by omega),
-    hmw.mono (matchingWidth_arith hk hr)⟩
+      MatchingWidthGe (razgonGraph k r) (Nat.log 2 (numVertices k r) * k / 32) :=
+  ⟨card_vertex k r, maxDegreeLe_razgonGraph k r, treewidthLe_razgonGraph k r,
+    matchingWidthGe_razgonGraph hk hr⟩
 
-/-! ## Theorem `maintheor` in the paper's `n^{k/c}` shape -/
+/-! ## Theorem `numVertices_rpow_le_size` in the paper's `n^{k/c}` shape -/
 
-/-- The exponent comparison behind `maintheor`, isolated: with `L = ⌊log₂ n⌋`,
+/-- The exponent comparison behind `numVertices_rpow_le_size`, isolated: with `L = ⌊log₂ n⌋`,
 `m = ⌊L·k/32⌋` and `L ≥ 23`, `k ≥ 3`, one has `(L+1)·k ≤ 64·m` over `ℝ`.
 
 `64` rather than the paper's `32` is the price of the two floors — `Nat.log`
@@ -421,7 +450,7 @@ theorem exponent_bound {L k : ℕ} (hL : 23 ≤ L) (hk : 3 ≤ k) :
   have hk' : (3 : ℝ) ≤ (k : ℝ) := by exact_mod_cast hk
   nlinarith [mul_nonneg (sub_nonneg.2 hL') (sub_nonneg.2 hk')]
 
-/-- **Theorem `maintheor`** (`source/kc/razgon/FBDDJOURN.tex:476`) in the paper's
+/-- **Theorem `numVertices_rpow_le_size`** ([Raz16, `maintheor`]) in the paper's
 own `n^{k/c}` shape:
 
 for every `k ≥ 3` and every `r ≥ max(5⌈log₂ k⌉, 23)`, every uniform read-once
@@ -430,8 +459,8 @@ NROBP realising `φ(T_r(P_{2p}))` — a graph on `n` vertices of treewidth at mo
 
   `c = 64 · TCover.f 5`.
 
-The paper's proof (`:539`–`:546`) composes `nrobplbdmw` (`2^{mw/f(5)}`) with
-`dmwtw` (`mw ≥ log n · k / b`, `b = 32`) and then replaces `2^{log n}` by `n`,
+The paper's proof ([Raz16, §3]) composes `le_size_of_matchingWidthGe` (`2^{mw/f(5)}`) with
+`razgonGraph_bounds` (`mw ≥ log n · k / b`, `b = 32`) and then replaces `2^{log n}` by `n`,
 reaching `c = f(5)·b = 32·f(5)`.  That last replacement is an identity only for
 the real logarithm.  Here `log` is `Nat.log 2`, so `n` may exceed `2^{⌊log₂ n⌋}`
 by almost a factor of two, and the natural-number division by `32` loses up to
@@ -440,14 +469,16 @@ one more unit; **the constant is therefore `64·f(5)`, not the paper's
 changes are consequences of insisting on an integer logarithm; with real `log`
 throughout, the paper's constant is correct.
 
-`Razgon.maintheor` in `Separation.lean` is the same theorem without the
+`Razgon.two_rpow_le_size_binTree_pathGraph` in `Separation.lean` is the same theorem without the
 repackaging, and is sharper. -/
-theorem maintheor {k r size : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.clog 2 k ≤ r) (hr23 : 23 ≤ r)
+theorem numVertices_rpow_le_size {k r size : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.clog 2 k ≤ r)
+    (hr23 : 23 ≤ r)
     [DecidableRel (razgonGraph k r).Adj]
     (Z : NROBP (Vertex k r) size) (hro : Z.ReadOnce) (hu : Z.Uniform)
     (hR : Z.Realises (razgonGraph k r)) :
     ((numVertices k r : ℝ)) ^ ((k : ℝ) / (64 * TCover.f 5)) ≤ (size : ℝ) := by
-  obtain ⟨-, hdeg, -, hmw⟩ := dmwtw hk hr
+  have hdeg := maxDegreeLe_razgonGraph k r
+  have hmw := matchingWidthGe_razgonGraph hk hr
   have hbase : (2 : ℝ) ^ (((Nat.log 2 (numVertices k r) * k / 32 : ℕ) : ℝ) / TCover.f 5)
       ≤ (size : ℝ) :=
     Razgon.two_rpow_le_size Z hro hu hR hmw (Razgon.maxDegree_le_of_maxDegreeLe hdeg)
@@ -477,71 +508,75 @@ theorem maintheor {k r size : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.clog 2 k ≤ r) 
         Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp
     _ ≤ (size : ℝ) := hbase
 
-/-! ## Lemma `separ`
+/-! ## Lemma `binTreePathNumVertices_rpow_le_size`
 
 `T_r(P_{2r})` — the same construction with the path length tied to the tree
 height rather than to a treewidth budget. -/
 
 /-- **`n = (2^{r+1} - 1)·2r`**, the vertex count of `T_r(P_{2r})`
-(`source/kc/razgon/FBDDJOURN.tex:1069`). -/
-def separNumVertices (r : ℕ) : ℕ := (2 ^ (r + 1) - 1) * (2 * r)
+([Raz16, §7]). -/
+def binTreePathNumVertices (r : ℕ) : ℕ := (2 ^ (r + 1) - 1) * (2 * r)
 
-/-- `separNumVertices` is the cardinality it claims to be. -/
-theorem card_separVertex (r : ℕ) :
-    Fintype.card (BinTreeNode r × Fin (2 * r)) = separNumVertices r := by
-  simpa [separNumVertices] using card_binTree_boxProd r (Fin (2 * r))
+/-- `binTreePathNumVertices` is the cardinality it claims to be. -/
+theorem card_binTreePathVertex (r : ℕ) :
+    Fintype.card (BinTreeNode r × Fin (2 * r)) = binTreePathNumVertices r := by
+  simpa [binTreePathNumVertices] using card_binTree_boxProd r (Fin (2 * r))
 
 /-- `n ≠ 0` for `r ≥ 1`. -/
-theorem separNumVertices_ne_zero {r : ℕ} (hr : 1 ≤ r) : separNumVertices r ≠ 0 := by
+theorem binTreePathNumVertices_ne_zero {r : ℕ} (hr : 1 ≤ r) :
+    binTreePathNumVertices r ≠ 0 := by
   have h1 : 1 ≤ 2 ^ r := Nat.one_le_two_pow
   have h2 := pow_le_pred_pow r
-  have hpos : 0 < separNumVertices r := Nat.mul_pos (by omega) (by omega)
+  have hpos : 0 < binTreePathNumVertices r := Nat.mul_pos (by omega) (by omega)
   omega
 
 /-- `r ≤ ⌊log₂ n⌋` for `T_r(P_{2r})`. -/
-theorem le_log_separNumVertices {r : ℕ} (hr : 1 ≤ r) :
-    r ≤ Nat.log 2 (separNumVertices r) := by
-  refine (Nat.pow_le_iff_le_log (by norm_num) (separNumVertices_ne_zero hr)).1 ?_
+theorem le_log_binTreePathNumVertices {r : ℕ} (hr : 1 ≤ r) :
+    r ≤ Nat.log 2 (binTreePathNumVertices r) := by
+  refine (Nat.pow_le_iff_le_log (by norm_num) (binTreePathNumVertices_ne_zero hr)).1 ?_
   calc 2 ^ r ≤ 2 ^ (r + 1) - 1 := pow_le_pred_pow r
     _ = (2 ^ (r + 1) - 1) * 1 := by ring
     _ ≤ (2 ^ (r + 1) - 1) * (2 * r) := Nat.mul_le_mul le_rfl (by omega)
-    _ = separNumVertices r := rfl
+    _ = binTreePathNumVertices r := rfl
 
-/-- **`⌊log₂ n⌋ ≤ r + ⌊log₂ r⌋ + 2`** — the paper's `:1070`,
+/-- **`⌊log₂ n⌋ ≤ r + ⌊log₂ r⌋ + 2`** — the paper's §7,
 "`r = log((n+2r)/4r) ≥ log n - log r - 2`", read as an upper bound on `log n`.
 
 Note that this is where the paper's own chain becomes lossy: it converts to
-`r ≥ log n/2` (`:1072`) and only then substitutes.  Keeping `log n ≤ r + log r + 2`
-until the end is what makes the "sufficiently large `r`" of `:1073`
+`r ≥ log n/2` ([Raz16, §7]) and only then substitutes.  Keeping `log n ≤ r + log r + 2`
+until the end is what makes the "sufficiently large `r`" of [Raz16, §7]
 unnecessary. -/
-theorem log_separNumVertices_le {r : ℕ} (hr : 1 ≤ r) :
-    Nat.log 2 (separNumVertices r) ≤ r + Nat.log 2 r + 2 := by
+theorem log_binTreePathNumVertices_le {r : ℕ} (hr : 1 ≤ r) :
+    Nat.log 2 (binTreePathNumVertices r) ≤ r + Nat.log 2 r + 2 := by
   set m := Nat.log 2 (2 * r) with hm
   have hmr : m = Nat.log 2 r + 1 := by
     rw [hm, Nat.mul_comm, Nat.log_mul_base (by norm_num) (by omega)]
-  have hlt : separNumVertices r < 2 ^ (r + 1 + (m + 1)) := by
+  have hlt : binTreePathNumVertices r < 2 ^ (r + 1 + (m + 1)) := by
     have h1 : (2 : ℕ) ^ (r + 1) - 1 ≤ 2 ^ (r + 1) := Nat.sub_le _ _
     have h2 : 2 * r < 2 ^ (m + 1) := Nat.lt_pow_succ_log_self (by norm_num) _
-    calc separNumVertices r = (2 ^ (r + 1) - 1) * (2 * r) := rfl
+    calc binTreePathNumVertices r = (2 ^ (r + 1) - 1) * (2 * r) := rfl
       _ ≤ 2 ^ (r + 1) * (2 * r) := Nat.mul_le_mul h1 le_rfl
       _ < 2 ^ (r + 1) * 2 ^ (m + 1) :=
           mul_lt_mul_of_pos_left h2 (Nat.pos_pow_of_pos _ (by norm_num))
       _ = 2 ^ (r + 1 + (m + 1)) := (pow_add 2 (r + 1) (m + 1)).symm
-  have := Nat.log_lt_of_lt_pow (separNumVertices_ne_zero hr) hlt
+  have := Nat.log_lt_of_lt_pow (binTreePathNumVertices_ne_zero hr) hlt
   omega
 
-/-- **The quadratic estimate behind `separ`**: `(r + s + 2)² ≤ 8·(r-s)·r`
+/-- **The quadratic estimate behind `binTreePathNumVertices_rpow_le_size`**: `(r + s + 2)² ≤ 8·(r-s)·r`
 whenever `2s ≤ r` and `r ≥ 3`.
 
 With `s = ⌊log₂ r⌋` (so that `2s ≤ r` by `two_mul_log_le`) this is the whole of
-`source/kc/razgon/FBDDJOURN.tex:1074`–`:1078`, and the proof of it is the reason
+[Raz16, §7], and the proof of it is the reason
 that step needs no "sufficiently large `r`".  Writing `u = r - s` and using
 `s ≤ u` — which is exactly `2s ≤ r` — the inequality becomes
 `(2s + u + 2)² ≤ 8u(s+u)`, and the slack is large: at `s = u` the two sides are
 `9u² + 12u + 4` and `16u²`.  The threshold `r ≥ 3` is what makes `u ≥ 2`; below
 it the estimate is genuinely false (`r = 1` gives `9 ≤ 8`), which is why
-`matchingWidth_separ` handles `r ∈ {1,2}` separately. -/
-theorem separ_quadratic {s r : ℕ} (hsr : 2 * s ≤ r) (h3 : 3 ≤ r) :
+`log_binTreePathNumVertices_sq_div_le` handles `r ∈ {1,2}` separately.
+
+`private`: a pure-arithmetic step of `log_binTreePathNumVertices_sq_div_le`, not
+API. -/
+private theorem quadratic_bound_aux {s r : ℕ} (hsr : 2 * s ≤ r) (h3 : 3 ≤ r) :
     (r + s + 2) * (r + s + 2) ≤ 8 * ((r - s) * r) := by
   obtain ⟨u, hru⟩ : ∃ u, r = s + u := ⟨r - s, by omega⟩
   have hsu : s ≤ u := by omega
@@ -553,13 +588,16 @@ theorem separ_quadratic {s r : ℕ} (hsr : 2 * s ≤ r) (h3 : 3 ≤ r) :
   have h2 : 4 + 12 * u ≤ 7 * (u * u) := by omega
   nlinarith [h1, h2, hsu]
 
-/-- **The matching-width bound of Lemma `separ` before the divisions**: if
+/-- **The matching-width bound of Lemma `binTreePathNumVertices_rpow_le_size` before the divisions**: if
 `L ≤ r + ⌊log₂ r⌋ + 2` and `r ≥ 1` then `L² ≤ 8·(r + 1 - ⌈log₂ r⌉)·r`.
 
-The cases `r = 1` and `r = 2` are done by hand, since `separ_quadratic`'s
+The cases `r = 1` and `r = 2` are done by hand, since `quadratic_bound_aux`'s
 relaxation `⌈log₂ r⌉ ≤ ⌊log₂ r⌋ + 1` is too lossy there; both are comfortable
-(`9 ≤ 16` and `25 ≤ 32`). -/
-theorem separ_matching_core {r L : ℕ} (hr : 1 ≤ r) (hLup : L ≤ r + Nat.log 2 r + 2) :
+(`9 ≤ 16` and `25 ≤ 32`).
+
+`private`: the pre-division form of `log_binTreePathNumVertices_sq_div_le`, not
+API. -/
+private theorem matching_core_aux {r L : ℕ} (hr : 1 ≤ r) (hLup : L ≤ r + Nat.log 2 r + 2) :
     L * L ≤ 8 * ((r + 1 - Nat.clog 2 r) * r) := by
   rcases Nat.lt_or_ge r 3 with hsmall | hbig
   · interval_cases r
@@ -573,41 +611,44 @@ theorem separ_matching_core {r L : ℕ} (hr : 1 ≤ r) (hLup : L ≤ r + Nat.log
   · have hsr : 2 * Nat.log 2 r ≤ r := two_mul_log_le r
     have hts : Nat.clog 2 r ≤ Nat.log 2 r + 1 := clog_le_log_succ r
     calc L * L ≤ (r + Nat.log 2 r + 2) * (r + Nat.log 2 r + 2) := Nat.mul_le_mul hLup hLup
-      _ ≤ 8 * ((r - Nat.log 2 r) * r) := separ_quadratic hsr hbig
+      _ ≤ 8 * ((r - Nat.log 2 r) * r) := quadratic_bound_aux hsr hbig
       _ ≤ 8 * ((r + 1 - Nat.clog 2 r) * r) :=
           Nat.mul_le_mul le_rfl (Nat.mul_le_mul (by omega) le_rfl)
 
-/-- **The matching-width bound of Lemma `separ`**
-(`source/kc/razgon/FBDDJOURN.tex:1078`): for every `r ≥ 1`,
+/-- **The matching-width bound of Lemma `binTreePathNumVertices_rpow_le_size`**
+([Raz16, §7]): for every `r ≥ 1`,
 
 `⌊log₂ n⌋² / 16 ≤ (r + 1 - ⌈log₂ r⌉) · r / 2`, where `n = (2^{r+1}-1)·2r`.
 
 The right-hand side is `TreeProduct.binTree_boxProd_matchingWidthGe` at `p = r`.
-**The paper's "for a sufficiently large `r`" (`:1073`) is not needed**: the
+**The paper's "for a sufficiently large `r`" ([Raz16, §7]) is not needed**: the
 inequality holds from `r = 1`, with the paper's constant `16` unchanged. -/
-theorem matchingWidth_separ {r : ℕ} (hr : 1 ≤ r) :
-    Nat.log 2 (separNumVertices r) * Nat.log 2 (separNumVertices r) / 16
+theorem log_binTreePathNumVertices_sq_div_le {r : ℕ} (hr : 1 ≤ r) :
+    Nat.log 2 (binTreePathNumVertices r) * Nat.log 2 (binTreePathNumVertices r) / 16
       ≤ (r + 1 - Nat.clog 2 r) * r / 2 := by
-  have hstep := separ_matching_core hr (log_separNumVertices_le hr)
-  have hdiv : Nat.log 2 (separNumVertices r) * Nat.log 2 (separNumVertices r) / 8
+  have hstep := matching_core_aux hr (log_binTreePathNumVertices_le hr)
+  have hdiv : Nat.log 2 (binTreePathNumVertices r) * Nat.log 2 (binTreePathNumVertices r) / 8
       ≤ (r + 1 - Nat.clog 2 r) * r :=
-    calc Nat.log 2 (separNumVertices r) * Nat.log 2 (separNumVertices r) / 8
+    calc Nat.log 2 (binTreePathNumVertices r) * Nat.log 2 (binTreePathNumVertices r) / 8
         ≤ 8 * ((r + 1 - Nat.clog 2 r) * r) / 8 := Nat.div_le_div_right hstep
       _ = (r + 1 - Nat.clog 2 r) * r := Nat.mul_div_cancel_left _ (by norm_num)
-  calc Nat.log 2 (separNumVertices r) * Nat.log 2 (separNumVertices r) / 16
-      = Nat.log 2 (separNumVertices r) * Nat.log 2 (separNumVertices r) / 8 / 2 := by
+  calc Nat.log 2 (binTreePathNumVertices r) * Nat.log 2 (binTreePathNumVertices r) / 16
+      = Nat.log 2 (binTreePathNumVertices r) * Nat.log 2 (binTreePathNumVertices r) / 8 / 2 := by
         rw [Nat.div_div_eq_div_mul]
     _ ≤ (r + 1 - Nat.clog 2 r) * r / 2 := Nat.div_le_div_right hdiv
 
-/-- The exponent comparison behind `separ`: with `L = ⌊log₂ n⌋`, `m = ⌊L²/16⌋`
+/-- The exponent comparison behind `binTreePathNumVertices_rpow_le_size`: with `L = ⌊log₂ n⌋`, `m = ⌊L²/16⌋`
 and `L ≥ 7`, one has `(L+1)·L ≤ 32·m` over `ℝ`.
 
 `32` rather than `16` is the price of the two floors, and `L ≥ 7` is the least
 threshold at which *this route* works: knowing only `16m > L² - 16`, the
 inequality reduces to `L² - L ≥ 32`, which first holds at `L = 7` (`7·6 = 42`)
 and fails at `L = 6` (`6·5 = 30`).  As in `exponent_bound`, the statement itself
-is true a little below that; the uniform threshold is what is stated. -/
-theorem separ_exponent_bound {L : ℕ} (hL : 7 ≤ L) :
+is true a little below that; the uniform threshold is what is stated.
+
+`private`: the square-exponent twin of `exponent_bound`, used only in
+`binTreePathNumVertices_rpow_le_size` below, and not API. -/
+private theorem exponent_bound_sq_aux {L : ℕ} (hL : 7 ≤ L) :
     ((L : ℝ) + 1) * (L : ℝ) ≤ 32 * ((L * L / 16 : ℕ) : ℝ) := by
   have hmod : 16 * (L * L / 16) + L * L % 16 = L * L := Nat.div_add_mod _ _
   have hlt : L * L % 16 < 16 := Nat.mod_lt _ (by norm_num)
@@ -619,7 +660,7 @@ theorem separ_exponent_bound {L : ℕ} (hL : 7 ≤ L) :
   have hL' : (7 : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL
   nlinarith [hL']
 
-/-- **Lemma `separ`** (`source/kc/razgon/FBDDJOURN.tex:1063`), explicitly:
+/-- **Lemma `binTreePathNumVertices_rpow_le_size`** ([Raz16, `separ`]), explicitly:
 
 for every `r ≥ 7`, every uniform read-once NROBP realising `φ(T_r(P_{2r}))` has
 size at least `n^{⌊log₂ n⌋/c}`, where `n = (2^{r+1}-1)·2r` is the number of
@@ -630,36 +671,37 @@ vertices and
 This is the paper's `Ω(n^{log n/c})` with the `Ω` removed: the class is the
 family indexed by `r`, and the bound holds at every member of it from `r = 7` on.
 
-Two remarks on the paper's proof (`:1066`–`:1080`).  Its first "sufficiently
-large `r`" (`:1067`, `r ≥ log r + 2`) is not used here at all — `⌊log₂ n⌋ ≥ r`
-is available directly.  Its second (`:1073`) is not needed either: the
+Two remarks on the paper's proof ([Raz16, `separ`]).  Its first "sufficiently
+large `r`" ([Raz16, §7], `r ≥ log r + 2`) is not used here at all — `⌊log₂ n⌋ ≥ r`
+is available directly.  Its second ([Raz16, §7]) is not needed either: the
 matching-width bound `mw ≥ ⌊log₂ n⌋²/16` holds from `r = 1`
-(`matchingWidth_separ`).  The threshold `r ≥ 7` that *does* appear is a different
+(`log_binTreePathNumVertices_sq_div_le`).  The threshold `r ≥ 7` that *does* appear is a different
 thing entirely — it pays for the two integer roundings in the passage to the real
 exponent, and it is also why the constant is `32·f(5)` rather than `16·f(5)`.
 See the module header. -/
-theorem separ {r size : ℕ} (hr : 7 ≤ r)
+theorem binTreePathNumVertices_rpow_le_size {r size : ℕ} (hr : 7 ≤ r)
     [DecidableRel (binTree r □ SimpleGraph.pathGraph (2 * r)).Adj]
     (Z : NROBP (BinTreeNode r × Fin (2 * r)) size) (hro : Z.ReadOnce) (hu : Z.Uniform)
     (hR : Z.Realises (binTree r □ SimpleGraph.pathGraph (2 * r))) :
-    ((separNumVertices r : ℝ)) ^
-        ((Nat.log 2 (separNumVertices r) : ℝ) / (32 * TCover.f 5)) ≤ (size : ℝ) := by
+    ((binTreePathNumVertices r : ℝ)) ^
+        ((Nat.log 2 (binTreePathNumVertices r) : ℝ) / (32 * TCover.f 5)) ≤ (size : ℝ) := by
   have hsr : 2 * Nat.log 2 r ≤ r := two_mul_log_le r
   have hts : Nat.clog 2 r ≤ Nat.log 2 r + 1 := clog_le_log_succ r
   have hrt : Nat.clog 2 r ≤ r := by omega
-  obtain ⟨-, hdeg, -, hmw⟩ := binTree_pathGraph_bounds r r hrt
-  set L := Nat.log 2 (separNumVertices r) with hLdef
+  have hdeg := maxDegreeLe_binTree_pathGraph r (2 * r)
+  have hmw := matchingWidthGe_binTree_pathGraph r r hrt
+  set L := Nat.log 2 (binTreePathNumVertices r) with hLdef
   have hmw' : MatchingWidthGe (binTree r □ SimpleGraph.pathGraph (2 * r)) (L * L / 16) :=
-    hmw.mono (matchingWidth_separ (by omega))
+    hmw.mono (log_binTreePathNumVertices_sq_div_le (by omega))
   have hbase : (2 : ℝ) ^ (((L * L / 16 : ℕ) : ℝ) / TCover.f 5) ≤ (size : ℝ) :=
     Razgon.two_rpow_le_size Z hro hu hR hmw' (Razgon.maxDegree_le_of_maxDegreeLe hdeg)
   have hf : 0 < TCover.f 5 := tcover_f_five_pos
   have hfne : TCover.f 5 ≠ 0 := ne_of_gt hf
   have hy : (0 : ℝ) ≤ (L : ℝ) / (32 * TCover.f 5) := by positivity
-  have hL7 : 7 ≤ L := le_trans hr (le_log_separNumVertices (by omega))
+  have hL7 : 7 ≤ L := le_trans hr (le_log_binTreePathNumVertices (by omega))
   have hexp : ((L : ℝ) + 1) * ((L : ℝ) / (32 * TCover.f 5))
       ≤ ((L * L / 16 : ℕ) : ℝ) / TCover.f 5 := by
-    have hstep := separ_exponent_bound hL7
+    have hstep := exponent_bound_sq_aux hL7
     have hsplit : ((L * L / 16 : ℕ) : ℝ) / TCover.f 5
         - ((L : ℝ) + 1) * ((L : ℝ) / (32 * TCover.f 5))
         = (32 * ((L * L / 16 : ℕ) : ℝ) - ((L : ℝ) + 1) * (L : ℝ)) / (32 * TCover.f 5) := by
@@ -670,9 +712,9 @@ theorem separ {r size : ℕ} (hr : 7 ≤ r)
       rw [hsplit]
       exact div_nonneg (by linarith) (by positivity)
     linarith
-  calc ((separNumVertices r : ℝ)) ^ ((L : ℝ) / (32 * TCover.f 5))
+  calc ((binTreePathNumVertices r : ℝ)) ^ ((L : ℝ) / (32 * TCover.f 5))
       ≤ (2 : ℝ) ^ (((L : ℝ) + 1) * ((L : ℝ) / (32 * TCover.f 5))) :=
-        log_add_one_bound (separNumVertices_ne_zero (by omega)) hy
+        log_add_one_bound (binTreePathNumVertices_ne_zero (by omega)) hy
     _ ≤ (2 : ℝ) ^ (((L * L / 16 : ℕ) : ℝ) / TCover.f 5) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp
     _ ≤ (size : ℝ) := hbase

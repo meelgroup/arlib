@@ -9,7 +9,10 @@ import Arlib.Approximation.Amplification
 # The Karp–Luby union-of-sets estimator
 
 Given finite sets `A 0, …, A (ℓ-1)` in a common universe, with known sizes, a
-uniform sampler for each and a membership test for each, Karp and Luby estimate
+uniform sampler for each and a membership test for each, Karp and Luby — [KLM89]:
+Richard M. Karp, Michael Luby, Neal Madras, *Monte-Carlo approximation algorithms
+for enumeration problems*, J. Algorithms **10**(3):429–448, 1989, preliminary
+version Karp–Luby, FOCS 1983 — estimate
 `|⋃_j A j|` by sampling a pair `(j, x)` with `j` proportional to `|A j|` and
 `x` uniform in `A j`, and accepting iff `j` is the *least* index with `x ∈ A j`.
 
@@ -83,8 +86,11 @@ in.
 ## A note on the index count `ℓ`
 
 The `ℓ` in `sampleCount` is the number of sets in the family, and it enters
-*squared*.  In the intended application (`fpras2.tex`, `prop:prop1`) the family
-is the set of transitions out of a state in the saturated transition relation
+*squared*.  In the intended application — [ACJR21, `prop:prop1`]: Marcelo Arenas,
+Luis Alberto Croquevielle, Rajesh Jayaram, Cristian Riveros, *#NFA admits an
+FPRAS*, J. ACM **68**(6), art. 48, 2021 (arXiv:1906.09226), cited by the labels
+of the authors' manuscript, which is not distributed with this library — the
+family is the set of transitions out of a state in the saturated transition relation
 `Δ̄`, and the source repeatedly bounds that count by `m`; the correct bound is
 `n·m`, since each `Δ`-transition spawns `i - 2 ≤ n` of them.  Nothing here
 depends on which bound is right — `ℓ` is a parameter and `inv_card_le_acceptProb`
@@ -732,7 +738,8 @@ end Estimator
 
 /-! ## The interface a consumer of the estimator states
 
-`CQCount/Union/Fpras.lean` consumes Karp–Luby through a hypothesis bundle
+`CQCount/Union/Fpras.lean` — in a sibling repository, not distributed with this
+library — consumes Karp–Luby through a hypothesis bundle
 `UnionEstimator size S U` whose fields are a membership-test cost, the union
 hypothesis `∀ w x, x ∈ U w ↔ ∃ i, x ∈ S w i`, and two conclusions — an FPRAS and
 an FPAUS for `U`.  The theorem below is the counting conclusion in exactly that

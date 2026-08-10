@@ -6,8 +6,8 @@ Authors: Kuldeep S. Meel
 /-
 # `thm: union` — d-SDNNF is not closed under disjunction
 
-The paper's Theorem `thm: union` (`source/kc/arXiv.tex:471`, proof in the
-appendix at `:672`): *there are two functions `f`, `g` which both admit small
+The paper's Theorem `thm: union` ([VS24], proof in the
+appendix at [VS24, `thm: fixed_or`]): *there are two functions `f`, `g` which both admit small
 d-DNNFs respecting a common v-tree, but whose disjunction `f ∨ g` has no small
 d-SDNNF.*
 
@@ -37,7 +37,7 @@ Here the imported hardness is about **unambiguous** communication, i.e. about
 rectangular *partitions*, and the only thing that makes a circuit's rectangles
 disjoint is determinism at its `∨`-nodes.  So the lower bound below is about
 d-SDNNF and not about SDNNF.  This is not an artefact of the formalization — it
-is the paper's own footnote at `source/kc/arXiv.tex:481`, which observes that
+is the paper's own footnote at [VS24, §4.6], which observes that
 `thm: union` "almost implies" `thm: main` but yields only a d-SDNNF bound.
 
 *No negation appears.*  `thm: main` had to translate "covering `(¬f)⁻¹(1)`" into
@@ -63,6 +63,7 @@ import Arlib.KnowledgeCompilation.Circuits.DNFMux
 namespace Arlib.KnowledgeCompilation
 namespace Separation
 
+open Arlib.Communication
 open AffinePerms Lifting
 
 section Union
@@ -121,13 +122,13 @@ theorem partBound_le_size_of_computes_union
     (hasPartitionOfSize_of_hasPartitionOfSize_permDNF_union (P := H.P) (ψ := H.ψ) (φ := H.φ)
       he (fun _ _ _ _ h => hrep h) hT'vars hbal hm hz hpart)
 
-/-- **`thm: union`** (`source/kc/arXiv.tex:471`): *there are two functions, each
+/-- **`thm: union`** ([VS24]): *there are two functions, each
 with a small d-SDNNF respecting any prescribed common v-tree, whose disjunction
 has no small d-SDNNF.*
 
 The two functions are `ψ'` and `φ'`, the copy-and-permute liftings of the two
-hard `k`-DNFs supplied by `Imported.UnionHard`.  As in `thm_main` the bounds are
-explicit rather than asymptotic, and the whole statement is conditional on that
+hard `k`-DNFs supplied by `Imported.UnionHard`.  As in `exists_dSDNNF_hard_negation` the
+bounds are explicit rather than asymptotic, and the whole statement is conditional on that
 one import and on nothing else.
 
 * **upper** `|C| ≤ |𝒫|·(termBound·m^k)·(2(|Zι| + km) + 2) + 1`, for each of the
@@ -136,8 +137,8 @@ one import and on nothing else.
   computing `ψ' ∨ φ'`.
 
 The paper's `n^{Ω̃(log n)}` is the comparison of these two numbers; see the
-docstring of `thm_main` and `ROADMAP.md` §5. -/
-theorem thm_union
+docstring of `exists_dSDNNF_hard_negation` and `docs/dev/KnowledgeCompilation-ROADMAP.md` §5. -/
+theorem exists_dSDNNF_pair_hard_disjunction
     (H : Imported.UnionHard (Finset.univ : Finset ι) k termBound partBound)
     {e : ι × Fin m → F} (he : Function.Injective e)
     {rep : F × F → Zι → Bool} (hrep : Function.Injective rep)
@@ -166,7 +167,7 @@ end Union
 
 /-! ## `thm: ex` — d-SDNNF is not closed under existential quantification
 
-The paper's Corollary `thm: ex` (`source/kc/arXiv.tex:493`), deduced from
+The paper's Corollary `thm: ex` ([VS24]), deduced from
 `thm: union` exactly as the paper deduces it, but with a different construction
 in the middle.
 
@@ -194,9 +195,9 @@ reads off.
 *Where `∃x` lands.*  `existsFresh` maps a function of `(F ⊕ Zι) ⊕ Unit` to a
 function of `F ⊕ Zι` — quantification *removes* the variable rather than fixing
 it.  So clause (2) below is a statement about circuits over the original variable
-type and is literally an instance of `thm_union`'s clause (2), with no transfer
-of partitions between variable types.  Had `∃x f` been left as a function of the
-larger type that step would have been real work, and it is the reason the fresh
+type and is literally an instance of `exists_dSDNNF_pair_hard_disjunction`'s clause (2),
+with no transfer of partitions between variable types.  Had `∃x f` been left as a function
+of the larger type that step would have been real work, and it is the reason the fresh
 variable is a summand rather than a distinguished element. -/
 
 section Ex
@@ -208,7 +209,7 @@ variable {F : Type} [Field F] [Fintype F] [DecidableEq F]
 variable {Zι : Type} [Fintype Zι] [DecidableEq Zι]
 variable {k termBound partBound : ℕ}
 
-/-- **`thm: ex`** (`source/kc/arXiv.tex:493`): *there is a function with a small
+/-- **`thm: ex`** ([VS24]): *there is a function with a small
 d-SDNNF, one of whose variables cannot be existentially quantified away without
 the size blowing up.*
 
@@ -225,7 +226,7 @@ The size on the upper side is twice the `thm: union` bound in the term count and
 one wider in the term width — the mux concatenates two DNFs and adds one literal
 to each term.  That is the analogue of the paper's `O(n)` where it had `n`, and
 it is absorbed on the other side exactly as the paper absorbs it. -/
-theorem thm_ex
+theorem exists_dSDNNF_hard_existsFresh
     (H : Imported.UnionHard (Finset.univ : Finset ι) k termBound partBound)
     {e : ι × Fin m → F} (he : Function.Injective e)
     {rep : F × F → Zι → Bool} (hrep : Function.Injective rep)

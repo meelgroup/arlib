@@ -30,7 +30,11 @@ real inequality makes the missing hypothesis visible.
 * **Phase two forces `1 ≤ A`.**  Substituting `r₂` into the upper-tail exponent
   reduces the requirement to `(1 − ε'/A)/(1 − ε') ≥ 1`, i.e. to `A ≥ 1`
   (`phase2_upper_budget`).  The source paper states its Theorem 5 for an
-  arbitrary poset and never records this; for `#(𝓛) ∈ {1,2}` the displayed chain
+  arbitrary poset and never records this (the schedule analysed here matches
+  Mark Huber, *Approximation Algorithms for the Normalizing Constant of Gibbs
+  Distributions*, Ann. Appl. Probab. **25**(2):974–985, 2015, arXiv:1206.2689,
+  but the rest of this sub-area attributes itself to Huber–Schott 2010; see
+  `Arlib/Algorithms/TPA.lean`); for `#(𝓛) ∈ {1,2}` the displayed chain
   of inequalities does not close.  The lower tail (`phase2_lower_budget`) needs
   only `A > 0`.
 

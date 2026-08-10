@@ -39,12 +39,20 @@ This is the area root; it re-exports the individual modules below. Import it to
 get the whole probability toolkit, or import a single module for just one piece.
 -/
 
+import Arlib.Probability.Bilinear
+import Arlib.Probability.FinDist
+import Arlib.Probability.FinKernelAlgebra
+import Arlib.Probability.FinDistFunctional
+import Arlib.Probability.FinDistTV
+import Arlib.Probability.Coupling
 import Arlib.Probability.FinProb
+import Arlib.Probability.Law
 import Arlib.Probability.CondEvent
 import Arlib.Probability.CouplingFinProb
 import Arlib.Probability.LevelCoupling
 import Arlib.Probability.CondExp
 import Arlib.Probability.Conditioning
+import Arlib.Probability.CondLaw
 import Arlib.Probability.Markov
 import Arlib.Probability.UnionBound
 import Arlib.Probability.ProbSpace

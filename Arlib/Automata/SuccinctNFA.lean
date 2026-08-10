@@ -18,6 +18,13 @@ with `wᵢ ∈ Aᵢ` and `(s_{i-1}, Aᵢ, sᵢ) ∈ Δ`.  This is the model unde
 `#TA` FPRAS of Arenas–Croquevielle–Jayaram–Riveros: their partition-size
 estimator is a Karp–Luby computation on the recurrence `W(sᵢ) = ⋃ W(v)·A` below.
 
+The statements of this file and of `SuccinctNFAMembership`/`SuccinctNFAWitness` are
+quoted from an unpublished manuscript of those authors whose source is not
+distributed with this library; its own labels (`def:prop`, `prop:membertest`,
+`thm:progmain`) are kept as the locators.  The published account of the `#NFA`
+FPRAS is Arenas, Croquevielle, Jayaram and Riveros, *#NFA Admits an FPRAS*,
+J. ACM 68(6), art. 48, 2021 (arXiv:1906.09226) [ACJR21].
+
 ## Design decisions
 
 **Labels are an abstract representation type, not `Set Γ`.**  The transition
@@ -553,8 +560,7 @@ whose label decodes to `∅`, with nothing in its statement to say so; such
 transitions are perfectly legal (they are simply dead) and the source nowhere
 forbids them.
 
-The guard is also what the source says.  `def:prop` (4)
-(`partition-size2.tex:76-80`, the definition itself spanning `66-82`) asks for
+The guard is also what the source says.  `def:prop` (4) asks for
 "an oracle which returns independent
 samples `a ∼ A` from a distribution `𝒟` over `A`, such that for every `a ∈ A`,
 `𝒟(a) = (1 ± ε₀)/|A|`".  There is no distribution over `∅`, and `1/|A|` is

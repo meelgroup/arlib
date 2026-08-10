@@ -30,7 +30,7 @@ import Mathlib.Data.Finset.Fold
 import Mathlib.Data.Finset.Lattice.Fold
 import Mathlib.Data.Real.Basic
 
-namespace Arlib
+namespace Arlib.Combinatorics
 
 /-- `maxOver s b f` is `max b (maxₓ∈ₛ f x)` — the maximum of `f` over `s`,
 floored at `b`.  Total: no nonemptiness side condition. -/
@@ -72,4 +72,4 @@ theorem maxOver_lt {α : Type*} [DecidableEq α] {s : Finset α} {b c : ℝ} {f 
       exact max_lt (hf a (Finset.mem_insert_self a s))
         (ih fun x hx => hf x (Finset.mem_insert_of_mem hx))
 
-end Arlib
+end Arlib.Combinatorics

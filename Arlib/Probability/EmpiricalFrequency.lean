@@ -44,7 +44,7 @@ Everything is proved from first principles with no `sorry`.
 -/
 import Arlib.Probability.IIDProduct
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset FinProb
@@ -190,4 +190,4 @@ theorem Pr_countEq_deviation_le_delta (μ : ι → X → ℝ) (h0 : ∀ j x, 0 �
   calc Real.exp (-b / 35) ≤ Real.exp (Real.log δ) := Real.exp_le_exp.mpr hexpo
     _ = δ := Real.exp_log hδ0
 
-end Arlib
+end Arlib.Probability

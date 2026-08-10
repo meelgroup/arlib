@@ -32,9 +32,10 @@ bounds; each term of the second is exactly what a per-level total-variation
 bound controls.
 
 This is the abstract content of Claims `xbound`, `claim-1-main-proof` and
-`fermat` in the `#NFA` FPRAS of Meel ⓡ Chakraborty ⓡ Mathur (PODS 2024,
-`sketch.tex:307-365`), with the process-specific content stripped out: nothing
-here mentions samples, estimates, or automata.
+`fermat` in [MCM24] — Kuldeep S. Meel ⓡ Sourav Chakraborty ⓡ Umang Mathur,
+*A Faster FPRAS for #NFA*, PODS 2024 (arXiv:2312.13320) — with the
+process-specific content stripped out: nothing here mentions samples,
+estimates, or automata.
 
 The decomposition is *sharper* than a plain union bound over `¬A ℓ`, in the same
 way `Arlib.FinProb.Pr_biUnion_eq_sum_firstBad` is: each term carries the
@@ -43,7 +44,7 @@ per-level bounds applicable.
 -/
 import Arlib.Probability.UnionBound
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 open scoped BigOperators
@@ -184,4 +185,4 @@ theorem one_sub_le_Pr_Ainf (A E : ℕ → Finset P.Ω) (n : ℕ) (a e : ℝ)
 
 end FinProb
 
-end Arlib
+end Arlib.Probability

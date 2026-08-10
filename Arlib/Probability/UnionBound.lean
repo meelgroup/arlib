@@ -49,7 +49,7 @@ public in `Arlib.Probability.Markov`, in exactly the `Pr`-of-`filter` idiom, and
 No `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -216,4 +216,4 @@ theorem Pr_count_ne_zero_le_Ex (N : P.Ω → ℕ) :
   exact P.markov_one _ (fun ω => Nat.cast_nonneg _)
 
 end FinProb
-end Arlib
+end Arlib.Probability

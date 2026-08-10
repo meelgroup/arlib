@@ -29,7 +29,7 @@ Main results:
 open Finset
 open scoped Matrix
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 /-- The quadratic form `y ↦ yᵀ M y` associated to `M`. -/
 def Mq {d : Type*} [Fintype d] (M : Matrix d d ℝ) (y : d → ℝ) : ℝ := y ⬝ᵥ (M *ᵥ y)
@@ -156,4 +156,4 @@ theorem exists_Mnet {d : Type*} [Fintype d] [DecidableEq d]
             rw [hε', div_pow, Real.sq_sqrt hnR]
             field_simp
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

@@ -6,12 +6,12 @@ Authors: Kuldeep S. Meel
 /-
 # Claim `perm`: a single permutation that reaches both sides for every variable
 
-Claim `perm` (`source/kc/arXiv.tex:448`) is the technical heart of the lifting
+Claim `perm` ([VS24, `claim: perm`]) is the technical heart of the lifting
 from the fixed-partition to the best-partition model.  The paper does not prove
 it: it cites Knop, Theorem 4.2, and remarks that "we need to use our more
 relaxed notion of balancedness but an inspection of the proof shows that
-everything goes through" (`source/kc/arXiv.tex:460`).  This file therefore
-*reconstructs* the argument rather than transcribing one; see `ROADMAP.md`,
+everything goes through" ([VS24, §4.5]).  This file therefore
+*reconstructs* the argument rather than transcribing one; see `docs/dev/KnowledgeCompilation-ROADMAP.md`,
 gap G2.
 
 The statement.  The variables of `ψ'` are identified with a finite field `F` of
@@ -67,7 +67,7 @@ Hence `A = m·|S|·(|F| − 1)` and `Q = A + m(m−1)·|S|(|S| − 1)`.
 ## The constant on `m`, made explicit
 
 The paper takes `m = c·n` for "some sufficiently large constant `c`"
-(`source/kc/arXiv.tex:379`) and never says what `c` is.  Following `ROADMAP.md`
+([VS24, §4.4.1]) and never says what `c` is.  Following `docs/dev/KnowledgeCompilation-ROADMAP.md`
 §5, the hypothesis appears here as the explicit inequality `6 · |ι| < m`, and
 that is exactly what the argument needs: each of the `2n` events fails for at
 most a `3/m` fraction of `𝒫`, so the union bound costs `6n/m`, which is below
@@ -104,12 +104,14 @@ cancelling `m·|S|·(|F| − 1)²`, Chebyshev collapses over `ℤ` to
 the two sides is visibly `(m−1)·(|F| − |S|) + (|F| − 1)·(4|S| − |F|)`.
 -/
 import Arlib.KnowledgeCompilation.LowerBounds.AffinePerms
-import Arlib.KnowledgeCompilation.Communication.Rectangle
+import Arlib.Communication.Rectangle
 import Mathlib.Algebra.BigOperators.Ring
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Finset.Prod
 
 namespace Arlib.KnowledgeCompilation
+
+open Arlib.Communication
 namespace ClaimPerm
 
 open Finset AffinePerms
@@ -484,7 +486,7 @@ theorem card_badMaps_mul_le (S : Finset F) {m : ℕ} (y : Fin m → F)
 
 /-! ## Claim `perm` -/
 
-/-- **Claim `perm`** (`source/kc/arXiv.tex:448`).
+/-- **Claim `perm`** ([VS24, `claim: perm`]).
 
 Let each of the `|ι|` original variables have `m` copies, given as points of
 `F` by `y i : Fin m → F`, distinct for each `i`.  Let `A` and `B` be two target
@@ -499,7 +501,7 @@ See `exists_maps_hits_of_balanced` for the form the paper states, and
 `card_badMaps_mul_le` for why the weakening is worth carrying.
 
 The constant is explicit and it is the point of the statement: the paper's
-`m = c·n` with `c` unspecified (`source/kc/arXiv.tex:379`) becomes `6·n < m`,
+`m = c·n` with `c` unspecified ([VS24, §4.4.1]) becomes `6·n < m`,
 i.e. `c > 6` suffices. -/
 theorem exists_maps_hits {ι : Type*} [Fintype ι] {m : ℕ} (y : ι → Fin m → F)
     (hy : ∀ i, Function.Injective (y i)) (A B : Finset F)
@@ -568,13 +570,13 @@ theorem exists_maps_hits {ι : Type*} [Fintype ι] {m : ℕ} (y : ι → Fin m �
     exact hnot.2 (Finset.mem_filter.mpr ⟨hp, hcon⟩)
 
 /-- **Claim `perm` for a balanced partition**, which is the form the paper
-states (`source/kc/arXiv.tex:448`).
+states ([VS24, `claim: perm`]).
 
 The partition is of *all* of `F`, matching the paper's identification of the
 variable set `V` with the field.  Balancedness enters only through
 `Balanced.card_le_left` and `Balanced.card_le_right`, and even those are used
 with a factor to spare — see `card_badMaps_mul_le`.  In particular, as
-`ROADMAP.md` §6 G2 requires, no exact split `|X| = |Y|` is assumed anywhere;
+`docs/dev/KnowledgeCompilation-ROADMAP.md` §6 G2 requires, no exact split `|X| = |Y|` is assumed anywhere;
 the paper's `|Z| ≤ 3·min(|X|,|Y|)` is enough, and is in fact more than enough.
 
 A caveat for the caller.  The paper writes the claim with `Π`, the partition of
@@ -599,7 +601,7 @@ theorem exists_maps_hits_of_balanced {ι : Type*} [Fintype ι] {m : ℕ}
 
 There the copies of `xᵢ` are the variables `(i, j) : ι × Fin m`, and the paper
 identifies them with elements of the field by `y_{i,j} := v_{i·m+j}`
-(`source/kc/arXiv.tex:421`).  Any injection `e` realises that identification;
+([VS24, §4.4.2]).  Any injection `e` realises that identification;
 injectivity of each `e (i, ·)` — all the argument actually needs — is inherited
 from it. -/
 theorem exists_maps_hits_copies {ι : Type*} [Fintype ι] {m : ℕ}

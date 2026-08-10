@@ -4,14 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.KnowledgeCompilation.LowerBounds.BalancedCut
-import Arlib.KnowledgeCompilation.Communication.Measures
+import Arlib.Communication.Measures
 
 /-
 # The rectangle lemma
 
 The bridge between circuit size and communication complexity, and the reason a
 lower bound on rectangle covers is a lower bound on structured circuits at all
-(`lem: rectangle`, `source/kc/arXiv.tex:299`):
+(`lem: rectangle`, [VS24]):
 
 > if `f` admits a d-SDNNF of size `s` then `Par₁(f) ≤ s`; if `f` admits an SDNNF
 > of size `s` then `Cov₁(f) ≤ s`.
@@ -99,7 +99,7 @@ hypothesis holds, the value at `v` depends only on `var(v) ⊆ X`.
 ## The hypothesis `var(C) ⊆ var(T)`
 
 The paper takes a v-tree "over `X`" for `X` the variable set of the circuit
-(`def: vtree`, `source/kc/arXiv.tex:150`), so `var(C) = var(T)`.  Our `Respects`
+(`def: vtree`, [VS24]), so `var(C) = var(T)`.  Our `Respects`
 constrains only `∧`-nodes and therefore does *not* imply `var(C) ⊆ var(T)`: a
 circuit that is a single literal `x` respects every v-tree vacuously, including
 ones that do not mention `x`.  The containment is genuinely needed — a variable
@@ -110,6 +110,8 @@ paper's definition.
 -/
 
 namespace Arlib.KnowledgeCompilation
+
+open Arlib.Communication
 
 namespace NNF
 
@@ -655,7 +657,7 @@ theorem fixedPar_le_size_cutPartition (hT : T.WellFormed) (hR : C.Respects T)
   fixedPar_le_of_hasPartition (hasPartitionOfSize_cutPartition hT hR hdet hs hCT hf)
 
 /-- **The rectangle lemma, cover half** (`lem: rectangle`,
-`source/kc/arXiv.tex:299`): *if `f` admits an SDNNF of size `s` then
+[VS24, `lem: rectangle`]): *if `f` admits an SDNNF of size `s` then
 `Cov₁(f) ≤ s`.*
 
 `C.Respects T` with `T` well-formed is exactly "`C` is an SDNNF, as witnessed by
@@ -671,7 +673,7 @@ theorem bestCov_le_size_of_respects (hT : T.WellFormed) (hR : C.Respects T)
   exact bestCov_le_of_hasCover hbal (hasCoverOfSize_cutPartition hT hR hs hCT hf)
 
 /-- **The rectangle lemma, partition half** (`lem: rectangle`,
-`source/kc/arXiv.tex:299`): *if `f` admits a d-SDNNF of size `s` then
+[VS24, `lem: rectangle`]): *if `f` admits a d-SDNNF of size `s` then
 `Par₁(f) ≤ s`.*
 
 Determinism enters in exactly one place, `NNF.descend_eq_of_agree`: it forbids
@@ -695,7 +697,7 @@ circuit does not mention `x₁` at all, which is exactly the configuration
 discussed in the module docstring under "why the rectangles are indexed by all
 nodes", and the one that forces the conditional form of `NNF.leftAt`.
 
-This also chips at gap G4 of `ROADMAP.md` (nothing had ever instantiated
+This also chips at gap G4 of `docs/dev/KnowledgeCompilation-ROADMAP.md` (nothing had ever instantiated
 `Respects`), though only barely: `Respects` and `Deterministic` are vacuous here
 for want of internal nodes.  A worked instance of the paper's Figure 1 remains
 the real target. -/

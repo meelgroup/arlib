@@ -27,6 +27,7 @@ avoids any appeal to concavity or to Jensen's inequality: the difference
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

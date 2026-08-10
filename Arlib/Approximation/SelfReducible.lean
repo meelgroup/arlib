@@ -868,7 +868,9 @@ theorem quarter_le_accProb {x : Ω} (hx : x ∈ P.U P.root) :
 
 /-- **Exact uniformity.**  Every solution is produced with probability exactly
 `1 / (2 Ñ(root))` — a value that does not depend on the solution.  This is the
-`lem:sampmain` uniformity claim, and it is *exact*, not approximate: the
+[ACJR21, `lem:sampmain`] uniformity claim (Arenas–Croquevielle–Jayaram–Riveros;
+the full reference is in `Arlib/Approximation/Sampling.lean`), and it is *exact*,
+not approximate: the
 estimator's error cancels between `φ` and the acceptance probability. -/
 theorem outcome_apply_some_eq {x : Ω} (hx : x ∈ P.U P.root) :
     P.outcome E (some x) = ENNReal.ofReal (1 / (2 * E.val P.root)) := by

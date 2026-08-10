@@ -52,10 +52,11 @@ provides only the generalized Chebyshev step and the fourth-moment input to it.
 No `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
+open Arlib.Combinatorics
 
 /-! ## The generalized Chebyshev inequality (the moment method) -/
 
@@ -522,4 +523,4 @@ theorem fourth_moment_le {ι : Type} [Fintype ι] [DecidableEq ι] {P : FinProb}
 
 end Fourth
 
-end Arlib
+end Arlib.Probability

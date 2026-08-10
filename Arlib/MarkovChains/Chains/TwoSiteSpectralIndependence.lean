@@ -13,7 +13,7 @@ The whole spectral-independence development — `Techniques.SpectralIndependence
 diagonal, the constant is the degenerate `η = 1`, and the local walk's gap is
 `1`.  Nothing exhibited a genuinely correlated measure with a computed constant,
 so nothing tested whether those definitions have the sharp value on a system
-where the sharp value is known.  Per `ROADMAP.md` §1.1 that is the job of a
+where the sharp value is known.  Per `docs/dev/MarkovChains-ROADMAP.md` §1.1 that is the job of a
 `Chains/` module, and this is it.
 
 The system is the smallest one that can be correlated at all: two sites

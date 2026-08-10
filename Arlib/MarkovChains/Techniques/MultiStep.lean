@@ -9,7 +9,10 @@ Authors: Kuldeep S. Meel
 `Techniques.Levels` builds the up and down operators one level at a time, and
 everything downstream — `Techniques.LevelVariance`, `Techniques.LocalToGlobal`,
 `Techniques.ImprovedRandomWalk` — is therefore a statement about *adjacent*
-levels.  The monograph is not: its `lem:diff-var` (§6.6, line 2208) is stated
+levels.  The monograph — Chen–Štefankovič–Vigoda, *Spectral Independence and
+Local-to-Global Techniques for Optimal Mixing of Markov Chains*,
+arXiv:2307.13826 (2023), cited below as [CSV23] — is not: its `lem:diff-var`
+([CSV23, §6.6]) is stated
 for all `n ≥ i > j ≥ 0`, and the Improved Random Walk Theorem it proves
 (`eqn:RW-improved-general`) is a bound on the spectral gap of the multi-level
 down-up walk `P^{∨}_{n,ℓ}`, which first goes all the way down from level `n` to

@@ -22,7 +22,7 @@ appeal to the concrete finite model.
 import Arlib.Probability.ProbSpace
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset ProbSpace
@@ -86,10 +86,6 @@ theorem H_eq_G (j : ℕ) (hj : 0 < j) (hjd : j ≤ S.depth) : S.H j = S.G j := b
   exact Ex_prod_cond_transport S.ce (S.Fhat j) S.blocks (fun b => S.X b j)
     (fun b => S.Xhat b j) (S.fact_X j hj hjd) (fun b hb => S.cond_X j hj hjd b hb)
 
-theorem induction_lemma (j : ℕ) (hj : 0 < j) (hjd : j ≤ S.depth) :
-    S.G j = S.H (j - 1) ∧ S.H j = S.G j :=
-  ⟨S.G_eq_H_pred j hj hjd, S.H_eq_G j hj hjd⟩
-
 theorem prod_descent (i : ℕ) (hi : i + 1 ≤ S.depth) : S.G (i + 1) = S.H 0 := by
   induction i with
   | zero => exact S.G_eq_H_pred 1 (by norm_num) hi
@@ -134,4 +130,4 @@ theorem second_moment_bound_beta (i : ℕ) (β K : ℝ) (hβ : 0 < β) (hi : i +
         rw [div_pow, pow_mul, one_div, ← div_eq_inv_mul]
 
 end SecondMoment
-end Arlib
+end Arlib.Probability

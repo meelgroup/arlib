@@ -35,7 +35,7 @@ tower rule.  Everything here is proved with no `sorry`.
 -/
 import Arlib.Probability.CondExp
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 
@@ -168,4 +168,4 @@ noncomputable def mkCondExp : HasCondExp P where
   cond_Ex := condCE_Ex
 
 end FinProb
-end Arlib
+end Arlib.Probability

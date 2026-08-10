@@ -16,7 +16,7 @@ No `sorry`.
 -/
 import Arlib.Probability.CondExp
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 
@@ -88,4 +88,4 @@ theorem chebyshev (X : P.Ω → ℝ) {a : ℝ} (ha : 0 < a) :
   exact hmk
 
 end FinProb
-end Arlib
+end Arlib.Probability

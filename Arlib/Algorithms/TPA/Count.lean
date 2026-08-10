@@ -6,7 +6,9 @@ Authors: Kuldeep S. Meel
 /-
 # The Tootsie Pop Algorithm: the law of its counter
 
-The Tootsie Pop Algorithm (Huber, 2010) estimates a ratio of measures
+The Tootsie Pop Algorithm (Huber; which of his papers this sub-area follows is
+not settled anywhere in this library — see `Arlib/Algorithms/TPA.lean`) estimates
+a ratio of measures
 `μ(B)/μ(B')` by repeatedly drawing from a *shell* and contracting it until the
 draw lands in the *centre*.  Its entire analysis rests on one distributional
 fact: **the number of contractions a run needs is Poisson** with parameter

@@ -99,7 +99,7 @@ costing a factor `≍ t²/μ` relative to two blocks of size `2`.
 No `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -477,4 +477,4 @@ theorem factorial_mul_sum_prod_powersetCard_le {ι : Type} [DecidableEq ι]
         Finset.sum_insert ha, hfac]
       nlinarith [hIH1, hkey, hmain]
 
-end Arlib
+end Arlib.Probability

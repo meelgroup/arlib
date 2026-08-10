@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # The balanced cut of a v-tree
 
 The first half of the rectangle lemma (`lem: rectangle`,
-`source/kc/arXiv.tex:299`), and the step that makes the whole bridge between
+[VS24, `lem: rectangle`]), and the step that makes the whole bridge between
 circuits and communication complexity possible.
 
 The rectangle lemma says that a small d-SDNNF for `f` yields a small rectangular
@@ -34,7 +34,7 @@ The hypothesis is genuinely necessary rather than an artefact: a v-tree on a
 single variable is one leaf, whose only node carries all of `Z`, and no partition
 of a one-element set is balanced at all — one block is empty.  This is the
 existence statement whose absence was recorded as a gap when
-`Communication/Measures` was written; the bound `2 ≤ |Z|` is where it lives.
+`Arlib/Communication/Measures.lean` was written; the bound `2 ≤ |Z|` is where it lives.
 
 ## What this does not yet do
 
@@ -45,9 +45,11 @@ two halves are independent, and this one is the reusable one — any argument th
 needs "a balanced partition compatible with the v-tree" can take it from here.
 -/
 import Arlib.KnowledgeCompilation.Circuits.VTree
-import Arlib.KnowledgeCompilation.Communication.Rectangle
+import Arlib.Communication.Rectangle
 
 namespace Arlib.KnowledgeCompilation
+
+open Arlib.Communication
 namespace VTree
 
 variable {V : Type*} [DecidableEq V]
@@ -135,7 +137,7 @@ theorem exists_balanced_partition {T : VTree V} (hT : T.WellFormed)
 `exists_balanced_subtree` would be worthless if its hypotheses were unsatisfiable,
 so we discharge them on a concrete tree.  This is cheap here — unlike `NNF.valAt`,
 `VTree.vars` and `VTree.WellFormed` are *structural* recursions, so they reduce in
-the kernel and `decide` works.  (Contrast gap G4 in `ROADMAP.md`, which is about
+the kernel and `decide` works.  (Contrast gap G4 in `docs/dev/KnowledgeCompilation-ROADMAP.md`, which is about
 the circuit side, where it does not.) -/
 section Sanity
 

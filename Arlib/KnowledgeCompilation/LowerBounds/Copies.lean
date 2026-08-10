@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # Step 1 of the lifting: making copies of variables
 
 The first half of the copy-and-permute construction (paper §4.4.1,
-`source/kc/arXiv.tex:377`).  Every variable `xᵢ` of the original formula is
+[VS24, §4.4.1]).  Every variable `xᵢ` of the original formula is
 replaced by a disjunction `⋁_{j ∈ [m]} y_{i,j}` of `m` fresh copies, the result
 is expanded by distributivity into a DNF, and then — a step Knop does not need,
 but this paper does — each term is *re-disambiguated* by adding `¬y_{i,j'}` for
@@ -78,7 +78,7 @@ lemma collapse_eq_false {α : ι × Fin m → Bool} {i : ι} :
 of each original variable.
 
 This is the region on which the construction is faithful; see the module
-docstring, and the protocol at `source/kc/arXiv.tex:452`. -/
+docstring, and the protocol at [VS24, §4.5]. -/
 def OneHot (α : ι × Fin m → Bool) : Prop :=
   ∀ i : ι, ∀ j j' : Fin m, α (i, j) = true → α (i, j') = true → j = j'
 
@@ -261,7 +261,7 @@ The DNF of the construction: one derived term per original term and per choice
 function.  The enumeration of choice functions is a *parameter* rather than
 being fixed here, and that is deliberate — see the discussion below. -/
 
-/-- **`ψ^∨`** (paper §4.4.1, `source/kc/arXiv.tex:389`), relative to a supplied
+/-- **`ψ^∨`** (paper §4.4.1, [VS24]), relative to a supplied
 enumeration `choices t` of the choice functions to use for the term `t`.
 
 Fixing the enumeration inside this definition would mean committing to a
@@ -315,7 +315,7 @@ theorem sat_of_sat_copyDNF {ψ : DNF ι} {choices : Finset (Lit ι) → List (ι
   exact ⟨t, ht, sat_of_sat_copyTerm hsat⟩
 
 /-- **Unambiguity of `ψ^∨`, in pairwise form** (paper's lemma at
-`source/kc/arXiv.tex:392`).
+[VS24, §4.4.1]).
 
 Two derived terms satisfied by the same assignment are *equal*.  The argument is
 the paper's: collapse `α`, use unambiguity of `ψ` to see both came from the same

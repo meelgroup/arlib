@@ -12,7 +12,8 @@ function `f ∘ g^κ` has one gadget per variable of `f`: Alice holds the left `
 bits of each gadget, Bob the right `b` bits, and the composed value is `f`
 applied to the vector of gadget outputs.
 
-Source: Göös–Kiefer–Yuan, `source/kc/goos/parts/union.tex`, "Nonnegative
+Source: Göös–Kiefer–Yuan, *Lower Bounds for Unambiguous Automata via Communication
+Complexity*, ICALP 2022 [GKY22, §3], "Nonnegative
 lifting" and "Proof of Theorem 2".
 
 ## The variable type, and why the doubling is free
@@ -40,9 +41,9 @@ operation on `f`.  That is what makes `ψ ∨ φ` — the composition of the two
 copies — equal to the composition of `f^∨`, which is the identity the whole
 union argument turns on.
 -/
-import Arlib.KnowledgeCompilation.Communication.NonnegRank
+import Arlib.Communication.NonnegRank
 
-namespace Arlib.KnowledgeCompilation
+namespace Arlib.Communication
 namespace Gadget
 
 variable (κ : Type*) [Fintype κ] [DecidableEq κ] (b : ℕ)
@@ -138,4 +139,4 @@ theorem compose_congr {g : (Fin b → Bool) → (Fin b → Bool) → Bool}
   unfold compose; rw [h]
 
 end Gadget
-end Arlib.KnowledgeCompilation
+end Arlib.Communication

@@ -56,7 +56,7 @@ No `sorry`.
 import Arlib.Probability.Poisson
 import Mathlib.Analysis.SpecialFunctions.Stirling
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped Nat
 
@@ -338,4 +338,4 @@ theorem poisson_entropy_le {lam : ℝ} (hlam : 0 < lam) :
   rw [hsplit]
   linarith [hbase]
 
-end Arlib
+end Arlib.Probability

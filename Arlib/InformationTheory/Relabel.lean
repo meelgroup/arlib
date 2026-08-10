@@ -31,6 +31,7 @@ steps are one rewrite rather than a fresh double-sum manipulation each time.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

@@ -37,7 +37,7 @@ theory in `Techniques/` talks about.
 
 Everything here is proved from first principles with no `sorry`.
 -/
-import Arlib.MarkovChains.Techniques.Chain
+import Arlib.Probability.FinDist
 
 namespace Arlib.MarkovChains
 

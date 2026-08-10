@@ -6,8 +6,10 @@ Authors: Suguman Bansal
 /-
 # Reachability values `V*`, `Q*`, and the Bellman optimality equations
 
-`Arlib.MDP.FixedPoint` defines `Q*` as *the fixed point of `H`*, on the
-paper's own authority that "the `Q`-Bellman optimality equation determines `Q*` completely".  This file
+`Arlib.MDP.FixedPoint` defines `Q*` as *the fixed point of `H`*, on the source
+paper's own authority that "the `Q`-Bellman optimality equation determines `Q*`
+completely" (that paper is not identified in this library; see
+`Arlib/MDP.lean`).  This file
 supplies the missing half of that sentence — the **coupling back to the real
 object**: it defines the optimal reachability value semantically, as the
 supremum over policies of the probability of reaching `S_T`, and proves it is

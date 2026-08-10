@@ -8,7 +8,7 @@ Authors: Kuldeep S. Meel
 
 The source monograph defines spectral independence as a bound `λ_max(Ψ) ≤ 1 + η`
 on the largest eigenvalue of an influence matrix `Ψ`.  That formulation cannot
-be used here (see `ROADMAP.md` §1.2), and it does not need to be: the monograph
+be used here (see `docs/dev/MarkovChains-ROADMAP.md` §1.2), and it does not need to be: the monograph
 itself proves that the eigenvalue bound is *equivalent* to a semidefinite
 ordering between the covariance form of `μ` and the diagonal form of its
 marginals, because `Cov = D · Ψ` with `D` diagonal.  We take that ordering as

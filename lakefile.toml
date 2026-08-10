@@ -1,14 +1,24 @@
 name = "arlib"
 defaultTargets = ["Arlib"]
-testDriver = ""
 
-# arlib — a curated, mathlib-style library of reusable Lean 4 lemmas distilled
-# from the meelgroup formalization projects. Pinned to the same Lean/Mathlib
-# release as the source projects so material migrates with zero porting.
+# `lake test` builds the smoke-test library, whose modules are short worked
+# examples of the public API — see `ArlibTest/`. They are deliberately NOT part
+# of `defaultTargets`: a consumer of the library should not pay to compile them.
+testDriver = "ArlibTest"
+
+# arlib — a curated, Mathlib-style library of reusable Lean 4 results in
+# randomised algorithms, knowledge compilation, and the probability and
+# information theory underneath them.
 #
 # Pin Mathlib to the git tag matching the toolchain in `lean-toolchain`
 # (leanprover/lean4:v4.15.0). If you bump the toolchain, bump this tag too and
 # re-run `lake update` + `lake exe cache get`.
+#
+# `doc-gen4` is deliberately NOT required here. Adding it would make every
+# `lake build` — including offline ones that reuse an already-materialised
+# Mathlib — try to fetch another package over the network. CI appends the
+# requirement itself for the documentation job only; see
+# `.github/workflows/build.yml` and CONTRIBUTING.md.
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
@@ -17,3 +27,6 @@ rev = "v4.15.0"
 
 [[lean_lib]]
 name = "Arlib"
+
+[[lean_lib]]
+name = "ArlibTest"

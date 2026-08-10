@@ -37,7 +37,7 @@ No `sorry`.  Single-file, depends only on `MixedCoinSpace`.
 -/
 import Arlib.Probability.MixedCoinSpace
 
-namespace Arlib
+namespace Arlib.Probability
 
 open MeasureTheory
 open Finset
@@ -109,4 +109,4 @@ theorem dependsOn_runCoins_of_firstComp {α : Type*} (C : MixedCoinSpace) (μ : 
 
 end MixedCoinSpace
 
-end Arlib
+end Arlib.Probability

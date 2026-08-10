@@ -7,17 +7,17 @@ Authors: Kuldeep S. Meel
 # Theorem `lbengine`: a `t`-cover of the vertex covers is exponentially large
 
 Igor Razgon, *On the read-once property of branching programs and CNFs of
-bounded treewidth*, Theorem `lbengine` (`source/kc/razgon/FBDDJOURN.tex:651`),
-proved in Subsection `lbenproof` (`source/kc/razgon/FBDDJOURN.tex:688`).
+bounded treewidth*, Theorem `lbengine` ([Raz16]),
+proved in Subsection `lbenproof` ([Raz16, §4.1]).
 
 Say a family `A` of subsets of `V(H)` **covers** the vertex covers of `H` if
 every vertex cover of `H` contains some member of `A`, and call it a
 **`t`-cover** if in addition every member has size at least `t`
-(`source/kc/razgon/FBDDJOURN.tex:645`).  The theorem: a `t`-cover of `VC(H)` has
+([Raz16, §4]).  The theorem: a `t`-cover of `VC(H)` has
 at least `2^{t/f(x)}` members, where `x` bounds the max-degree of `H` and `f` is
 determined by `2^{-1/f(x)} = (1 - 2^{-x})^{1/(x+1)}`.
 
-The consumer is Theorem `nrobplbdmw` (`source/kc/razgon/FBDDJOURN.tex:515`),
+The consumer is Theorem `le_size_of_matchingWidthGe` ([Raz16, `nrobplbdmw`]),
 which feeds in the family of witnessing sets `S(a)` of the `t`-nodes of a
 branching program and reads off a lower bound on the number of nodes.  It wants
 two shapes, and both are provided: `card_ge_of_isTCover`, a "no fixed point
@@ -87,7 +87,7 @@ condition, so it is counted by `card_filter_forall_mul` via
 Two steps are asserted in the source and supplied here in full.
 
 * "any `S` contains an independent set of size at least `|S|/(x+1)`"
-  (`source/kc/razgon/FBDDJOURN.tex:778`) is `exists_indep_subset`, proved by the
+  ([Raz16, §4.1]) is `exists_indep_subset`, proved by the
   greedy strong induction on `S.card`: delete a vertex together with its at most
   `x` neighbours.
 * The degenerate cases.  `x = 0` makes the base `1 - 2^0 = 0` and every
@@ -139,7 +139,7 @@ lemma graft_graft (A : Finset ι) (c d : ∀ i, β i) :
 variable [Fintype ι] [∀ i, Fintype (β i)]
 
 /-- **Independence, as a count** (the paper's `(4)` and `(5)`,
-`source/kc/razgon/FBDDJOURN.tex:739`).  If `P` depends only on the coordinates
+[Raz16, §4.1]).  If `P` depends only on the coordinates
 in `A` and `Q` only on the coordinates outside `A`, then
 
   `|{c | P c ∧ Q c}| · |Ω| = |{c | Q c}| · |{c | P c}|`,
@@ -183,7 +183,7 @@ predicates `p i` on the fibres,
   `|{c | ∀ i ∈ A, p i (c i)}| · ∏_{i ∈ A} |β i| = |Ω| · ∏_{i ∈ A} |{b | p i b}|`.
 
 This is the count behind `Pr(u ∉ Out(E_u)) = 2^{-|E_u|}`
-(`source/kc/razgon/FBDDJOURN.tex:776`): avoiding `u` is a separate constraint on
+([Raz16, §4.1]): avoiding `u` is a separate constraint on
 each edge at `u`, and each constraint leaves exactly one of the two endpoints
 available.  The proof is `Equiv.subtypePiEquivPi`, which turns the subtype of
 the product cut out by a coordinatewise condition into the product of the
@@ -222,7 +222,7 @@ section Outcome
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
-/-- **An outcome** (`source/kc/razgon/FBDDJOURN.tex:691`): a choice of one
+/-- **An outcome** ([Raz16, §4.1]): a choice of one
 endpoint from every unordered pair of vertices.  See the module docstring for
 why the choice is recorded as a dependent function into `{x // x ∈ e}` rather
 than as an orientation bit. -/
@@ -243,7 +243,7 @@ theorem outcome_nonempty : Nonempty (Outcome V) := by
 theorem card_outcome_pos : 0 < Fintype.card (Outcome V) :=
   Fintype.card_pos_iff.mpr outcome_nonempty
 
-/-- **`Out(E)`** (`source/kc/razgon/FBDDJOURN.tex:695`): the set of endpoints
+/-- **`Out(E)`** ([Raz16, §4.1]): the set of endpoints
 selected by `c` along the edges of `G`. -/
 def outcomeSet (G : SimpleGraph V) [DecidableRel G.Adj] (c : Outcome V) : Finset V :=
   G.edgeFinset.image (fun e => (c e : V))
@@ -251,7 +251,7 @@ def outcomeSet (G : SimpleGraph V) [DecidableRel G.Adj] (c : Outcome V) : Finset
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
 
 /-- The paper's `(1)`, `u ∈ Out(E) ↔ u ∈ Out(E_u)`
-(`source/kc/razgon/FBDDJOURN.tex:725`): a vertex is selected exactly when it is
+([Raz16, §4.1]): a vertex is selected exactly when it is
 selected on one of *its own* edges. -/
 theorem mem_outcomeSet {c : Outcome V} {u : V} :
     u ∈ outcomeSet G c ↔ ∃ e ∈ G.incidenceFinset u, (c e : V) = u := by
@@ -267,7 +267,7 @@ theorem mem_outcomeSet {c : Outcome V} {u : V} :
     rw [outcomeSet, Finset.mem_image]
     exact ⟨e, SimpleGraph.mem_edgeFinset.mpr he.1, hce⟩
 
-/-- **Every outcome selects a vertex cover** (`source/kc/razgon/FBDDJOURN.tex:714`).
+/-- **Every outcome selects a vertex cover** ([Raz16, §4.1]).
 This is what makes the counting argument contradict the covering hypothesis. -/
 theorem isVertexCover_outcomeSet (c : Outcome V) : IsVertexCover G (outcomeSet G c) := by
   intro u v huv
@@ -289,7 +289,7 @@ theorem mem_outcomeSet_congr {c d : Outcome V} {u : V}
   · rintro ⟨e, he, hce⟩; exact ⟨e, he, by rw [← hce, h e he]⟩
   · rintro ⟨e, he, hce⟩; exact ⟨e, he, by rw [← hce, h e he]⟩
 
-/-- **`E_S`** (`source/kc/razgon/FBDDJOURN.tex:721`): all edges meeting `S`. -/
+/-- **`E_S`** ([Raz16, §4.1]): all edges meeting `S`. -/
 def incidences (G : SimpleGraph V) [DecidableRel G.Adj] (I : Finset V) : Finset (Sym2 V) :=
   I.biUnion (fun v => G.incidenceFinset v)
 
@@ -315,7 +315,7 @@ def IsIndep (G : SimpleGraph V) (I : Finset V) : Prop :=
   ∀ ⦃u v : V⦄, u ∈ I → v ∈ I → ¬ G.Adj u v
 
 /-- The disjointness that independence buys (the paper's "the sets `E_{u_i}` are
-pairwise disjoint", `source/kc/razgon/FBDDJOURN.tex:747`): no edge at `u` meets
+pairwise disjoint", [Raz16, §4.1]): no edge at `u` meets
 any other vertex of an independent set containing `u`. -/
 theorem incidences_disjoint {u : V} {I : Finset V} (hu : u ∉ I)
     (hind : IsIndep G (insert u I)) :
@@ -333,7 +333,7 @@ theorem incidences_disjoint {u : V} {I : Finset V} (hu : u ∉ I)
   rw [this] at hmem
   exact hmem
 
-/-- **The greedy independent set** (`source/kc/razgon/FBDDJOURN.tex:778`): every
+/-- **The greedy independent set** ([Raz16, §4.1]): every
 set of vertices contains an independent subset of at least a `1/(x+1)` fraction
 of its size, where `x` bounds the max-degree.  The paper asserts this; the proof
 here is the greedy strong induction — take any vertex, discard it together with
@@ -417,7 +417,7 @@ theorem count_singleton (u : V) :
     (Finset.filter_congr (fun _ _ => by rw [Finset.singleton_subset_iff]))
 
 /-- **The independence step, as a product of counts** (the paper's induction on
-`|I|`, `source/kc/razgon/FBDDJOURN.tex:748`).  Adding a vertex `u` to an
+`|I|`, [Raz16, §4.1]).  Adding a vertex `u` to an
 independent set multiplies the count by `count G {u} / |Ω|`. -/
 theorem count_insert {u : V} {I : Finset V} (hu : u ∉ I) (hind : IsIndep G (insert u I)) :
     count G (insert u I) * Fintype.card (Outcome V) = count G I * count G {u} := by
@@ -473,7 +473,7 @@ theorem card_mem_ne_eq_one {e : Sym2 V} (he : ¬ e.IsDiag) {u : V} (hu : u ∈ e
       · exact absurd rfl hyu
 
 /-- **`Pr(u ∉ Out(E_u)) = 2^{-deg(u)}`, cleared of denominators**
-(`source/kc/razgon/FBDDJOURN.tex:776`): the outcomes avoiding `u` altogether are
+([Raz16, §4.1]): the outcomes avoiding `u` altogether are
 exactly a `2^{-deg u}` fraction of all outcomes. -/
 theorem card_avoid_mul (u : V) :
     (Finset.univ.filter (fun c : Outcome V => u ∉ outcomeSet G c)).card * 2 ^ G.degree u
@@ -518,7 +518,7 @@ section Real
 variable {V : Type*} [Fintype V] [DecidableEq V] {G : SimpleGraph V} [DecidableRel G.Adj]
 
 /-- **The base `1 - 2^{-x}`** of the paper's bound
-(`source/kc/razgon/FBDDJOURN.tex:700`). -/
+([Raz16, §4.1]). -/
 noncomputable def base (x : ℕ) : ℝ := 1 - (2 : ℝ) ^ (-(x : ℝ))
 
 /-- `1 - 2^{-x}` with the real exponent eliminated. -/
@@ -553,7 +553,7 @@ theorem base_pos {x : ℕ} (hx : 1 ≤ x) : 0 < base x := by
   linarith
 
 /-- **`Pr(u ∈ Out(E)) = 1 - 2^{-deg u} ≤ 1 - 2^{-x}`**
-(`source/kc/razgon/FBDDJOURN.tex:776`), in counting form. -/
+([Raz16, §4.1]), in counting form. -/
 theorem count_singleton_le {x : ℕ} (hx : G.maxDegree ≤ x) (u : V) :
     (count G {u} : ℝ) ≤ (Fintype.card (Outcome V) : ℝ) * base x := by
   set N : ℕ := Fintype.card (Outcome V) with hN
@@ -578,7 +578,7 @@ theorem count_singleton_le {x : ℕ} (hx : G.maxDegree ≤ x) (u : V) :
     ring
   linarith
 
-/-- **The claim, for independent sets** (`source/kc/razgon/FBDDJOURN.tex:748`):
+/-- **The claim, for independent sets** ([Raz16, §4.1]):
 `Pr(I ⊆ Out(E)) ≤ (1 - 2^{-x})^{|I|}`, in counting form.  Induction on `I`,
 using `count_insert` for the product step and `count_singleton_le` for each
 factor. -/
@@ -614,7 +614,7 @@ theorem count_le_pow {x : ℕ} (hx : G.maxDegree ≤ x) {I : Finset V} (hI : IsI
     rw [Finset.card_insert_of_not_mem hu, pow_succ]
     exact le_of_mul_le_mul_right hmul hN
 
-/-- **The Claim** (`source/kc/razgon/FBDDJOURN.tex:700`):
+/-- **The Claim** ([Raz16, §4.1]):
 `Pr(S ⊆ Out(E)) ≤ (1 - 2^{-x})^{|S|/(x+1)}` for *every* `S`, in counting form.
 Obtained from `count_le_pow` on a greedy independent subset of `S`.
 
@@ -640,7 +640,7 @@ theorem count_le_rpow {x : ℕ} (hx1 : 1 ≤ x) (hx : G.maxDegree ≤ x) (S : Fi
     _ ≤ (Fintype.card (Outcome V) : ℝ) * base x ^ ((S.card : ℝ) / ((x : ℝ) + 1)) := by
         exact mul_le_mul_of_nonneg_left h3 hN
 
-/-- **The union bound** (`source/kc/razgon/FBDDJOURN.tex:706`): if every vertex
+/-- **The union bound** ([Raz16, §4.1]): if every vertex
 cover contains a member of `A`, then every outcome is accounted for by some
 member of `A`. -/
 theorem card_le_sum_count (A : Finset (Finset V))
@@ -679,7 +679,7 @@ theorem isVertexCover_empty_of_maxDegree_eq_zero (H : SimpleGraph V) [DecidableR
   have := H.degree_le_maxDegree u
   omega
 
-/-- **Theorem `lbengine`** (`source/kc/razgon/FBDDJOURN.tex:651`), in the form
+/-- **Theorem `lbengine`** ([Raz16]), in the form
 "no size below the threshold survives": if `A` is a `t`-cover of the vertex
 covers of `H` and `H` has max-degree at most `x`, then
 
@@ -756,7 +756,7 @@ theorem card_ge_of_isTCover (H : SimpleGraph V) [DecidableRel H.Adj] (x t : ℕ)
         * (Fintype.card (Outcome V) : ℝ)) hN
     exact this
 
-/-- **The paper's `f`** (`source/kc/razgon/FBDDJOURN.tex:709`), defined
+/-- **The paper's `f`** ([Raz16, §4.1]), defined
 explicitly: the unique solution of `2^{-1/f(x)} = (1 - 2^{-x})^{1/(x+1)}`, i.e.
 
   `f(x) = -(x+1)·log 2 / log(1 - 2^{-x})`.
@@ -789,10 +789,10 @@ theorem two_rpow_div_f {x : ℕ} (hx : 1 ≤ x) (t : ℕ) :
   ring
 
 /-- **Theorem `lbengine`, in the paper's exponential form**
-(`source/kc/razgon/FBDDJOURN.tex:655`): a `t`-cover of `VC(H)` has at least
+([Raz16, `lbengine`]): a `t`-cover of `VC(H)` has at least
 `2^{t/f(x)}` members, where `x` bounds the max-degree of `H` and `f` is the
-explicit function above.  This is the shape quoted by Theorem `nrobplbdmw`
-(`source/kc/razgon/FBDDJOURN.tex:682`). -/
+explicit function above.  This is the shape quoted by Theorem `le_size_of_matchingWidthGe`
+([Raz16, §4]). -/
 theorem two_rpow_le_card (H : SimpleGraph V) [DecidableRel H.Adj] (x t : ℕ)
     (hx : H.maxDegree ≤ x) (A : Finset (Finset V))
     (hsize : ∀ S ∈ A, t ≤ S.card)

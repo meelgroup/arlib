@@ -6,7 +6,7 @@ Authors: Kuldeep S. Meel
 /-
 # Variable partitions and combinatorial rectangles
 
-The tool half of the area (paper §3, `source/kc/arXiv.tex:285`).  A lower bound
+The tool half of the area (paper §3, [VS24]).  A lower bound
 on the size of a structured circuit is obtained here by a detour through
 communication complexity: the rectangle lemma turns a d-SDNNF of size `s` into a
 partition of `f⁻¹(1)` into `s` rectangles, so a lower bound on the number of
@@ -61,14 +61,14 @@ import Arlib.Prelude
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 
-namespace Arlib.KnowledgeCompilation
+namespace Arlib.Communication
 
 variable {V : Type*} [DecidableEq V]
 
 /-! ## Variable partitions -/
 
 /-- **A partition `Π = (X, Y)` of a variable set `Z`** (paper §3,
-`source/kc/arXiv.tex:287`).
+[VS24, §3]).
 
 Two disjoint finite sets of variables whose union is `Z`.  The paper's `Π` is
 written `P` here: the character `Π` is not a legal Lean identifier (Lean 4
@@ -122,19 +122,19 @@ def swap : VarPartition Z where
 
 /-! ### Balancedness -/
 
-/-- **A balanced partition** (paper §3, `source/kc/arXiv.tex:287`; inventory
+/-- **A balanced partition** (paper §3, [VS24]; inventory
 D16): `|Z|/3 ≤ min(|X|, |Y|)`, stated as `|Z| ≤ 3 · min(|X|, |Y|)` so that
 everything stays in `ℕ` and no rounding convention has to be chosen.
 
 This is the paper's *own*, deliberately relaxed, notion of balancedness, and the
 relaxation is load-bearing: the proof of Claim `perm`
-(`source/kc/arXiv.tex:448`), the technical heart of the lifting from the
+([VS24, `claim: perm`]), the technical heart of the lifting from the
 fixed-partition to the best-partition model, is discharged in the paper by
 citing Knop, Theorem 4.2, with the remark that "we need to use our more relaxed
 notion of balancedness but an inspection of the proof shows that everything goes
-through" (`source/kc/arXiv.tex:460`).  Formalizing that step therefore means
+through" ([VS24, §4.5]).  Formalizing that step therefore means
 reconstructing the argument under *this* definition rather than transcribing a
-published one — see `ROADMAP.md`, gap G2.
+published one — see `docs/dev/KnowledgeCompilation-ROADMAP.md`, gap G2.
 
 One caveat about the folklore comparison, recorded here because it is easy to
 state the relaxation wrongly.  Relative to the textbook condition
@@ -200,7 +200,7 @@ end VarPartition
 
 /-! ## Rectangles -/
 
-/-- **A `Π`-rectangle** (paper §3, `source/kc/arXiv.tex:288`; inventory D17).
+/-- **A `Π`-rectangle** (paper §3, [VS24]; inventory D17).
 
 The paper's `A × B ⊆ {0,1}^X × {0,1}^Y`, encoded as a pair of predicates on
 total assignments together with the proofs that each depends only on its own
@@ -237,7 +237,7 @@ instance : Membership (V → Bool) (Rectangle P) :=
 /-- **The crossing property: rectangles are closed under exchanging halves.**
 
 If `α` and `β` both lie in `R`, then so does the assignment agreeing with `α` on
-`X` and with `β` on `Y` (paper §3, `source/kc/arXiv.tex:288`).
+`X` and with `β` on `Y` (paper §3, [VS24]).
 
 This is the combinatorial content of the definition and the only property of
 rectangles that a lower-bound proof ever consumes: it says a cover of `f⁻¹(b)`
@@ -281,7 +281,7 @@ end Rectangle
 
 variable {Z : Finset V} {P : VarPartition Z} {k m : ℕ}
 
-/-- **A cover** (paper §3, `source/kc/arXiv.tex:289`; inventory D18): the
+/-- **A cover** (paper §3, [VS24]; inventory D18): the
 `Π`-rectangles `R₁, …, R_k` cover `S` when `⋃ᵢ Rᵢ = S`.
 
 `S` is a predicate on assignments rather than a `Finset`, for the reason given
@@ -289,7 +289,7 @@ in the module docstring; the paper only ever instantiates it at `f⁻¹(b)`. -/
 def Covers (R : Fin k → Rectangle P) (S : (V → Bool) → Prop) : Prop :=
   ∀ α, (∃ i, α ∈ R i) ↔ S α
 
-/-- **A rectangular partition** (paper §3, `source/kc/arXiv.tex:292`; inventory
+/-- **A rectangular partition** (paper §3, [VS24]; inventory
 D18): a cover whose rectangles are moreover pairwise disjoint.
 
 This is the stronger notion, and it is the one produced by *determinism*: in the
@@ -362,4 +362,4 @@ lemma Partitions.extend {R : Fin k → Rectangle P} {S : (V → Bool) → Prop}
   obtain ⟨hj', hj⟩ := mem_extendFamily_iff.mp hj
   exact h.2 _ _ (fun he => hij (by simpa [Fin.ext_iff] using he)) α ⟨hi, hj⟩
 
-end Arlib.KnowledgeCompilation
+end Arlib.Communication

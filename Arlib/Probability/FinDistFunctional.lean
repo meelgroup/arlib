@@ -25,7 +25,7 @@ The key identities, all elementary algebra over a finite sum:
 
 We also record that `ip μ` is a positive semidefinite symmetric bilinear form
 (`isBilin_ip`, `ip_comm`, `ip_self_nonneg`), so that `psd_cauchy_schwarz` from
-`Arlib.MarkovChains.Bilinear` applies to it directly, together with the
+`Arlib.Probability.Bilinear` applies to it directly, together with the
 lambda-form bilinearity lemmas (`ip_add_left`, `ip_smul_right`, …) that the
 computations downstream actually rewrite with.
 
@@ -36,18 +36,21 @@ say that expectations, variances and their monotonicity see only the support.
 
 Finally, `Ex_push_eq` and `ip_push_eq` transport `Ex` and `ip` along a
 *rectangular* kernel; they involve no stationarity and are the bookkeeping that
-makes the law of total variance (`Techniques.LevelVariance`) a three-line
+makes the law of total variance (`Arlib.MarkovChains.Techniques.LevelVariance`)
+a three-line
 computation.
 
 Everything here is proved from first principles with no `sorry`.
 -/
-import Arlib.MarkovChains.Techniques.Chain
-import Arlib.MarkovChains.Techniques.Bilinear
+import Arlib.Probability.FinDist
+import Arlib.Probability.Bilinear
 
-namespace Arlib.MarkovChains
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
+
+namespace FinDist
 
 variable {Ω : Type*} [Fintype Ω]
 
@@ -391,5 +394,29 @@ in the form `⟪g, g⟫_μ - 1` for `g = ν/μ`. -/
 theorem chiSq_eq_ip_sub_one {ν μ : FinDist Ω} (hac : ∀ x, μ x = 0 → ν x = 0) :
     chiSq ν μ = ip μ (relDensity ν μ) (relDensity ν μ) - 1 := by
   rw [chiSq, Var_eq_ip_sub_sq, Ex_relDensity hac]; norm_num
+
+end FinDist
+
+end Arlib.Probability
+
+/-! ## Compatibility: the `Arlib.MarkovChains` spellings
+
+These declarations used to live in `namespace Arlib.MarkovChains` (in
+`Arlib/MarkovChains/Techniques/{Chain,Bilinear,Functional,TotalVariation,Coupling}.lean`).
+They are not Markov-chain-specific and now live in `Arlib.Probability`.  The
+aliases below reproduce the old fully-qualified names exactly, so that every
+`Arlib/MarkovChains/**` module keeps resolving them unchanged.  New code should
+use the `Arlib.Probability` names directly; this block can be deleted once the
+`Arlib.MarkovChains` call sites have been migrated. -/
+
+namespace Arlib.MarkovChains
+
+export Arlib.Probability.FinDist (Ex Ex_apply Ex_const Ex_add Ex_sub Ex_sum Ex_smul Ex_sub_const
+  Ex_nonneg Ex_mono Ex_mono_of_ne_zero Ex_pos_of_pos Ex_congr_ae Ex_comp_equiv Ex_act_of_stationary
+  ip ip_apply ip_comm ip_self_nonneg ip_eq_Ex_mul ip_one_right ip_self_eq_Ex_sq ip_const isBilin_ip
+  ip_add_left ip_add_right ip_smul_left ip_smul_right ip_sq_le Var Var_apply Var_nonneg
+  Var_eq_ip_sub_sq Var_const Var_sub_const Var_congr_ae Var_affine Var_eq_ip_self_of_mean_zero
+  Ex_center Var_eq_ip_center Var_eq_pair Var_le_ip_self Ex_push_eq ip_push_eq relDensity
+  relDensity_nonneg chiSq chiSq_nonneg Ex_relDensity chiSq_eq_ip_sub_one)
 
 end Arlib.MarkovChains

@@ -24,7 +24,7 @@ No `sorry`.
 -/
 import Arlib.Approximation.LewisWeights.Existence
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -90,4 +90,4 @@ theorem abs_dot_le_lewis_L1 (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d → 
   (abs_dot_le_lewis_sqrt_quad hL hw y i).trans
     (mul_le_mul_of_nonneg_left (sqrt_quad_le_L1 hL hw y) (hw i).le)
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

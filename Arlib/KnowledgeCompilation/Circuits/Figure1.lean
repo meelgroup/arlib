@@ -6,7 +6,7 @@ Authors: Kuldeep S. Meel
 /-
 # Figure 1: a worked structured d-DNNF, and the v-tree it respects
 
-The paper's Figure 1 (`source/kc/arXiv.tex:239`) draws a v-tree `T` on the left
+The paper's Figure 1 ([VS24, §2]) draws a v-tree `T` on the left
 and a circuit `C` on the right, asserts that `C` is a structured d-DNNF
 respecting `T`, and states the formula it computes:
 
@@ -79,7 +79,7 @@ namespace Arlib.KnowledgeCompilation
 
 namespace Figure1
 
-/-- The five variables of Figure 1 (`source/kc/arXiv.tex:239`). -/
+/-- The five variables of Figure 1 ([VS24, §2]). -/
 inductive Var where
   /-- The variable `a`. -/
   | a
@@ -98,7 +98,7 @@ open Var
 /-! ## The circuit -/
 
 /-- The gates of the circuit on the right of Figure 1
-(`source/kc/arXiv.tex:239`), in the topological order forced by `NNF.child_lt`.
+([VS24, §2]), in the topological order forced by `NNF.child_lt`.
 
 Indices `0`–`6` are the leaves and `7`–`14` the internal nodes; the names in the
 comments are the ones used in the picture's `tikz` source. -/
@@ -119,7 +119,7 @@ def G : Fin 15 → Gate Var 15
   | 13 => .disj 10 12      -- `v  = w4 ∨ g6`
   | 14 => .disj 8 13       -- `v2 = w2 ∨ v`, the source
 
-/-- **The circuit of Figure 1** (`source/kc/arXiv.tex:239`), fifteen nodes with
+/-- **The circuit of Figure 1** ([VS24, §2]), fifteen nodes with
 source `14`. -/
 def C : NNF Var where
   size := 15
@@ -226,7 +226,7 @@ variable (α : Var → Bool)
 end Val
 
 /-- **The formula the caption of Figure 1 claims the circuit computes**
-(`source/kc/arXiv.tex:238`):
+([VS24, §2]):
 
 ```
 ⟨C⟩ = (a ∧ b ∧ ¬c) ∨ (a ∧ b ∧ c ∧ e) ∨ (a ∧ b ∧ c ∧ d ∧ ¬e)
@@ -238,7 +238,7 @@ def caption (α : Var → Bool) : Bool :=
   (α a && α b && !α c) || (α a && α b && α c && α e) || (α a && α b && α c && α d && !α e)
 
 /-- **The circuit computes the formula in the caption of Figure 1**
-(`source/kc/arXiv.tex:238`).
+([VS24, §2]).
 
 The right-hand side is the paper's own assertion about `C`, transcribed from the
 caption without reference to the gates; the theorem says the drawing and the
@@ -254,7 +254,7 @@ theorem computes_caption : C.Computes caption := eval_eq_caption
 
 /-! ## The v-tree
 
-The tree on the left of Figure 1 (`source/kc/arXiv.tex:239`): `a` and `b` are
+The tree on the left of Figure 1 ([VS24, §2]): `a` and `b` are
 joined first, then `c`, and the `{d, e}` block hangs off the root. -/
 
 /-- The v-tree node over `{a, b}`. -/
@@ -266,7 +266,7 @@ def Tabc : VTree Var := .node Tab (.leaf c)
 /-- The v-tree node over `{d, e}`, the right child of the root. -/
 def Tde : VTree Var := .node (.leaf d) (.leaf e)
 
-/-- **The v-tree of Figure 1** (`source/kc/arXiv.tex:239`). -/
+/-- **The v-tree of Figure 1** ([VS24, §2]). -/
 def T : VTree Var := .node Tabc Tde
 
 @[simp] lemma vars_Tab : Tab.vars = {a, b} := rfl
@@ -317,7 +317,7 @@ values were. -/
 
 /-! ## Structuredness, decomposability, determinism -/
 
-/-- **`C` respects the v-tree `T`** (paper `source/kc/arXiv.tex:154`, and the
+/-- **`C` respects the v-tree `T`** ([VS24, §2], and the
 assertion of the caption of Figure 1).
 
 Note that four *different* nodes of `T` are used, one per shape of `∧`-node:
@@ -353,7 +353,7 @@ theorem deterministic : C.Deterministic := by
 theorem isSDNNF : C.IsSDNNF := NNF.isSDNNF_of_respects wellFormed_T respects_T
 
 /-- **The circuit of Figure 1 is a structured d-DNNF**, as the caption asserts
-(`source/kc/arXiv.tex:239`). -/
+([VS24, §2]). -/
 theorem isdSDNNF : C.IsdSDNNF := ⟨deterministic, isSDNNF⟩
 
 /-- **`C` is a d-DNNF**, a fortiori. -/

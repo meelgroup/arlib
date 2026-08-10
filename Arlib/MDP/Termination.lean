@@ -35,6 +35,7 @@ namespace Arlib
 
 open scoped BigOperators
 open Finset
+open Arlib.Combinatorics
 
 variable {S A : Type*} [Fintype S] [DecidableEq S] [Fintype A] [DecidableEq A]
 
@@ -452,7 +453,6 @@ theorem tendsto_timeVal (e : EscapeBound M) (s : S) :
     Filter.Tendsto (fun k => M.timeVal k s) Filter.atTop (nhds (M.timeSup s)) :=
   tendsto_atTop_ciSup (M.timeVal_monotone s) (M.bddAbove_timeVal e s)
 
-end MDP
 
 /-- **Stage 1 — the graph argument.**  The no-EC assumption yields a uniform
 escape bound.  (the almost-sure termination property, first two paragraphs of the appendix
@@ -548,4 +548,5 @@ theorem exists_hittingWeight_of_noEC {M : MDP S A} (h : M.NoEC) :
   let ⟨e⟩ := exists_escapeBound_of_noEC h
   exists_hittingWeight_of_escapeBound e
 
+end MDP
 end Arlib

@@ -30,7 +30,7 @@ data-dependent threshold).  Everything here is proved with no `sorry`.
 -/
 import Arlib.Probability.ProductSpace
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset FinProb
 
@@ -231,4 +231,4 @@ theorem condCE_reduceStep_pair_forgetSet (hpos : ∀ i c, 0 < C.coinMass i c)
   rw [hinner ω]
 
 end CoinSpace
-end Arlib
+end Arlib.Probability

@@ -63,8 +63,8 @@ provides no way to produce one.
 * `IsFPRAS.comp_parsimonious` — an FPRAS transfers along a parsimonious
   reduction.
 * `IsFPAUS.comp_bijection` — an FPAUS transfers along a bijective reduction.
-* `ParsimoniousReduction` — the two hypotheses bundled, with `.fpras` and
-  `.fpaus`.
+* `ParsimoniousReduction` — the two hypotheses bundled, with
+  `.isFPRAS_comp` and `.isFPAUS_comp`.
 -/
 
 universe u v
@@ -381,13 +381,13 @@ theorem card_eq (R : ParsimoniousReduction sizeA sizeB f g g₁ g₂) (w : α) :
   card_eq_of_equiv (R.decode w)
 
 /-- **An FPRAS transfers along the reduction.** -/
-theorem fpras (R : ParsimoniousReduction sizeA sizeB f g g₁ g₂)
+theorem isFPRAS_comp (R : ParsimoniousReduction sizeA sizeB f g g₁ g₂)
     {B : β → ℝ → PMF (ℝ × ℕ)} (hg : IsFPRAS sizeB g B) :
     IsFPRAS sizeA f (fun w ε => (B (R.toFun w) ε).map (fun p => (p.1, p.2 + R.cost w))) :=
   IsFPRAS.comp_parsimonious R.cost_poly R.size_poly R.count_eq hg
 
 /-- **An FPAUS transfers along the reduction.** -/
-theorem fpaus (R : ParsimoniousReduction sizeA sizeB f g g₁ g₂)
+theorem isFPAUS_comp (R : ParsimoniousReduction sizeA sizeB f g g₁ g₂)
     {B : β → ℝ → PMF (Option Ω₂ × ℕ)} (hg : IsFPAUS sizeB g₂ B) :
     IsFPAUS sizeA g₁ (fun w δ => (B (R.toFun w) δ).map
       (fun p => (decodeOpt (g₁ w) (g₂ (R.toFun w)) (R.decode w) p.1, p.2 + R.cost w))) :=

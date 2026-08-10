@@ -34,7 +34,7 @@ is an *exact* identity (no factor) rather than a lossy step, and is recorded in
 What this does **not** do is take the supremum over all queries `y` inside a single
 expectation at the optimal rate — that step needs the supremum-level contraction
 and a chaining/`weakbound` argument (suprema-of-stochastic-processes infrastructure
-absent from Mathlib; see `ROUTE_A_PLAN.md`).  Route A (`RouteA.process_uniform_tail`)
+absent from Mathlib; see `docs/dev/LewisWeights-ROUTE_A_PLAN.md`).  Route A (`RouteA.process_uniform_tail`)
 already gives the optimal *uniform* control for the pure sign process; Route B
 (`Embed.lewis_importance_embeds`) already gives a genuine all-query embedding at
 suboptimal size.  This file closes the sampling-side moment reduction between them.
@@ -44,10 +44,10 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Symmetrize
 import Arlib.Approximation.LewisWeights.Khintchine
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
-open Finset Arlib Arlib.Approximation
+open Finset Arlib Arlib.Approximation Arlib.Probability
 
 variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 variable {w : ι → ℝ} {a : ι → d → ℝ}
@@ -98,4 +98,4 @@ theorem sampled_moment_le_energy [Nonempty ι] (hw : ∀ i, 0 < w i)
   rw [radProb_Ex]
   exact avg_pow_le (fun r => sval w a m y (ω r)) hk
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

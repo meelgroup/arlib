@@ -9,11 +9,11 @@ import Arlib.KnowledgeCompilation.BranchingPrograms.Separation
 # Appendix B: the {\sc arosrn} and the traditional {\sc nrobp} are the same model
 
 Igor Razgon, *On the read-once property of branching programs and CNFs of bounded
-treewidth*, Appendix B (`source/kc/razgon/FBDDJOURN.tex:1360`-`1403`), together with the
-Remark that announces it at `source/kc/razgon/FBDDJOURN.tex:281`.
+treewidth*, Appendix B ([Raz16, §B]), together with the
+Remark that announces it at [Raz16, §2].
 
 `BranchingPrograms/NROBP.lean` formalizes the paper's Definition 1
-(`source/kc/razgon/FBDDJOURN.tex:262`), which — as that Remark admits — is not the
+([Raz16, `arosrn`]), which — as that Remark admits — is not the
 textbook nondeterministic read-once branching program at all but the *acyclic read-once
 switching-and-rectifier network*: one root, one leaf, labels on **edges**.  The textbook
 object has labels on **nodes** and two leaves.  This file builds the two translations, so
@@ -25,10 +25,10 @@ phrase was hiding.
 ## The traditional model
 
 `Equivalence.TraditionalBP V size` is Razgon's `Z` of
-`source/kc/razgon/FBDDJOURN.tex:1361`-`1366`: a {\sc dag} on the nodes `Fin size` with a
+[Raz16, §B]: a {\sc dag} on the nodes `Fin size` with a
 root and two distinguished leaves, a partial node labelling `varLabel : Fin size → Option V`,
 and edges labelled by `Option Bool` — `none` for an edge out of a *guessing* node
-(`source/kc/razgon/FBDDJOURN.tex:277`), `some p` for the `p`-branch out of a node labelled
+([Raz16, §2]), `some p` for the `p`-branch out of a node labelled
 with a variable.  The structure fields record exactly the paper's demands: a labelled node
 has an out-edge for each of `true` and `false` (`out_edge`) and no two out-edges with the
 same answer (`out_unique`), a labelled edge leaves a labelled node (`edge_decision`), an
@@ -40,7 +40,7 @@ The read-once condition is *not* a field, for the same reason as in `NROBP`: it 
 over `TraditionalBP.Path`, which cannot be defined until the structure exists.
 
 `TraditionalBP.Path` implements the paper's reading convention verbatim
-(`source/kc/razgon/FBDDJOURN.tex:1368`-`1371`): "it is convenient to see each edge `e`
+([Raz16, §B]): "it is convenient to see each edge `e`
 labelled with `true` or `false` being in fact labelled with the positive or negative
 literal of the variable labelling the tail of `e`".  Its `step` constructor takes the
 node's label `y` and the edge's answer `p` and conses the literal `(y, p)`; its `skip`
@@ -66,9 +66,9 @@ lists, transport along a path bijection is a one-line `ComputesBy.congr`.
 `TraditionalBP.toNROBP` keeps the node set, the root, and every edge, moves the label of a
 node onto its out-edges, and declares the `true` leaf to be *the* leaf.  `Fin size` in,
 `Fin size` out: **no increase in nodes and none in edges**, which is stronger than the
-paper's "without increase of the number of edges" (`source/kc/razgon/FBDDJOURN.tex:279`).
+paper's "without increase of the number of edges" ([Raz16, §2]).
 
-Razgon's recipe (`source/kc/razgon/FBDDJOURN.tex:1375`-`1381`) additionally *deletes* the
+Razgon's recipe ([Raz16, §B]) additionally *deletes* the
 `false` leaf and every node from which the `true` leaf is unreachable, and for that reason
 has to assume the computed function is not constantly `false`.  **Both the deletion and the
 hypothesis are avoidable here, and that is a genuine simplification of the paper.**  The
@@ -89,7 +89,7 @@ exactly what is wanted.
 This is the direction with real content, and the obstacle is bureaucratic rather than
 mathematical: `NROBP V size` indexes nodes by `Fin size` and carries
 `edge_lt : edge a b l → a < b`, while Razgon's construction
-(`source/kc/razgon/FBDDJOURN.tex:1383`-`1396`) *subdivides every labelled edge* with a
+([Raz16, §B]) *subdivides every labelled edge* with a
 fresh node and adds a `false` leaf.  Each new node must be inserted strictly between the
 endpoints of the edge it subdivides, so the target index type is not `Fin size` and the
 insertion is a global re-indexing.
@@ -131,7 +131,7 @@ bddSize V size = size * (size * (2 * |V|) + 1) + 1.
 That is an honest node bound but a loose one: only `size + (number of labelled edges) + 1`
 of those indices are ever the endpoint of an edge, the rest being empty slots that carry no
 label (`bddVarLabel` returns `none` on them) and no edge.  In *edges* — the quantity
-Razgon's Remark actually measures (`source/kc/razgon/FBDDJOURN.tex:280`) — the blow-up is
+Razgon's Remark actually measures ([Raz16, §2]) — the blow-up is
 the paper's: an unlabelled edge is copied, a labelled edge becomes the three edges
 `u → w`, `w → v`, `w → false`, so at most a threefold increase, and the empty slots
 contribute nothing.  Compressing the index range down to `size + |E_labelled| + 1` would
@@ -151,7 +151,7 @@ textbook programs.
 Two sentences of Appendix B carry real work.
 
 1. "*It is not hard to see that ... the obtained graph is an {\sc arosrn} computing exactly
-   the same function as `Z`*" (`source/kc/razgon/FBDDJOURN.tex:1375`).  What has to be
+   the same function as `Z`*" ([Raz16, §B]).  What has to be
    checked is that the relabelled graph's root-leaf paths carry the *same literal lists* as
    the original's root-`true`-leaf paths.  Here that is `toNROBP_path_iff`, and it is short
    only because `TraditionalBP.Path` was defined to read literals in the first place; the
@@ -162,7 +162,7 @@ Two sentences of Appendix B carry real work.
 
 2. "*It is not hard to see that there is a bijection between root-leaf paths of the
    {\sc arosrn} and root-true leaf paths of the resulting {\sc nrobp} preserving the
-   associated sets of literals*" (`source/kc/razgon/FBDDJOURN.tex:1401`).  The forward half
+   associated sets of literals*" ([Raz16, §B]).  The forward half
    is a routine induction (`bddOf_path_of_path`).  The backward half is not, and the reason
    is the `false` leaf: a traditional path arriving at a subdivision node `w` may leave by
    *either* of `w`'s two out-edges, and the wrong one reads the *complementary* literal.
@@ -202,7 +202,7 @@ with the same literals — and it is the form `ComputesBy.congr` consumes.
 `TraditionalBP`, `toNROBP` and the whole of Direction 1 are stated over an arbitrary `V`.
 
 The bundle `TraditionalBP` has thirteen fields, four of them positive demands, so
-`traditionalTrivial` inhabits it: see `Arlib/KnowledgeCompilation/ROADMAP.md` §1.3 for why
+`traditionalTrivial` inhabits it: see `docs/dev/KnowledgeCompilation-ROADMAP.md` §1.3 for why
 an uninhabited hypothesis bundle would make every theorem below vacuous while
 `#print axioms` reported nothing.
 
@@ -244,11 +244,11 @@ open NROBP
 /-! ## The traditional model -/
 
 /-- **A traditional nondeterministic read-once branching program** over the variables `V`,
-on `size` nodes (Razgon's `Z`, `source/kc/razgon/FBDDJOURN.tex:1361`).
+on `size` nodes (Razgon's `Z`, [Raz16, §B]).
 
 A {\sc dag} on `Fin size` with one root and two leaves.  `varLabel a = some y` marks `a` as
 a *decision* node testing the variable `y`; `varLabel a = none` marks it as a *guessing*
-node (`source/kc/razgon/FBDDJOURN.tex:277`) or a leaf.  `edge a b (some p)` is the
+node ([Raz16, §2]) or a leaf.  `edge a b (some p)` is the
 `p`-branch out of a decision node, `edge a b none` an unlabelled edge out of a guessing
 node.
 
@@ -292,7 +292,7 @@ variable {V : Type*} {size : ℕ}
 
 /-- **A directed path of a traditional program, together with the literals it reads.**
 
-This is the paper's reading convention of `source/kc/razgon/FBDDJOURN.tex:1368`: an edge
+This is the paper's reading convention of [Raz16, §B]: an edge
 answering `p` out of a node labelled `y` "is in fact labelled with" the literal `(y, p)`.
 `skip` pushes an unlabelled edge and leaves the list alone; `step` pushes an answered edge
 and conses the literal its tail's label determines.  Deliberately the same shape as
@@ -320,7 +320,7 @@ theorem Path.append {a b : Fin size} {ls : List (Lit V)} (h₁ : T.Path a b ls) 
 
 /-- A path leaving a node with no out-edges is empty.  Applied to the `false` leaf, this is
 the fact Razgon's "there is a bijection ... preserving the associated sets of literals"
-(`source/kc/razgon/FBDDJOURN.tex:1401`) silently uses: a path that takes the rejecting
+([Raz16, §B]) silently uses: a path that takes the rejecting
 branch out of a subdivision node is stuck there and never reaches the `true` leaf. -/
 theorem Path.eq_of_sink {a c : Fin size} {ls : List (Lit V)} (h : T.Path a c ls)
     (hs : ∀ (b : Fin size) (l : Option Bool), ¬ T.edge a b l) : c = a ∧ ls = [] := by
@@ -335,7 +335,7 @@ theorem Path.of_falseLeaf {c : Fin size} {ls : List (Lit V)} (h : T.Path T.false
   h.eq_of_sink fun _ _ => T.falseLeaf_sink
 
 /-- **The read-once property** for a traditional program: no directed path carries two
-literals of the same variable (`source/kc/razgon/FBDDJOURN.tex:1363`, "no variable occurs
+literals of the same variable ([Raz16, §B], "no variable occurs
 as a label twice on a directed path of `Z`"). -/
 def ReadOnce (T : TraditionalBP V size) : Prop :=
   ∀ {a b : Fin size} {ls : List (Lit V)}, T.Path a b ls → (ls.map Prod.fst).Nodup
@@ -345,7 +345,7 @@ end TraditionalBP
 /-! ## Computing a Boolean function -/
 
 /-- **The paper's connection between a program and a function**
-(`source/kc/razgon/FBDDJOURN.tex:262`), abstracted away from the program: `paths` is the
+([Raz16, `arosrn`]), abstracted away from the program: `paths` is the
 set of literal lists read by accepting paths, and `f` the function.
 
 Two clauses, the paper's: *soundness*, every total assignment extending an accepted list
@@ -374,7 +374,7 @@ Boolean function. -/
 def Computes {V : Type*} {size : ℕ} (Z : NROBP V size) (f : (V → Bool) → Prop) : Prop :=
   ComputesBy (Z.Path Z.root Z.leaf) f
 
-/-- **A traditional program computes `f`** (`source/kc/razgon/FBDDJOURN.tex:1372`: "the
+/-- **A traditional program computes `f`** ([Raz16, §B]: "the
 satisfying assignments of the function computed by `Z` are precisely those that are
 extensions of `A(P)` for paths `P` from the root to the `true` leaf"). -/
 def TraditionalBP.Computes {V : Type*} {size : ℕ} (T : TraditionalBP V size)
@@ -391,7 +391,7 @@ theorem computes_iff_realises {V : Type*} [Fintype V] [DecidableEq V] {size : �
 /-- **The traditional model is inhabited**: two nodes, no edges, the root doubling as the
 `true` leaf.
 
-`Arlib/KnowledgeCompilation/ROADMAP.md` §1.3 asks for this.  `TraditionalBP` bundles
+`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.3 asks for this.  `TraditionalBP` bundles
 thirteen fields, four of which are *positive* demands (`out_edge` in particular), and a
 bundle whose fields were jointly unsatisfiable would make every theorem below taking one as
 a hypothesis vacuously true, with `#print axioms` none the wiser.  This witness says
@@ -421,7 +421,7 @@ theorem traditionalTrivial_computes (V : Type*) :
 
 /-! ## Direction 1: a traditional program is an {\sc arosrn}, on the same nodes
 
-`source/kc/razgon/FBDDJOURN.tex:1375`-`1381`.  The paper relabels edges by literals, drops
+[Raz16, §B].  The paper relabels edges by literals, drops
 the node labels, and then deletes the `false` leaf together with everything from which the
 `true` leaf is unreachable.  Only the relabelling is performed here; see the module
 docstring for why the deletion — and with it the paper's hypothesis that the function is
@@ -431,12 +431,12 @@ namespace TraditionalBP
 
 variable {V : Type*} {size : ℕ}
 
-/-- **A traditional program, read as an {\sc arosrn}** (`source/kc/razgon/FBDDJOURN.tex:1376`).
+/-- **A traditional program, read as an {\sc arosrn}** ([Raz16, §B]).
 
 Same nodes, same root, same edges; the `true` leaf becomes *the* leaf; the label of a
 decision node is pushed onto its out-edges as a literal.  The node count is unchanged, so
 the simulation costs nothing at all — better than the paper's "without increase of the
-number of edges" (`source/kc/razgon/FBDDJOURN.tex:279`).
+number of edges" ([Raz16, §2]).
 
 The `false` leaf and any node from which the `true` leaf is unreachable survive as junk;
 they lie on no root-leaf path, hence affect neither the computed function nor
@@ -466,7 +466,7 @@ theorem toNROBP_edge (T : TraditionalBP V size) (a b : Fin size) (l : Option (Li
   Iff.rfl
 
 /-- **The paths agree.**  This is the content of the paper's first "it is not hard to see"
-(`source/kc/razgon/FBDDJOURN.tex:1375`): relabelling edges by literals changes no path's
+([Raz16, §B]): relabelling edges by literals changes no path's
 literal list.  Stated for arbitrary endpoints, so that read-onceness — which quantifies
 over all directed paths — transports as well. -/
 theorem toNROBP_path_iff (T : TraditionalBP V size) {a b : Fin size} {ls : List (Lit V)} :
@@ -519,7 +519,7 @@ theorem toNROBP_computes {T : TraditionalBP V size} {f : (V → Bool) → Prop}
 
 end TraditionalBP
 
-/-- **Direction 1, packaged** (`source/kc/razgon/FBDDJOURN.tex:1375`): every traditional
+/-- **Direction 1, packaged** ([Raz16, §B]): every traditional
 {\sc nrobp} on `size` nodes is simulated by an {\sc arosrn} on `size` nodes computing the
 same function, with read-onceness and uniformity preserved.
 
@@ -762,7 +762,7 @@ end Layout
 
 /-! ## Direction 2: an {\sc arosrn} is a traditional program
 
-`source/kc/razgon/FBDDJOURN.tex:1383`-`1401`.  Every labelled edge is subdivided by a fresh
+[Raz16, §B].  Every labelled edge is subdivided by a fresh
 decision node with a rejecting branch to a fresh `false` leaf. -/
 
 section Backward
@@ -789,7 +789,7 @@ noncomputable def slotEquiv (V : Type*) [Fintype V] (size : ℕ) :
     ring)
 
 /-- The subdivision node of the edge `u → v` labelled `x` (Razgon's `w`,
-`source/kc/razgon/FBDDJOURN.tex:1387`). -/
+[Raz16, §B]). -/
 noncomputable def bddSub (V : Type*) [Fintype V] {size : ℕ} (u v : Fin size) (x : Lit V) :
     Fin (bddSize V size) :=
   slotIdx u (slotEquiv V size (v, x))
@@ -797,7 +797,7 @@ noncomputable def bddSub (V : Type*) [Fintype V] {size : ℕ} (u v : Fin size) (
 variable (Z : NROBP V size)
 
 /-- **The edges of the traditional program built in Direction 2**
-(`source/kc/razgon/FBDDJOURN.tex:1381`-`1394`).  Four families: an unlabelled edge of `Z`
+([Raz16, §B]).  Four families: an unlabelled edge of `Z`
 is copied; a labelled edge `u → v` carrying `x` becomes the unlabelled edge `u → w`, the
 `x.2`-branch `w → v`, and the `!x.2`-branch `w → false`. -/
 def bddEdge (a b : Fin (bddSize V size)) (l : Option Bool) : Prop :=
@@ -811,7 +811,7 @@ def bddEdge (a b : Fin (bddSize V size)) (l : Option Bool) : Prop :=
 
 open Classical in
 /-- **The node labelling of the traditional program built in Direction 2**
-(`source/kc/razgon/FBDDJOURN.tex:1390`, "label `w` by `Var(x)`").  An index is labelled
+([Raz16, §B], "label `w` by `Var(x)`").  An index is labelled
 exactly when it decodes to a subdivision slot whose edge really is present in `Z`; the
 empty slots stay unlabelled, which is what keeps `out_edge` true of them vacuously. -/
 noncomputable def bddVarLabel (a : Fin (bddSize V size)) : Option V :=
@@ -832,7 +832,7 @@ theorem bddVarLabel_falseIdx :
   simp only [bddVarLabel, decodeSlot_falseIdx]
 
 /-- The subdivision node of an edge labelled `x` is labelled `Var(x)`
-(`source/kc/razgon/FBDDJOURN.tex:1390`). -/
+([Raz16, §B]). -/
 theorem bddVarLabel_bddSub {u v : Fin size} {x : Lit V} (h : Z.edge u v (some x)) :
     bddVarLabel Z (bddSub V u v x) = some x.1 := by
   classical
@@ -876,7 +876,7 @@ theorem bddSub_ne_falseIdx (u v : Fin size) (x : Lit V) :
     bddSub V u v x ≠ falseIdx size (slotCount V size) :=
   slotIdx_ne_falseIdx _ _
 
-/-- **Direction 2, the construction** (`source/kc/razgon/FBDDJOURN.tex:1383`-`1394`).
+/-- **Direction 2, the construction** ([Raz16, §B]).
 
 `hsink` says the {\sc arosrn}'s leaf really is a leaf — true of the paper's object, not
 recorded by the `NROBP` structure, and needed exactly once, to certify that the resulting
@@ -971,14 +971,14 @@ variable (hsink : ∀ (b : Fin size) (l : Option (Lit V)), ¬ Z.edge Z.leaf b l)
 @[simp] theorem bddOf_root : (bddOf Z hsink).root = origIdx _ Z.root := rfl
 
 /-- The `true` leaf of `bddOf` is the image of the {\sc arosrn}'s leaf
-(`source/kc/razgon/FBDDJOURN.tex:1384`). -/
+([Raz16, §B]). -/
 @[simp] theorem bddOf_trueLeaf : (bddOf Z hsink).trueLeaf = origIdx _ Z.leaf := rfl
 
 /-- The `false` leaf of `bddOf` is the fresh top index. -/
 @[simp] theorem bddOf_falseLeaf :
     (bddOf Z hsink).falseLeaf = falseIdx size (slotCount V size) := rfl
 
-/-- **Forward half of Razgon's path bijection** (`source/kc/razgon/FBDDJOURN.tex:1401`):
+/-- **Forward half of Razgon's path bijection** ([Raz16, §B]):
 every path of the {\sc arosrn} becomes a path of the traditional program reading the same
 literals.  A labelled edge is traversed in two steps — the unlabelled edge into the
 subdivision node, then its accepting branch — which is where the literal is read. -/
@@ -996,7 +996,7 @@ theorem bddOf_path_of_path {u w : Fin size} {ls : List (Lit V)} (h : Z.Path u w 
       (Or.inr (Or.inr (Or.inl ⟨a, b, x, he, rfl, rfl, rfl⟩))) ih
 
 /-- **Backward half of Razgon's path bijection**, the half the paper's "it is not hard to
-see" hides (`source/kc/razgon/FBDDJOURN.tex:1401`).
+see" hides ([Raz16, §B]).
 
 Two statements proved by one induction, because a traditional path may sit at an original
 node or in the middle of a subdivided edge, and those have different relationships to the
@@ -1055,7 +1055,7 @@ theorem bddOf_reflect {a c : Fin (bddSize V size)} {ls : List (Lit V)}
         (TraditionalBP.Path.of_falseLeaf (T := bddOf Z hsink) hpath).1
       exact origIdx_ne_falseIdx (slotCount V size) w (by rw [← hw, hc])
 
-/-- **The subdivision-node reflection lemma** (`source/kc/razgon/FBDDJOURN.tex:1401`), the
+/-- **The subdivision-node reflection lemma** ([Raz16, §B]), the
 "third reflection lemma (targets in the middle of a column)" the module docstring flags as
 missing for the backward transport of `Uniform`.
 
@@ -1125,7 +1125,7 @@ theorem bddOf_reflect_sub {a c : Fin (bddSize V size)} {ls : List (Lit V)}
       exact bddSub_ne_falseIdx u₁ v₁ x₁ (by rw [← hw, hc])
 
 /-- **`Uniform.prefix_vars` transports backwards across a subdivision node**
-(`source/kc/razgon/FBDDJOURN.tex:1401`): if the {\sc arosrn} `Z` is uniform then any two
+([Raz16, §B]): if the {\sc arosrn} `Z` is uniform then any two
 root-to-`bddSub u v x` paths of the traditional program read the same set of variables.
 
 This is the subdivision-node case of `TraditionalBP.Uniform.prefix_vars`, discharged by the
@@ -1142,7 +1142,7 @@ theorem bddOf_prefix_vars_bddSub [DecidableEq V] (hu : Z.Uniform) {u v : Fin siz
   hu.prefix_vars ((bddOf_reflect_sub hsink hls u v x rfl).1 Z.root rfl)
     ((bddOf_reflect_sub hsink hms u v x rfl).1 Z.root rfl)
 
-/-- **Razgon's path bijection** (`source/kc/razgon/FBDDJOURN.tex:1401`): the root-leaf
+/-- **Razgon's path bijection** ([Raz16, §B]): the root-leaf
 paths of the {\sc arosrn} and the root-to-`true`-leaf paths of the traditional program
 carry exactly the same literal lists. -/
 theorem bddOf_path_iff {ls : List (Lit V)} :
@@ -1227,7 +1227,7 @@ variable {V : Type*} [Fintype V] {size : ℕ}
 theorem bddSize_eq (V : Type*) [Fintype V] (size : ℕ) :
     bddSize V size = size * (size * (2 * Fintype.card V) + 1) + 1 := rfl
 
-/-- **Direction 2, packaged** (`source/kc/razgon/FBDDJOURN.tex:1383`-`1401`): an
+/-- **Direction 2, packaged** ([Raz16, §B]): an
 {\sc arosrn} on `size` nodes whose leaf is a sink is simulated by a traditional
 {\sc nrobp} on `size * (size * (2 * |V|) + 1) + 1` nodes, read-once if the original was,
 computing the same function, with Razgon's literal-preserving bijection between root-leaf
@@ -1249,15 +1249,15 @@ end BackwardPackage
 
 /-! ## The lower bound, read as a bound on textbook programs
 
-Direction 1 carries `Razgon.two_rpow_le_size` and `Razgon.maintheor`
-(`source/kc/razgon/FBDDJOURN.tex:668`, `:476`) across to the traditional model with no loss
+Direction 1 carries `Razgon.two_rpow_le_size` and `Razgon.two_rpow_le_size_binTree_pathGraph`
+([Raz16, §4], [Raz16, `maintheor`]) across to the traditional model with no loss
 at all, since `toNROBP` does not change the node count. -/
 
 section Corollaries
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
-/-- **`nrobplbdmw` for a textbook {\sc nrobp}** (`source/kc/razgon/FBDDJOURN.tex:515`):
+/-- **`le_size_of_matchingWidthGe` for a textbook {\sc nrobp}** ([Raz16, `nrobplbdmw`]):
 a uniform read-once *traditional* nondeterministic branching program — variable-labelled
 decision nodes, guessing nodes, a `true` and a `false` leaf — computing `φ(G)` for a graph
 `G` of matching width at least `t` and max-degree at most `x` has at least
@@ -1276,21 +1276,21 @@ theorem traditional_two_rpow_le_size {G : SimpleGraph V} [DecidableRel G.Adj] {t
 
 end Corollaries
 
-/-- **Razgon's Theorem `maintheor` for a textbook {\sc nrobp}**
-(`source/kc/razgon/FBDDJOURN.tex:476`): for `G = T_r(P_{2p})`, every uniform read-once
+/-- **Razgon's Theorem `two_rpow_le_size_binTree_pathGraph` for a textbook {\sc nrobp}**
+([Raz16, `maintheor`]): for `G = T_r(P_{2p})`, every uniform read-once
 traditional nondeterministic branching program computing `φ(G)` has at least
 `2^{((r+1-⌈log₂ p⌉)·p/2) / f(5)}` nodes.
 
 The statement that the {\sc nrobp} lower bound of this development is a lower bound in the
 *textbook* sense, and hence a lower bound for {\sc fbdd}s, which are the special case with
-no guessing nodes (`source/kc/razgon/FBDDJOURN.tex:277`). -/
-theorem traditional_maintheor {p r size : ℕ} (hr : Nat.clog 2 p ≤ r)
+no guessing nodes ([Raz16, §2]). -/
+theorem traditional_two_rpow_le_size_binTree_pathGraph {p r size : ℕ} (hr : Nat.clog 2 p ≤ r)
     [DecidableRel (TreeProduct.binTree r □ SimpleGraph.pathGraph (2 * p)).Adj]
     (T : TraditionalBP (TreeProduct.BinTreeNode r × Fin (2 * p)) size)
     (hro : T.ReadOnce) (hu : T.Uniform)
     (hc : T.Computes (phi (TreeProduct.binTree r □ SimpleGraph.pathGraph (2 * p)))) :
     (2 : ℝ) ^ ((((r + 1 - Nat.clog 2 p) * p / 2 : ℕ) : ℝ) / TCover.f 5) ≤ (size : ℝ) :=
-  Razgon.maintheor hr T.toNROBP (TraditionalBP.toNROBP_readOnce hro)
+  Razgon.two_rpow_le_size_binTree_pathGraph hr T.toNROBP (TraditionalBP.toNROBP_readOnce hro)
     (TraditionalBP.toNROBP_uniform hu)
     (computes_iff_realises.mp (TraditionalBP.toNROBP_computes hc))
 

@@ -15,14 +15,14 @@ need to reopen the paper except to check a proof detail.
   identities the paper attributes to reversibility only need stationarity.
 
 **Existing Lean (do not redo).**
-`Arlib/MarkovChains/Techniques/Chain.lean`: `FinDist`, `FinKernel` (rectangular!),
+`Arlib/Probability/FinDist.lean` (was `Arlib/MarkovChains/Techniques/Chain.lean`): `FinDist`, `FinKernel` (rectangular!),
 `FinChain`, `act`, `push`, `comp` (`∘ₖ`), `id`, `iter`, `Stationary`, `Reversible`,
 `Reversible.stationary`, `act_const/add/sub/sub_const/smul`, `act_comp`.
-`Techniques/Functional.lean`: `Ex`, `ip`, `Var`, `Ex_act_of_stationary`, `ip_comm`,
+`Arlib/Probability/FinDistFunctional.lean` (was `Techniques/Functional.lean`): `Ex`, `ip`, `Var`, `Ex_act_of_stationary`, `ip_comm`,
 `ip_self_nonneg`, `ip_sq_le` (Cauchy–Schwarz), `Var_eq_ip_sub_sq`, `Var_eq_pair`,
 `Var_sub_const`, `Var_eq_ip_self_of_mean_zero`, `Var_eq_ip_center`, `Var_le_ip_self`,
 `relDensity`, `chiSq`, `Ex_relDensity`, `chiSq_eq_ip_sub_one`.
-`Techniques/Bilinear.lean`: `IsBilin`, `psd_cauchy_schwarz` (discriminant proof),
+`Arlib/Probability/Bilinear.lean` (was `Techniques/Bilinear.lean`): `IsBilin`, `psd_cauchy_schwarz` (discriminant proof),
 `isBilin_weighted`.
 
 ---

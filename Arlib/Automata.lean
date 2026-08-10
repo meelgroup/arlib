@@ -9,30 +9,39 @@ Authors: Kuldeep S. Meel
 Finite automata, and lower bounds on the number of states they need.
 
 The development follows Mika Göös, Stefan Kiefer and Weiqiang Yuan, *Lower
-Bounds for Unambiguous Automata via Communication Complexity* (ICALP 2022), in
-`source/kc/goos/`.  The paper proves three blowup theorems about *unambiguous*
+Bounds for Unambiguous Automata via Communication Complexity*, ICALP 2022,
+LIPIcs vol. 229, art. 126 (arXiv:2109.09155) — cited below as [GKY22].  The paper proves three blowup theorems about *unambiguous*
 finite automata — automata with at most one accepting run per word — and it
 proves all three by translating them into communication complexity.
 
-## Why this area depends on `Arlib.KnowledgeCompilation`
+## Why this area depends on `Arlib.Communication`
 
 The translation is the point of the paper, so the communication-complexity
 machinery is not incidental here: it is where the content lives.  That machinery
-already existed in this library, in `Arlib.KnowledgeCompilation.Communication`,
-because the knowledge-compilation area was built on the same tools — indeed on
-this very paper, which it cites as an imported result.  Two of its files,
-`Communication.ConicalJunta` and `Communication.NonnegRank`, contain
-Göös–Kiefer–Yuan's own Lemma 14 and the inequality `Par₁ ≥ rk⁺`, both proved.
+already existed in this library, because `Arlib.KnowledgeCompilation` was built
+on the same tools — indeed on this very paper, which it cites as an imported
+result — and it lived inside that area, in
+`Arlib.KnowledgeCompilation.Communication`.
 
-So `Arlib.Automata` imports from `Arlib.KnowledgeCompilation` rather than
-duplicating it.  If the dependency ever becomes awkward, the fix is to promote
-`Communication/` to an area of its own that both depend on; nothing in either
-area would have to change apart from module names.
+It does not any more.  A tool that two areas depend on should be an area, so
+rectangles, covers, the measures `Cov` and `Par`, nonnegative rank and gadget
+composition are now `Arlib.Communication`, which sits below both this area and
+`Arlib.KnowledgeCompilation` and imports nothing but `Arlib.Prelude`.  This area
+therefore depends on `Arlib.Communication` and **not** on
+`Arlib.KnowledgeCompilation` for its communication machinery — only
+`Automata.DNFtoUFA`, `Automata.WordCoding`, `Automata.Union` and
+`Automata.Complement` reach into the knowledge-compilation area at all, and they
+do so for DNFs and for `UnionDerived`, not for rectangles.
+
+What did *not* move is Göös–Kiefer–Yuan's own Lemma 14: it is about conical
+juntas of DNF terms, so it stayed with the DNF machinery as
+`Arlib.KnowledgeCompilation.LowerBounds.ConicalJunta`.  The other half of their
+groundwork, the inequality `Par₁ ≥ rk⁺`, is `Arlib.Communication.NonnegRank`.
 
 ## The two models of a two-party function
 
-The area uses `Communication.TwoParty`, which is rectangles and covers for a
-bare `F : X → Y → Bool` on arbitrary types, rather than `Communication.Rectangle`,
+The area uses `Arlib.Communication.TwoParty`, which is rectangles and covers for a
+bare `F : X → Y → Bool` on arbitrary types, rather than `Arlib.Communication.Rectangle`,
 which fixes a partition of a *variable set*.  An automaton reads a word and the
 split is at a *position*: Alice holds a prefix, Bob a suffix.  A variable
 partition of a Boolean cube is the wrong shape for that, and it is the wrong
@@ -116,7 +125,7 @@ counting projects rather than by the lower bounds.
   from trees to *automata*: states `S ⊕ (Γ × List S)`, alphabet `Γ ⊕ Unit` with
   `Sum.inr ()` playing the `@` of the TATA construction, and the spine peeling
   the comb from the right.  `ncard_langOfSize_binarize` is the counting identity
-  `|L_{2n−1}(binarize A)| = |L_n(A)|` that the source papers cite to `[tata2007]`
+  `|L_{2n−1}(binarize A)| = |L_n(A)|` that the source papers cite to `[TATA]`
   without proof; `isFPRAS_of_binary` / `isFPAUS_of_binary` transport both
   guarantees along it.  The decoding — which those papers assert can be done in
   polynomial time and never argue — is the proved bijection `finsetEncodeEquiv`,

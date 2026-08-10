@@ -9,13 +9,13 @@ Authors: Kuldeep S. Meel
 Part of Step 1 of `KnowledgeCompilation.Tseitin`, formalizing the resolution
 vocabulary of §3 of Florent de Colnet and Stefan Mengel, *Characterizing
 Tseitin-formulas with short regular resolution refutations*
-(`source/kc/decolnet/main.tex:384`).
+([dCM21, §2]).
 
 A **resolution refutation** of a CNF `F` derives the empty clause from the clauses
 of `F` by the resolution rule; its **length** is the number of derived clauses,
 and this is the quantity the main theorem lower-bounds.  A refutation is
 **regular** when, on every directed path of its derivation DAG, no variable is
-resolved twice (`:389`).
+resolved twice ([dCM21, §2]).
 
 The definitions here are generic (over any variable type and clause list), and
 self-contained — no `Tseitin`-specific CNF encoding is built, since Step 1 only
@@ -30,10 +30,10 @@ open Finset
 variable {V : Type*} [DecidableEq V]
 
 /-- **A clause**: a finite set of literals `(variable, polarity)`
-(`source/kc/decolnet/main.tex:387`).  Reuses `Circuits.DNF`'s `Lit V = V × Bool`. -/
+([dCM21, §2]).  Reuses `Circuits.DNF`'s `Lit V = V × Bool`. -/
 abbrev Clause (V : Type*) := Finset (V × Bool)
 
-/-- **`D` is the resolvent of `C₁` and `C₂` on `x`** (`source/kc/decolnet/main.tex:387`):
+/-- **`D` is the resolvent of `C₁` and `C₂` on `x`** ([dCM21, §2]):
 `C₁` contains `x`, `C₂` contains `¬x`, and `D` is their union with `x` and `¬x`
 removed. -/
 def IsResolvent (D C₁ C₂ : Clause V) (x : V) : Prop :=
@@ -41,7 +41,7 @@ def IsResolvent (D C₁ C₂ : Clause V) (x : V) : Prop :=
     D = C₁.erase (x, true) ∪ C₂.erase (x, false)
 
 /-- **A resolution refutation of `F` with `n` derived clauses**
-(`source/kc/decolnet/main.tex:387`): each clause is either an axiom of `F` or the
+([dCM21, §2]): each clause is either an axiom of `F` or the
 resolvent of two *earlier* clauses, and the empty clause `∅` is derived.  The
 `parent` field records the derivation DAG and the resolved variable of each
 resolution step, which is what regularity is stated on. -/
@@ -74,7 +74,7 @@ def DirectParent (R : Refutation F n) (i j : Fin n) : Prop :=
 def Ancestor (R : Refutation F n) : Fin n → Fin n → Prop :=
   Relation.TransGen R.DirectParent
 
-/-- **A refutation is regular** (`source/kc/decolnet/main.tex:389`): on every
+/-- **A refutation is regular** ([dCM21, §2]): on every
 directed path no variable is resolved twice, i.e. no two nodes on a common
 ancestor-chain resolve the same variable. -/
 def IsRegular (R : Refutation F n) : Prop :=
@@ -84,7 +84,7 @@ def IsRegular (R : Refutation F n) : Prop :=
 end Refutation
 
 /-- **`F` has a regular resolution refutation of length at most `S`**
-(`source/kc/decolnet/main.tex:387`).  The paper's "smallest regular refutation
+([dCM21, §2]).  The paper's "smallest regular refutation
 length" is the least such `S`; this predicate is the form the reduction consumes. -/
 def RegRefutationLen (F : List (Clause V)) (S : ℕ) : Prop :=
   ∃ n, n ≤ S ∧ ∃ R : Refutation F n, R.IsRegular

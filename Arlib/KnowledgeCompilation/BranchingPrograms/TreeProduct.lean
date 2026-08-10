@@ -7,10 +7,10 @@ Authors: Kuldeep S. Meel
 # The tree product `T(H)` and Razgon's matching-width lower bound
 
 The structural half of Igor Razgon, *On the read-once property of branching
-programs and CNFs of bounded treewidth* (`source/kc/razgon/FBDDJOURN.tex`,
+programs and CNFs of bounded treewidth* ([Raz16],
 section `dmwmainproof`, lines 783–1032): the construction `T(H)`, the three
 structural lemmas `matchontheway`, `mincase`, `dmwtwstruct`, and the degree
-and treewidth bounds that the final theorem `dmwtw` needs.
+and treewidth bounds that the final theorem `razgonGraph_bounds` needs.
 
 ## `T(H)` is the box product
 
@@ -120,13 +120,13 @@ instantiated.
 Mathlib at this version has no treewidth.  `TreeDecomposition` here is a local
 definition — a decomposition tree, a bag per node, and the three axioms — used
 *only* to state the upper bound `treewidth (T_r(H)) ≤ 2·|V(H)| - 1` that
-Razgon's `dmwtw` needs.  It is deliberately minimal (no width function, no
+Razgon's `razgonGraph_bounds` needs.  It is deliberately minimal (no width function, no
 `sInf` over decompositions, no equivalence with any other characterisation);
 if Mathlib ever grows treewidth, this should be deleted rather than developed.
 
 ## What is *not* here
 
-The last step of `dmwtw` — repackaging `r` as `log n` — is not formalised.
+The last step of `razgonGraph_bounds` — repackaging `r` as `log n` — is not formalised.
 The paper's arithmetic there is loose (it silently replaces `r+1` by
 `log n - ⌈log k⌉` and absorbs several constants), and the clean statement is
 `binTree_boxProd_matchingWidthGe` itself:
@@ -289,7 +289,7 @@ theorem exists_injective_family {L : Finset β} {n : ℕ} (h : n ≤ L.card) :
 variable [Fintype α] [DecidableEq α] [DecidableEq β]
 
 omit [Fintype α] in
-/-- **Lemma `matchontheway`** (`source/kc/razgon/FBDDJOURN.tex:829`).
+/-- **Lemma `matchontheway`** ([Raz16]).
 
 The vertices of `T(H)` are two-coloured by membership in `S`.  Suppose two
 copies `H₁`, `H₂` of `H` — sitting at tree vertices `t₁`, `t₂` joined by a walk
@@ -362,7 +362,7 @@ theorem crossMatching_of_two_copies {T : SimpleGraph α} {H : SimpleGraph β}
 omit [Fintype α] [DecidableEq β] in
 /-- **A copy with many vertices on one side of the partition.**
 
-This is the step the paper (`source/kc/razgon/FBDDJOURN.tex:889`) argues by
+This is the step the paper ([Raz16, §5]) argues by
 "otherwise the vertices of the copies of `H` associated with the
 non-partitioned vertices of `T` all belong to `V₁`" — which is not true as
 stated, since a non-partitioned copy may lie entirely in `V₂`.
@@ -437,7 +437,7 @@ theorem exists_rich_copy {A : Finset α} {p : ℕ} (hp : 1 ≤ p)
   omega
 
 omit [Fintype α] in
-/-- **Lemma `mincase`** (`source/kc/razgon/FBDDJOURN.tex:861`).
+/-- **Lemma `mincase`** ([Raz16]).
 
 `A` is a connected set of at least `p` tree vertices, `H` is connected with at
 least `2p` vertices, and the cut `S` splits the region over `A` into two parts
@@ -678,7 +678,7 @@ def RegionSplit (T : SimpleGraph α) (H : SimpleGraph β) (p : ℕ) (A : Finset 
     ∃ M : CrossMatching (T □ H) (prefixSet e i) m,
       (∀ j, M.left j ∈ region A β) ∧ (∀ j, M.right j ∈ region A β)
 
-/-- **The base case of `dmwtwstruct`** (`source/kc/razgon/FBDDJOURN.tex:926`).
+/-- **The base case of `dmwtwstruct`** ([Raz16, §5]).
 
 A connected region on at least `p` tree vertices, with `H` connected on at
 least `2p` vertices, admits a cut meeting it in exactly `p²` vertices; the
@@ -708,7 +708,7 @@ theorem regionSplit_base {T : SimpleGraph α} {H : SimpleGraph β} {p : ℕ} {A 
       (S := prefixSet e i) (by omega) hcompl
   exact ⟨i, by omega, hcompl, M, hM₁, hM₂⟩
 
-/-- **The induction step of `dmwtwstruct`** (`source/kc/razgon/FBDDJOURN.tex:938`).
+/-- **The induction step of `dmwtwstruct`** ([Raz16, §5]).
 
 `A` contains three pairwise disjoint regions `As 0, As 1, As 2`, each already
 known to satisfy `RegionSplit … m`, and removing any one of them from `A`
@@ -789,7 +789,7 @@ structure SubtreeSystem (T : SimpleGraph α) where
     (∀ k, As k ⊆ A) ∧ (∀ k l, k ≠ l → Disjoint (As k) (As l)) ∧
       (∀ k, Sub h (As k)) ∧ (∀ k, ConnectedWithin T (A \ As k))
 
-/-- **Lemma `dmwtwstruct`, the induction** (`source/kc/razgon/FBDDJOURN.tex:921`).
+/-- **Lemma `dmwtwstruct`, the induction** ([Raz16, §5]).
 
 For a subtree of height `⌈log p⌉ + 2x` the paper's strengthened statement holds
 with matching size `(x+1)p`.  Induction on `x` in steps of `2`, exactly as in
@@ -902,7 +902,7 @@ def binTree (r : ℕ) : SimpleGraph (BinTreeNode r) where
   loopless := by
     rintro u (⟨b, hb⟩ | ⟨b, hb⟩) <;> exact absurd (congrArg List.length hb) (by simp)
 
-/-- **The vertex count of `T_r(H)`** (`source/kc/razgon/FBDDJOURN.tex:1013`):
+/-- **The vertex count of `T_r(H)`** ([Raz16, §5]):
 `|V(T_r(H))| = (2^{r+1} - 1) · |V(H)|`. -/
 theorem card_binTree_boxProd (r : ℕ) (β : Type*) [Fintype β] :
     Fintype.card (BinTreeNode r × β) = (2 ^ (r + 1) - 1) * Fintype.card β := by
@@ -1087,7 +1087,7 @@ def binTreeSubtreeSystem (r : ℕ) : SubtreeSystem (binTree r) where
       refine connectedWithin_subtreeAt_sdiff (by omega) ?_
       rw [binTreeGrandchild_length]; omega
 
-/-- **Lemma `dmwtwstruct`** (`source/kc/razgon/FBDDJOURN.tex:891`).
+/-- **Lemma `dmwtwstruct`** ([Raz16]).
 
 For any `p ≥ 1`, any connected `H` on at least `2p` vertices, and any
 `r ≥ ⌈log p⌉`,
@@ -1136,7 +1136,7 @@ theorem card_triple_le {V : Type*} [DecidableEq V] (a b c : V) :
 omit [Fintype β] [Fintype α] in
 /-- **Degrees add across the box product.**  In `T(H)` a vertex is adjacent to
 its `H`-neighbours inside its own copy and to its own image in the copy at each
-`T`-neighbour (paper, `source/kc/razgon/FBDDJOURN.tex:1005`). -/
+`T`-neighbour ([Raz16, §5]). -/
 theorem maxDegreeLe_boxProd {T : SimpleGraph α} {H : SimpleGraph β} {dT dH : ℕ}
     (hT : MaxDegreeLe T dT) (hH : MaxDegreeLe H dH) : MaxDegreeLe (T □ H) (dT + dH) := by
   classical
@@ -1199,7 +1199,7 @@ theorem maxDegreeLe_pathGraph (n : ℕ) : MaxDegreeLe (SimpleGraph.pathGraph n) 
     tauto
 
 /-- **The graphs `T_r(P_q)` have max degree at most `5`**
-(`source/kc/razgon/FBDDJOURN.tex:998`): at most `2` neighbours inside the copy
+([Raz16, §5]): at most `2` neighbours inside the copy
 of the path, and at most `3` outside it. -/
 theorem maxDegreeLe_binTree_pathGraph (r q : ℕ) :
     MaxDegreeLe (binTree r □ SimpleGraph.pathGraph q) 5 :=
@@ -1209,7 +1209,7 @@ theorem maxDegreeLe_binTree_pathGraph (r q : ℕ) :
 
 /-- **A tree decomposition of `G`** — a *local* definition.
 
-Mathlib at this version has no treewidth, and Razgon's `dmwtw` needs an upper
+Mathlib at this version has no treewidth, and Razgon's `razgonGraph_bounds` needs an upper
 bound on the treewidth of `T_r(H)`.  This is the standard notion, minimal: a
 decomposition tree on `ι`, a bag per node, and the three axioms (every vertex
 is in a bag, every edge is inside a bag, the nodes whose bag contains a given
@@ -1239,7 +1239,7 @@ def TreewidthLe {V : Type*} (G : SimpleGraph V) (k : ℕ) : Prop :=
 
 omit [DecidableEq β] in
 /-- **The treewidth of `T_r(H)` is at most `2·|V(H)| - 1`**
-(`source/kc/razgon/FBDDJOURN.tex:993`).
+([Raz16, §5]).
 
 The paper's decomposition, verbatim: the decomposition tree is `T_r` itself and
 the bag at `t` is the copy of `H` at `t` together with the copy at `t`'s parent.
@@ -1317,9 +1317,35 @@ theorem treewidthLe_binTree_boxProd (r : ℕ) (H : SimpleGraph β) :
         ≤ 2 * Fintype.card β := Nat.mul_le_mul_right _ h3
       _ ≤ 2 * Fintype.card β - 1 + 1 := by omega
 
-/-! ## The class `T_r(P_q)` of Theorem `dmwtw` -/
+/-! ## The class `T_r(P_q)` of Theorem `razgonGraph_bounds` -/
 
-/-- **The concrete class of Theorem `dmwtw`** (`source/kc/razgon/FBDDJOURN.tex:988`),
+/-- **The vertex count of `T_r(P_{2p})`**: `(2^{r+1} - 1) · 2p`.
+
+This is `card_binTree_boxProd` at `H = P_{2p}`, with `Fintype.card (Fin (2p))`
+evaluated. -/
+theorem card_binTree_pathGraph (p r : ℕ) :
+    Fintype.card (BinTreeNode r × Fin (2 * p)) = (2 ^ (r + 1) - 1) * (2 * p) := by
+  simpa using card_binTree_boxProd r (Fin (2 * p))
+
+/-- **The treewidth of `T_r(P_{2p})` is at most `4p - 1`**.
+
+This is `treewidthLe_binTree_boxProd` at `H = P_{2p}`, with
+`Fintype.card (Fin (2p))` evaluated. -/
+theorem treewidthLe_binTree_pathGraph (p r : ℕ) :
+    TreewidthLe (binTree r □ SimpleGraph.pathGraph (2 * p)) (2 * (2 * p) - 1) := by
+  simpa using treewidthLe_binTree_boxProd r (SimpleGraph.pathGraph (2 * p))
+
+/-- **The matching width of `T_r(P_{2p})` is at least `(r + 1 - ⌈log p⌉)·p/2`**.
+
+This is `binTree_boxProd_matchingWidthGe` at `H = P_{2p}`, with its two side
+conditions — that a path is preconnected, and that `P_{2p}` has at least `2p`
+vertices — discharged once and for all, so that call sites need only `hr`. -/
+theorem matchingWidthGe_binTree_pathGraph (p r : ℕ) (hr : Nat.clog 2 p ≤ r) :
+    MatchingWidthGe (binTree r □ SimpleGraph.pathGraph (2 * p))
+      ((r + 1 - Nat.clog 2 p) * p / 2) :=
+  binTree_boxProd_matchingWidthGe (SimpleGraph.pathGraph_preconnected (2 * p)) (by simp) hr
+
+/-- **The concrete class of Theorem `razgonGraph_bounds`** ([Raz16, §5]),
 with `H = P_{2p}` a path on `2p` vertices:
 
 * `T_r(P_{2p})` has `(2^{r+1} - 1) · 2p` vertices;
@@ -1328,18 +1354,21 @@ with `H = P_{2p}` a path on `2p` vertices:
 * its matching width is at least `(r + 1 - ⌈log p⌉) · p / 2`.
 
 The paper's final step, turning `r` into `log n`, is deliberately not performed
-here — see the module docstring. -/
+here — see the module docstring.
+
+This is a **derived convenience**: it is exactly the conjunction of
+`card_binTree_pathGraph`, `maxDegreeLe_binTree_pathGraph`,
+`treewidthLe_binTree_pathGraph` and `matchingWidthGe_binTree_pathGraph`, each of
+which is available separately.  Prefer the components at a call site that wants
+only some of them; nothing in the library should index into this tuple. -/
 theorem binTree_pathGraph_bounds (p r : ℕ) (hr : Nat.clog 2 p ≤ r) :
     Fintype.card (BinTreeNode r × Fin (2 * p)) = (2 ^ (r + 1) - 1) * (2 * p) ∧
       MaxDegreeLe (binTree r □ SimpleGraph.pathGraph (2 * p)) 5 ∧
       TreewidthLe (binTree r □ SimpleGraph.pathGraph (2 * p)) (2 * (2 * p) - 1) ∧
       MatchingWidthGe (binTree r □ SimpleGraph.pathGraph (2 * p))
-        ((r + 1 - Nat.clog 2 p) * p / 2) := by
-  refine ⟨by simpa using card_binTree_boxProd r (Fin (2 * p)),
-    maxDegreeLe_binTree_pathGraph r (2 * p),
-    by simpa using treewidthLe_binTree_boxProd r (SimpleGraph.pathGraph (2 * p)),
-    binTree_boxProd_matchingWidthGe (SimpleGraph.pathGraph_preconnected (2 * p)) ?_ hr⟩
-  simp
+        ((r + 1 - Nat.clog 2 p) * p / 2) :=
+  ⟨card_binTree_pathGraph p r, maxDegreeLe_binTree_pathGraph r (2 * p),
+    treewidthLe_binTree_pathGraph p r, matchingWidthGe_binTree_pathGraph p r hr⟩
 
 end TreeProduct
 

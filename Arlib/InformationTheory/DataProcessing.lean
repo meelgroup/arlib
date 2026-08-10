@@ -49,6 +49,7 @@ inferred forces the elaborator into a non-pattern unification problem and a
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

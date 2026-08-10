@@ -29,7 +29,7 @@ import Arlib.Approximation.LewisWeights.Projection
 import Arlib.Approximation.LewisWeights.Duality
 import Arlib.Approximation.LewisWeights.Concentration
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -114,4 +114,4 @@ theorem avg_process_pow_le [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w i
   refine hmono.trans ?_
   exact avg_sum_row_pow_le hL hw hU hk
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

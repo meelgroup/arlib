@@ -19,7 +19,7 @@ power series (`pow_le_factorial_mul_cosh`), then optimises the free scale
 No `sorry`.
 -/
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset Real
@@ -169,4 +169,4 @@ theorem avg_pow_le (x : ι → ℝ) {k : ℕ} (hk : 1 ≤ k) :
           gcongr
       _ = (2 * Real.exp 1 * (k : ℝ) * s2) ^ k := by rw [ht2k, hexp_eq]; exact hEq
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

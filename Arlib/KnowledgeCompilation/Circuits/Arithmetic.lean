@@ -6,7 +6,7 @@ Authors: Kuldeep S. Meel
 /-
 # Arithmetic circuits, and the relabelling `φ`
 
-Paper §5, `source/kc/arXiv.tex:509`.  The section's whole strategy is that an
+Paper §5, [VS24].  The section's whole strategy is that an
 arithmetic circuit and a Boolean one are *the same graph read two ways*, so that
 a lower bound proved for d-SDNNF transfers verbatim to its arithmetic analogue.
 This file builds the two objects and the map between them, and proves the one
@@ -26,20 +26,21 @@ transfer lemma below is then an induction that never touches the graph.
 
 ## The paper's `def: AC` is self-inconsistent; we follow the version §5 uses
 
-`def: AC` (`source/kc/arXiv.tex:511`) says leaves are labelled `0`, `1`, a
+`def: AC` ([VS24]) says leaves are labelled `0`, `1`, a
 variable, or a negated variable.  Under that reading the entire section
 collapses:
 
-* "monotone = every constant is non-negative" (`:519`) would be no restriction
+* "monotone = every constant is non-negative" ([VS24, §5]) would be no restriction
   at all, since `0` and `1` are already non-negative — so `AC_m = AC`, and the
   containment `AC_m ⊆ AC_p` the section is built on would be an equality;
-* the relabelling `φ` (`:521`) says non-zero constant leaves become `1`, which
+* the relabelling `φ` ([VS24, §5]) says non-zero constant leaves become `1`, which
   would be the identity;
-* the paper's own figure (`:560`) has an AC with leaves `a`, `b` and `3`, and
+* the paper's own figure ([VS24, §5]) has an AC with leaves `a`, `b` and `3`, and
   shows `φ` sending the `3` to `1`.
 
 The line immediately above the definition — "any real number may be a constant"
-— and the *commented-out* earlier draft still present in the source at `:512`
+— and the *commented-out* earlier draft still present in the arXiv LaTeX source
+of [VS24] beside `def: AC`
 ("labelled by a real number, a variable `x` or a negated variable `¬x`") are the
 definition §5 actually uses.  `AGate.const` therefore carries an `ℝ`.  This is
 recorded here rather than silently fixed, since a reader checking `AC` against
@@ -63,7 +64,7 @@ matters because `valAt_nonneg` is what the `+` case of the main lemma runs on.
 ## What `supp = sat` is for, and the two ways to get it
 
 `supp(C) = sat(φ(C))` is the one substantive theorem here, and the paper states
-it only as a remark in a figure caption (`:601`).  Everything turns on its `+`
+it only as a remark in a figure caption ([VS24, §5]).  Everything turns on its `+`
 case, where the question is whether `a + b` can vanish while `a` or `b` does not.
 Two independent hypotheses answer it, and the file proves both:
 
@@ -76,8 +77,8 @@ Two independent hypotheses answer it, and the file proves both:
 
 The second is the one Part D actually consumes, and having it is why the
 arithmetic half of this development imports nothing.  The paper's proof of
-`cor: add` (`:646`) converts a dSD-`AC_p` into a dSD-`AC_m` by flipping signs,
-citing a *sixth* imported result (de Colnet–Mengel, Lemma 10) for the sole
+`cor: add` ([VS24, §5]) converts a dSD-`AC_p` into a dSD-`AC_m` by flipping signs,
+citing a *sixth* imported result ([dCM21b, Lemma 10]) for the sole
 purpose of making `supp = sat` available.  Determinism, which the class has by
 definition, makes it available already.  See `LowerBounds/Arithmetic.lean`.
 -/
@@ -126,7 +127,7 @@ def AGate.children : AGate V n → List (Fin n)
     (AGate.mul j k : AGate V n).children = [j, k] := rfl
 
 /-- **An arithmetic circuit** over variables `V` (paper `def: AC`,
-`source/kc/arXiv.tex:511`, read as the section uses it — see the module
+[VS24, `def: AC`], read as the section uses it — see the module
 docstring on why `const` carries an `ℝ`).
 
 Nodes are the indices `Fin size`; `gate i` labels node `i`; `child_lt` makes the
@@ -236,7 +237,7 @@ decreasing_by
 the paper's `f_C : {0,1}^{dom(C)} → ℝ`. -/
 def eval (α : V → Bool) : ℝ := C.valAt α C.root
 
-/-- **`α` lies in the support of `C`** (paper `:532`): `f_C(α) ≠ 0`.  The paper's
+/-- **`α` lies in the support of `C`** (paper §5): `f_C(α) ≠ 0`.  The paper's
 `supp(C)` is `{α | C.Supp α}`. -/
 def Supp (α : V → Bool) : Prop := C.eval α ≠ 0
 
@@ -311,7 +312,7 @@ end Vars
 
 /-! ## Monotone and positive
 
-Paper `:519`.  *Positive* is the semantic condition — the circuit computes a
+Paper §5.  *Positive* is the semantic condition — the circuit computes a
 non-negative polynomial — and *monotone* the syntactic one that enforces it:
 every constant is non-negative.  `IsMonotone.isPositive` is the implication the
 paper states in one clause, and its proof, `valAt_nonneg`, is reused directly in
@@ -322,12 +323,12 @@ of `IsMonotone`, which is what a recursion over the circuit carries. -/
 def IsMonotoneFrom (r : Fin C.size) : Prop :=
   ∀ ⦃i : Fin C.size⦄ ⦃c : ℝ⦄, C.Reaches r i → C.gate i = .const c → 0 ≤ c
 
-/-- **`C` is a monotone AC** (`AC_m`, paper `:519`): every constant labelling a
+/-- **`C` is a monotone AC** (`AC_m`, paper §5): every constant labelling a
 node of `C` is non-negative.  As with `Decomposable` and `Deterministic`, "node
 of `C`" means an index reachable from the source. -/
 def IsMonotone : Prop := C.IsMonotoneFrom C.root
 
-/-- **`C` is a positive AC** (`AC_p`, paper `:519`): it computes a non-negative
+/-- **`C` is a positive AC** (`AC_p`, paper §5): it computes a non-negative
 polynomial.  This is a semantic condition, and unlike `IsMonotone` it says
 nothing about the labels. -/
 def IsPositive : Prop := ∀ α, 0 ≤ C.eval α
@@ -366,7 +367,7 @@ decreasing_by
   · exact (C.mul_lt hg).1
   · exact (C.mul_lt hg).2
 
-/-- **`AC_m ⊆ AC_p`** (paper `:519`).  The converse fails; see the module
+/-- **`AC_m ⊆ AC_p`** (paper §5).  The converse fails; see the module
 docstring of `LowerBounds/Arithmetic.lean`, where the failure is exactly what
 makes `cor: add` need a sixth imported result. -/
 theorem IsMonotone.isPositive (h : C.IsMonotone) : C.IsPositive :=
@@ -376,7 +377,7 @@ variable (C)
 
 /-! ## Decomposability, determinism, structuredness
 
-Paper `:532`: "we can also lift the definitions of decomposability, determinism
+Paper §5: "we can also lift the definitions of decomposability, determinism
 and structuredness to AC, by replacing the role of `∧` with `×`, `∨` with `+`
 and `sat` with `supp`".  That is done literally below. -/
 
@@ -409,7 +410,7 @@ def RespectsFrom [DecidableEq V] (T : VTree V) (r : Fin C.size) : Prop :=
 def Respects [DecidableEq V] (T : VTree V) : Prop := C.RespectsFrom T C.root
 
 /-- **Deterministic, structured and decomposable** — the three conditions the
-paper lifts from d-SDNNF (`:532`), with neither `AC_m` nor `AC_p` attached.
+paper lifts from d-SDNNF ([VS24, §5]), with neither `AC_m` nor `AC_p` attached.
 
 Splitting this out is not tidiness.  `cor: add` in the paper is stated for
 dSD-`AC_p` and proved by first converting to dSD-`AC_m`; it turns out that
@@ -420,7 +421,7 @@ the common core is what lets that be stated once.  See
 def IsdSD [DecidableEq V] : Prop :=
   C.Deterministic ∧ C.Decomposable ∧ ∃ T : VTree V, T.WellFormed ∧ C.Respects T
 
-/-- **A dSD-`AC_m`** (paper `:532`): a deterministic, structured, decomposable
+/-- **A dSD-`AC_m`** (paper §5): a deterministic, structured, decomposable
 monotone AC — the arithmetic analogue of d-SDNNF.
 
 As with `NNF.IsdSDNNF`, decomposability is listed even though
@@ -428,7 +429,7 @@ As with `NNF.IsdSDNNF`, decomposability is listed even though
 that way. -/
 def IsdSDAC [DecidableEq V] : Prop := C.IsMonotone ∧ C.IsdSD
 
-/-- **A dSD-`AC_p`** (paper `:642`): the same with the *semantic* fragment
+/-- **A dSD-`AC_p`** (paper `cor: add`): the same with the *semantic* fragment
 condition.  `cor: add` is stated over this class. -/
 def IsdSDACp [DecidableEq V] : Prop := C.IsPositive ∧ C.IsdSD
 
@@ -457,7 +458,7 @@ theorem IsdSDAC.isdSD [DecidableEq V] (h : C.IsdSDAC) : C.IsdSD := h.2
 
 theorem IsdSDACp.isdSD [DecidableEq V] (h : C.IsdSDACp) : C.IsdSD := h.2
 
-/-- **dSD-`AC_m` ⊆ dSD-`AC_p`**, the fragment containment of `:519` restricted to
+/-- **dSD-`AC_m` ⊆ dSD-`AC_p`**, the fragment containment of [VS24, §5] restricted to
 the structured classes. -/
 theorem IsdSDAC.isdSDACp [DecidableEq V] (h : C.IsdSDAC) : C.IsdSDACp :=
   ⟨h.1.isPositive, h.2⟩
@@ -466,7 +467,7 @@ end AC
 
 /-! ## The relabelling `φ`
 
-Paper `:521`.  `φ(C)` has the same underlying graph as `C`; leaves labelled by a
+Paper §5.  `φ(C)` has the same underlying graph as `C`; leaves labelled by a
 variable, a negated variable or the constant `0` are unchanged, every other leaf
 becomes the constant `1`; `+` becomes `∨` and `×` becomes `∧`.
 
@@ -476,7 +477,7 @@ never look at the labels. -/
 
 namespace AGate
 
-/-- The relabelling `φ` on a single node (paper `:521`).  A constant becomes the
+/-- The relabelling `φ` on a single node (paper §5).  A constant becomes the
 Boolean `c ≠ 0` — which is the paper's "`0` unchanged, everything else `1`". -/
 noncomputable def toGate : AGate V n → Gate V n
   | .const c => .const (if c = 0 then false else true)
@@ -492,7 +493,7 @@ end AGate
 
 namespace AC
 
-/-- **The relabelling `φ`** (paper `:521`): the NNF on the same graph as `C`. -/
+/-- **The relabelling `φ`** (paper §5): the NNF on the same graph as `C`. -/
 noncomputable def toNNF (C : AC V) : NNF V where
   size := C.size
   gate := fun i => (C.gate i).toGate
@@ -558,7 +559,7 @@ decreasing_by
 
 variable {C}
 
-/-- **`supp(C) = sat(φ(C))`, at every node** (paper, figure caption `:601`).
+/-- **`supp(C) = sat(φ(C))`, at every node** (paper, figure caption [VS24, §5]).
 
 This is the theorem the whole section rests on, and the `+` case is the only
 place monotonicity is used: `a + b ≠ 0` follows from `a ≠ 0 ∨ b ≠ 0` exactly
@@ -595,7 +596,7 @@ decreasing_by
   · exact (C.mul_lt hg).1
   · exact (C.mul_lt hg).2
 
-/-- **`supp(C) = sat(φ(C))`** (paper, figure caption `:601`). -/
+/-- **`supp(C) = sat(φ(C))`** (paper, figure caption [VS24, §5]). -/
 theorem supp_iff_sat_toNNF (h : C.IsMonotone) (α : V → Bool) :
     C.Supp α ↔ C.toNNF.Sat α :=
   valAt_ne_zero_iff h α
@@ -611,13 +612,13 @@ deterministic AC at most one child is non-zero, so there is nothing to cancel.
 No sign condition on the constants is required, and none appears below.
 
 This is why the arithmetic half of Part D needs no import.  The paper's proof of
-`cor: add` (`:646`) converts a dSD-`AC_p` into a dSD-`AC_m` by flipping the sign
-of every negative constant, citing de Colnet–Mengel Lemma 10 — a *sixth* imported
+`cor: add` ([VS24, §5]) converts a dSD-`AC_p` into a dSD-`AC_m` by flipping the sign
+of every negative constant, citing [dCM21b, Lemma 10] — a *sixth* imported
 result, used at that one step and nowhere else.  Its only purpose is to make
 `supp = sat` available, and this theorem makes it available already, from a
 condition dSD-`AC_p` has by definition.  See `LowerBounds/Arithmetic.lean`.
 
-Both hypotheses are worth keeping: the paper's figure at `:560` is monotone and
+Both hypotheses are worth keeping: the paper's figure at [VS24, §5] is monotone and
 *not* deterministic (the `+`-node `¬c + 3` has two children whose supports
 overlap), so the caption's claim is an instance of the previous theorem and not
 of this one. -/
@@ -670,7 +671,7 @@ theorem toNNF_size' : C.toNNF.size = C.size := rfl
 
 /-! ### `φ(dSD-AC_m) ⊆ d-SDNNF`
 
-Paper `:636`, first sentence: "observe that `φ(dSD-AC_m) = d-SDNNF`".  The
+Paper §5, first sentence: "observe that `φ(dSD-AC_m) = d-SDNNF`".  The
 inclusion proved here is the one Part D consumes; the reverse inclusion is
 `NNF.toAC` in the next section, which is what makes the paper's `=` an equality
 rather than a containment. -/
@@ -745,7 +746,7 @@ theorem toNNF_deterministic (h : C.Deterministic) : C.toNNF.Deterministic :=
   toNNF_deterministicFrom h
 
 /-- **`φ` of a deterministic structured decomposable AC is a d-SDNNF**, on the
-same graph and hence of the same size (paper `:636`).
+same graph and hence of the same size (paper §5).
 
 The paper states this for `AC_m` (`φ(dSD-AC_m) = d-SDNNF`).  Nothing in the proof
 looks at a constant, so it holds for `AC_p` and indeed for arbitrary constants;
@@ -765,7 +766,7 @@ end AC
 
 /-! ## `ψ`: reading a Boolean circuit as an arithmetic one
 
-The converse of `φ`, and what the proof of `cor: add` (`:646`) opens with:
+The converse of `φ`, and what the proof of `cor: add` ([VS24, §5]) opens with:
 "take any d-SDNNF equivalent to `f`; if we change every `∨` to a `+` and every
 `∧` to a `×` we get a dSD-`AC_m` of the same size which is equivalent to `f`
 viewed as a positive polynomial".
@@ -806,7 +807,7 @@ end Gate
 
 namespace NNF
 
-/-- **Reading a Boolean circuit as an arithmetic one** (paper `:646`). -/
+/-- **Reading a Boolean circuit as an arithmetic one** (paper §5). -/
 def toAC (C : NNF V) : AC V where
   size := C.size
   gate := fun i => (C.gate i).toAGate
@@ -980,7 +981,7 @@ variable {C}
 
 /-- **`ψ` of a d-SDNNF is a dSD-`AC_m` of the same size**: the reverse
 containment of `AC.IsdSDAC.toNNF_isdSDNNF`, and together with it the paper's
-`φ(dSD-AC_m) = d-SDNNF` (`:636`). -/
+`φ(dSD-AC_m) = d-SDNNF` ([VS24, §5]). -/
 theorem IsdSDNNF.toAC_isdSDAC [DecidableEq V] (h : C.IsdSDNNF) : C.toAC.IsdSDAC := by
   obtain ⟨hd, hdec, T, hT, hR⟩ := h
   exact ⟨C.toAC_isMonotone, C.toAC_deterministic hd, C.toAC_decomposable hdec,

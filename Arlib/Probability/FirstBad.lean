@@ -29,7 +29,7 @@ No `sorry`, no new axioms.
 -/
 import Arlib.Probability.ProbSpace
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators Classical
 open Finset ProbSpace
@@ -129,4 +129,4 @@ theorem Pr_biUnion_le_sum_firstBad (s : Finset ι) (E : ι → P.Ω → Prop) (c
   exact Finset.sum_le_sum h
 
 end FinProb
-end Arlib
+end Arlib.Probability

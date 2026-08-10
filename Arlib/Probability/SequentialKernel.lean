@@ -3,6 +3,7 @@ Copyright (c) 2026 Kuldeep S. Meel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
+import Arlib.Combinatorics.FinSnoc
 import Arlib.Probability.FinProb
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
@@ -40,10 +41,11 @@ setting used throughout `Arlib`:
 Everything here is proved from first principles with no `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
+open Arlib.Combinatorics (snocEquiv)
 
 /-- The first `i` coordinates of a length-`q` history. -/
 def histPrefix {S : Type} {q : ℕ} (c : Fin q → S) (i : Fin q) : Fin i.val → S :=
@@ -51,21 +53,6 @@ def histPrefix {S : Type} {q : ℕ} (c : Fin q → S) (i : Fin q) : Fin i.val �
 
 @[simp] theorem histPrefix_apply {S : Type} {q : ℕ} (c : Fin q → S) (i : Fin q)
     (j : Fin i.val) : histPrefix c i j = c ⟨j.val, lt_trans j.isLt i.isLt⟩ := rfl
-
-/-- Bundling a length-`q` history with one more entry is the same as a length-`(q+1)`
-history, via `Fin.snoc`. -/
-def snocEquiv (S : Type) (q : ℕ) : ((Fin q → S) × S) ≃ (Fin (q + 1) → S) where
-  toFun p := Fin.snoc p.1 p.2
-  invFun f := (Fin.init f, f (Fin.last q))
-  left_inv p := by
-    ext j
-    · simp [Fin.init_snoc]
-    · simp [Fin.snoc_last]
-  right_inv f := by
-    funext i
-    refine Fin.lastCases ?_ (fun j => ?_) i
-    · simp [Fin.snoc_last]
-    · simp [Fin.snoc_castSucc, Fin.init]
 
 /-- Taking the prefix of `Fin.snoc h s` before the last coordinate recovers `h`. -/
 theorem histPrefix_snoc_last {S : Type} {q : ℕ} (h : Fin q → S) (s : S) :
@@ -119,7 +106,8 @@ private theorem sum_seqWeight_aux {S : Type} [Fintype S] :
     intro k hk
     have hsum : ∑ c : Fin (q + 1) → S, seqWeight k c
         = ∑ h : Fin q → S, ∑ s : S, seqWeight k (Fin.snoc h s) := by
-      rw [← Equiv.sum_comp (snocEquiv S q) (fun c => seqWeight k c), Fintype.sum_prod_type]
+      rw [← Equiv.sum_comp (snocEquiv (n := q) S) (fun c => seqWeight k c),
+        Fintype.sum_prod_type]
       rfl
     rw [hsum]
     have step : ∀ h : Fin q → S, (∑ s : S, seqWeight k (Fin.snoc h s))
@@ -146,8 +134,9 @@ noncomputable def seqFinProb {S : Type} [Fintype S] [DecidableEq S] [Inhabited S
     (hk0 : ∀ (i : Fin q) (h : Fin i.val → S) (s : S), 0 ≤ k i h s)
     (hk1 : ∀ (i : Fin q) (h : Fin i.val → S), ∑ s, k i h s = 1) : FinProb where
   Ω := Fin q → S
-  mass := seqWeight k
-  mass_nonneg := seqWeight_nonneg k hk0
-  mass_sum := sum_seqWeight k hk1
+  μ :=
+    { p := seqWeight k
+      p_nonneg := seqWeight_nonneg k hk0
+      p_sum := sum_seqWeight k hk1 }
 
-end Arlib
+end Arlib.Probability

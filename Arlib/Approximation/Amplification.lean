@@ -163,9 +163,9 @@ theorem relErr_eq_Icc (c r : ℝ) : {y : ℝ | |y - c| ≤ r} = Set.Icc (c - r) 
 /-! ## The median of a majority
 
 The combinatorial core, and the only step that is really about medians.  It is
-`Arlib.median_mem_Icc_of_lt_half_outside` — already proved, for an arbitrary
+`Arlib.Probability.median_mem_Icc_of_lt_half_outside` — already proved, for an arbitrary
 value satisfying the `IsMedian` predicate — specialised to the concrete
-`Arlib.medianOf` and restated in terms of the count of entries *inside* the
+`Arlib.Probability.medianOf` and restated in terms of the count of entries *inside* the
 interval, which is the form a probabilistic argument produces. -/
 
 /-- **If strictly more than half the entries lie in `[a, b]`, so does the
@@ -173,17 +173,17 @@ median.**
 
 The hypothesis `m < 2 * #{i | v i ∈ [a,b]}` is "a strict majority of the `m`
 entries are good".  Complementing it gives `2 * #{i | v i ∉ [a,b]} < m`, which is
-exactly the hypothesis of `Arlib.median_mem_Icc_of_lt_half_outside`; the
-concrete `Arlib.medianOf v` satisfies `IsMedian` by `Arlib.isMedian_medianOf`.
+exactly the hypothesis of `Arlib.Probability.median_mem_Icc_of_lt_half_outside`; the
+concrete `Arlib.Probability.medianOf v` satisfies `IsMedian` by `Arlib.Probability.isMedian_medianOf`.
 
 Note that this is a statement about *any* interval, with no reference to
 probability: it is the whole reason the median, rather than the mean or the
 first run's answer, is what one returns. -/
 theorem median_mem_Icc_of_majority {m : ℕ} (v : Fin m → ℝ) {a b : ℝ}
     (h : m < 2 * (Finset.univ.filter fun i => v i ∈ Set.Icc a b).card) :
-    Arlib.medianOf v ∈ Set.Icc a b := by
+    Arlib.Probability.medianOf v ∈ Set.Icc a b := by
   classical
-  refine Arlib.median_mem_Icc_of_lt_half_outside (Arlib.isMedian_medianOf v) ?_
+  refine Arlib.Probability.median_mem_Icc_of_lt_half_outside (Arlib.Probability.isMedian_medianOf v) ?_
   have hsplit :
       (Finset.univ.filter fun i : Fin m => v i ∈ Set.Icc a b).card
         + (Finset.univ.filter fun i : Fin m => v i ∉ Set.Icc a b).card
@@ -220,12 +220,12 @@ noncomputable def repeatAlg (A : α → ℝ → PMF (ℝ × ℕ)) (m : ℕ) :
 /-- **The amplified algorithm**: run `A` independently `m` times and return the
 median of the `m` answers, at the summed cost.
 
-`Arlib.medianOf` is the `⌊m/2⌋`-th order statistic; any concrete choice
+`Arlib.Probability.medianOf` is the `⌊m/2⌋`-th order statistic; any concrete choice
 satisfying `Arlib.IsMedian` would serve, and `median_mem_Icc_of_majority` is
 proved through the predicate rather than the implementation. -/
 noncomputable def medianAlg (A : α → ℝ → PMF (ℝ × ℕ)) (m : ℕ) :
     α → ℝ → PMF (ℝ × ℕ) :=
-  fun w ε => (repeatAlg A m w ε).map (fun q => (Arlib.medianOf q.1, q.2))
+  fun w ε => (repeatAlg A m w ε).map (fun q => (Arlib.Probability.medianOf q.1, q.2))
 
 /-! ## The cost of repetition
 
@@ -319,9 +319,9 @@ bound itself. -/
 theorem outProbR_medianPMF_ge (H : MajorityConcentration) (μ : PMF (ℝ × ℕ))
     (m : ℕ) {a b : ℝ} (h : 3/4 ≤ outProbR μ (Set.Icc a b)) :
     1 - Real.exp (-(m : ℝ) / 8) ≤
-      outProbR ((repeatPMF μ m).map fun q => (Arlib.medianOf q.1, q.2)) (Set.Icc a b) := by
-  rw [outProbR_map (repeatPMF μ m) (fun q => (Arlib.medianOf q.1, q.2))
-      Arlib.medianOf (fun _ => rfl) (Set.Icc a b)]
+      outProbR ((repeatPMF μ m).map fun q => (Arlib.Probability.medianOf q.1, q.2)) (Set.Icc a b) := by
+  rw [outProbR_map (repeatPMF μ m) (fun q => (Arlib.Probability.medianOf q.1, q.2))
+      Arlib.Probability.medianOf (fun _ => rfl) (Set.Icc a b)]
   refine le_trans (H.majority_ge μ (Set.Icc a b) m h) (outProbR_mono _ ?_)
   intro v hv
   rw [Set.mem_setOf_eq] at hv
@@ -388,7 +388,7 @@ theorem medianAlg_accuracy {size : α → ℕ} {f : α → ℝ} {A : α → ℝ 
     rw [← hwin]; exact hA.accuracy w ε hε
   have hmain := outProbR_medianPMF_ge H (A w ε) m hbase
   have hexp : Real.exp (-(m : ℝ) / 8) ≤ δ := by rw [hm]; exact exp_neg_div_le_of_ceil hδ0
-  show 1 - δ ≤ outProbR ((repeatPMF (A w ε) m).map fun q => (Arlib.medianOf q.1, q.2))
+  show 1 - δ ≤ outProbR ((repeatPMF (A w ε) m).map fun q => (Arlib.Probability.medianOf q.1, q.2))
       {y | |y - f w| ≤ ε * f w}
   rw [hwin]
   exact le_trans (by linarith) hmain

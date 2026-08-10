@@ -14,21 +14,21 @@ in when it gets there.  Hence a bound on the number of states bounds a
 rectangle count.  Two lemmas, with the same one-line construction:
 
 * `NFA.hasTPCover_of_nfa` — the paper's `lem:NFA-CC`
-  (`source/kc/goos/parts/complementation.tex:58`): an NFA with `s` states gives
+  ([GKY22, `lem:NFA-CC`]): an NFA with `s` states gives
   `Cov₁(F) ≤ s`.
 * `NFA.hasTPPartition_of_ufa` — the paper's `lem:UFA-CC`
-  (`source/kc/goos/parts/union.tex:150`): a UFA with `s` states gives
+  ([GKY22, `lem:UFA-CC`]): a UFA with `s` states gives
   `Par₁(F) ≤ s`.
 
 Both are used in the *contrapositive* direction downstream: a lower bound on
 `Cov₁` or `Par₁` of a lifted function becomes a lower bound on the number of
 states of any (U)FA for the corresponding language
-(`source/kc/goos/parts/complementation.tex:94`,
-`source/kc/goos/parts/union.tex:203`).
+([GKY22, §2.2],
+[GKY22, §3.4]).
 
 ## The rectangles
 
-The construction is displayed at `source/kc/goos/parts/complementation.tex:64`:
+The construction is displayed at [GKY22, §2.1]:
 `F⁻¹(1)` is the union, over states `q`, of the rectangle whose left side is the
 `x` from which some initial state reaches `q`, and whose right side is the `y`
 from which `q` reaches an accepting state.  Here that is `NFA.simLeft`,
@@ -43,11 +43,11 @@ and it is why the bound is `≤ s` rather than `= s`.
 ## Why the partition proof is not literally "the same"
 
 The paper says `lem:UFA-CC` is "proved the same way"
-(`source/kc/goos/parts/union.tex:149`), and the *family* of rectangles is indeed
+([GKY22, §3.3]), and the *family* of rectangles is indeed
 the same one.  The disjointness is not immediate, and the gap is worth spelling
 out because it is exactly where the hypotheses are used.
 
-Unambiguity (`source/kc/goos/parts/preliminaries.tex:9`) says a word has at most
+Unambiguity ([GKY22, §1.4]) says a word has at most
 one accepting *run*.  Membership of `(x, y)` in two rectangles `q ≠ q'` produces
 two accepting runs on `x ++ y`, so unambiguity makes the two runs equal — as
 lists of states.  It does **not** directly say that the two runs agree *at the
@@ -75,7 +75,7 @@ The link between the automaton and the two-party function is a hypothesis
     hA : ∀ x y, A.Accepts (x.val ++ y.val) ↔ F x y = true
 
 rather than an equation `A.language = {x y | F x y}`.  The paper's phrasing
-(`source/kc/goos/parts/complementation.tex:57`) identifies `F` with the language
+([GKY22, §2.1]) identifies `F` with the language
 `{xy ∈ {0,1}^{m₁+m₂} | F(x,y) = 1}`, which would additionally force `A` to
 reject every word whose length is not `m₁ + m₂`.  Nothing in the argument needs
 that, and downstream automata (products with length counters, say) are more
@@ -94,11 +94,11 @@ a positivity side condition.  The index type of the rectangle family is
 `NFA.simFamily` is too.  Nothing downstream evaluates it.
 -/
 import Arlib.Automata.Basic
-import Arlib.KnowledgeCompilation.Communication.TwoParty
+import Arlib.Communication.TwoParty
 
 namespace Arlib.Automata
 
-open Arlib.KnowledgeCompilation
+open Arlib.Communication
 
 universe u v
 
@@ -114,7 +114,7 @@ halves.
 
 This is the unstated content of the paper's "we tacitly identify a function
 `F : {0,1}^{m₁} × {0,1}^{m₂} → {0,1}` with the language `F⁻¹(1)`"
-(`source/kc/goos/parts/complementation.tex:57`).  It is not needed for either
+([GKY22, §2.1]).  It is not needed for either
 simulation lemma — those only ever go from `(x, y)` to `x ++ y` — but it is what
 makes the hypothesis `hA` below a faithful transcription of that sentence. -/
 theorem WordsOfLen.append_inj {σ : Type v} {m₁ m₂ : ℕ}
@@ -132,7 +132,7 @@ variable {Q : Type u} {σ : Type v} {m₁ m₂ : ℕ} (A : NFA Q σ)
 
 /-- **Alice's side of the rectangle at `q`**: the inputs `x` from which some
 initial state reaches `q`, i.e. the paper's
-`{x | ∃ q₀ ∈ I . q₀ --x--> q}` (`source/kc/goos/parts/complementation.tex:67`).
+`{x | ∃ q₀ ∈ I . q₀ --x--> q}` ([GKY22, §2.1]).
 
 Phrased with an explicit run `rs` rather than with `Reach`, even though for the
 cover lemma `Reach` would do.  The partition lemma has to compare *runs* across
@@ -143,13 +143,13 @@ def simLeft (q : Q) {m : ℕ} (x : WordsOfLen σ m) : Prop :=
 
 /-- **Bob's side of the rectangle at `q`**: the inputs `y` from which `q`
 reaches an accepting state, the paper's `{y | ∃ f ∈ F . q --y--> f}`
-(`source/kc/goos/parts/complementation.tex:68`). -/
+([GKY22, §2.1]). -/
 def simRight (q : Q) {m : ℕ} (y : WordsOfLen σ m) : Prop :=
   ∃ rs, A.IsRun q y.val rs ∧ A.accept (lastState q rs)
 
 /-- **The rectangle at `q`**, `simLeft q × simRight q`.
 
-In protocol terms (`source/kc/goos/parts/complementation.tex:70`): Alice guesses
+In protocol terms ([GKY22, §2.1]): Alice guesses
 a run for `x` from an initial state to `q` and sends the name of `q`; Bob
 guesses a run for `y` from `q` to an accepting state.  The name of `q` is the
 entire message, which is why the number of rectangles is the number of
@@ -189,7 +189,7 @@ theorem exists_mem_simRect_of_accepts {x : WordsOfLen σ m₁} {y : WordsOfLen �
 /-- **The state at the cut is determined**, when `A` is unambiguous: a pair
 `(x, y)` lies in at most one of the rectangles.
 
-This is the step the paper does not spell out (`source/kc/goos/parts/union.tex:149`
+This is the step the paper does not spell out ([GKY22, §3.3]
 says only "proved the same way as `lem:NFA-CC`").  Unambiguity equates the two
 accepting runs on `x ++ y` *as lists*; to conclude that they agree at the cut one
 still needs that the two left factors have the same length, which holds because
@@ -227,7 +227,7 @@ noncomputable def simFamily [Fintype Q] (m₁ m₂ : ℕ) :
     Fin (Fintype.card Q) → TPRect (WordsOfLen σ m₁) (WordsOfLen σ m₂) :=
   fun i => A.simRect m₁ m₂ ((Fintype.equivFin Q).symm i)
 
-/-- **Lemma NFA-CC** (`source/kc/goos/parts/complementation.tex:58`): if the
+/-- **Lemma NFA-CC** ([GKY22, `lem:NFA-CC`]): if the
 two-party function `F` is recognised — on split words — by an NFA with state set
 `Q`, then `F⁻¹(1)` is covered by `Fintype.card Q` rectangles. -/
 theorem hasTPCover_of_nfa [Fintype Q] {F : WordsOfLen σ m₁ → WordsOfLen σ m₂ → Bool}
@@ -241,13 +241,13 @@ theorem hasTPCover_of_nfa [Fintype Q] {F : WordsOfLen σ m₁ → WordsOfLen σ 
     exact ⟨Fintype.equivFin Q q, by simpa [simFamily] using hq⟩
 
 /-- **`Cov₁(F) ≤ s`**, the form the paper states
-(`source/kc/goos/parts/complementation.tex:59`), with `s = Fintype.card Q`. -/
+([GKY22, `lem:NFA-CC`]), with `s = Fintype.card Q`. -/
 theorem tpCov_le_card [Fintype Q] {F : WordsOfLen σ m₁ → WordsOfLen σ m₂ → Bool}
     (hA : ∀ x y, A.Accepts (x.val ++ y.val) ↔ F x y = true) :
     tpCov F true ≤ Fintype.card Q :=
   tpCov_le_of_hasTPCover (A.hasTPCover_of_nfa hA)
 
-/-- **Lemma UFA-CC** (`source/kc/goos/parts/union.tex:150`): the same family of
+/-- **Lemma UFA-CC** ([GKY22, `lem:UFA-CC`]): the same family of
 rectangles is a *partition* of `F⁻¹(1)` when the automaton is unambiguous.
 
 Only the uniqueness half differs from `hasTPCover_of_nfa`, and it is
@@ -267,7 +267,7 @@ theorem hasTPPartition_of_ufa [Fintype Q] (hU : A.Unambiguous)
     exact (Fintype.equivFin Q).symm.injective (by rw [Equiv.symm_apply_apply]; exact hstate)
 
 /-- **`Par₁(F) ≤ s`**, the form the paper states
-(`source/kc/goos/parts/union.tex:151`), with `s = Fintype.card Q`. -/
+([GKY22, `lem:UFA-CC`]), with `s = Fintype.card Q`. -/
 theorem tpPar_le_card [Fintype Q] (hU : A.Unambiguous)
     {F : WordsOfLen σ m₁ → WordsOfLen σ m₂ → Bool}
     (hA : ∀ x y, A.Accepts (x.val ++ y.val) ↔ F x y = true) :

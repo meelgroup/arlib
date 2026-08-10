@@ -6,9 +6,9 @@ Authors: Kuldeep S. Meel
 /-
 # Conical juntas, and why `∨` is hard for them
 
-This file formalizes §4 of Göös–Kiefer–Yuan, *Lower bounds for unambiguous
+This file formalizes §3 of Göös–Kiefer–Yuan, *Lower bounds for unambiguous
 automata via communication complexity* (ICALP 2022), whose source is at
-`source/kc/goos/parts/union.tex`.  That section is the one place in the chain
+[GKY22, §3].  That section is the one place in the chain
 behind `Imported.UnionHard` where a *new theorem* is proved rather than cited,
 and this file proves it.
 
@@ -24,7 +24,7 @@ links are theorems here and which remain imported:
 | hardness of `¬` for approximate conical juntas — GJPW18, Lemma 8 | **imported** |
 | `∨` is at least as hard as `¬` — GKY, Lemma 14 | **proved here** |
 | lifting `deg⁺` to nonnegative rank — GLMWZ16, Kothari21 | **imported** |
-| `Par₁ ≥ rk⁺` | proved, `Communication/NonnegRank.lean` |
+| `Par₁ ≥ rk⁺` | proved, `Arlib/Communication/NonnegRank.lean` |
 | `deg⁺(f) ≤ UC₁(f)` for unambiguous DNFs | **proved here** |
 
 So this file does not make anything unconditional.  What it does is replace one
@@ -47,7 +47,7 @@ already in place, including `Term.sat_union`, which is the product rule.
 ## No numeric degree
 
 `deg⁺_ε(f)` is an infimum, and the development's standing policy
-(`Communication/Measures.lean`) is that an `sInf` over a possibly-empty set of
+(`Arlib/Communication/Measures.lean`) is that an `sInf` over a possibly-empty set of
 naturals is a trap.  Everything here is stated with the predicate
 `HasConicalApprox d ε f` — "some conical `d`-junta `ε`-approximates `f`" — and
 lower bounds appear as its negation.  `deg⁺_ε(f) > d` is `¬ HasConicalApprox d ε f`.
@@ -146,7 +146,7 @@ rather than an exchange of a `Finset` sum with a `List` sum.
 extensional: `add` produces the literal function `fun α => f α + g α`, and
 without `congr` every use would have to match that syntactic shape. -/
 
-/-- **`f` is a conical `d`-junta** (`source/kc/goos/parts/union.tex`,
+/-- **`f` is a conical `d`-junta** ([GKY22, §3],
 "Conical juntas"): a non-negative linear combination of conjunctions of width at
 most `d`. -/
 inductive IsConical : ℕ → ((V → Bool) → ℝ) → Prop
@@ -190,6 +190,39 @@ theorem const (c : ℝ) (hc : 0 ≤ c) : IsConical (V := V) 0 (fun _ => c) :=
   (IsConical.term c hc ∅ (by simp [Term.width])).congr (fun α => by simp)
 
 theorem one : IsConical (V := V) 0 (fun _ => (1 : ℝ)) := const 1 zero_le_one
+
+/-- **The converse of `const`: a conical `0`-junta *is* a constant.**
+
+Width `0` forces a conjunction to be empty (`Term.width` is the literal count),
+and the empty conjunction is satisfied by every assignment, so the only
+generators available at degree `0` are the non-negative constants — and constants
+are closed under the sums and rescalings the inductive predicate allows.
+
+Stated as `d = 0 → …` rather than with `0` in the index so that the induction may
+be performed directly; `isConst_of_zero` is the form to use.
+
+This is what puts a floor under `deg⁺`: at degree `0` a `δ`-approximation of a
+`{0,1}`-valued function must approximate *both* of its values by one number, so
+no non-constant function is `δ`-approximable at degree `0` for `δ < 1/2`.  It is
+the fact `Imported.hardnessOfNegation_witness` runs on. -/
+theorem isConst_of_eq_zero (h : IsConical d f) : d = 0 → ∀ α β, f α = f β := by
+  induction h with
+  | term c hc t ht =>
+    rintro rfl
+    have hcard : t.card = 0 := Nat.le_zero.mp ht
+    have hte : t = ∅ := Finset.card_eq_zero.mp hcard
+    intro α β
+    simp [hte]
+  | zero => intro _ α β; rfl
+  | add _ _ ihf ihg =>
+    intro hd α β
+    show _ + _ = _ + _
+    rw [ihf hd α β, ihg hd α β]
+  | congr _ hfg ih => intro hd α β; rw [← hfg α, ← hfg β]; exact ih hd α β
+
+/-- A conical `0`-junta is constant.  See `isConst_of_eq_zero`. -/
+theorem isConst_of_zero (h : IsConical (V := V) 0 f) (α β : V → Bool) : f α = f β :=
+  isConst_of_eq_zero h rfl α β
 
 theorem smul {c : ℝ} (hc : 0 ≤ c) (hf : IsConical d f) :
     IsConical d (fun α => c * f α) := by
@@ -258,7 +291,7 @@ end IsConical
 
 /-- **Some conical `d`-junta `ε`-approximates `f`** — the source's
 `deg⁺_ε(f) ≤ d`, in the predicate form the development prefers to an `sInf`
-(module docstring, and `Communication/Measures.lean`). -/
+(module docstring, and `Arlib/Communication/Measures.lean`). -/
 def HasConicalApprox (d : ℕ) (ε : ℝ) (f : (V → Bool) → ℝ) : Prop :=
   ∃ g, IsConical d g ∧ ∀ α, |f α - g α| ≤ ε
 
@@ -280,7 +313,7 @@ two fields are its constraints; the third is the objective bound that makes `Φ`
 a *certificate* rather than merely feasible. -/
 
 /-- **`Φ` separates `f` from the conical `d`-juntas with margin `ε`**
-(`source/kc/goos/parts/union.tex`, programme `junta_dual`). -/
+([GKY22, §3], programme `junta_dual`). -/
 structure Separates (Φ : (V → Bool) → ℝ) (d : ℕ) (ε : ℝ) (f : (V → Bool) → ℝ) :
     Prop where
   /-- `‖Φ‖ ≤ 1`. -/
@@ -439,7 +472,7 @@ end Doubling
 
 /-! ## Claim 15: `∨` is at least as hard as `2 − f`
 
-`source/kc/goos/parts/union.tex`, Claim `negp_to_or`.  Given a certificate for
+[GKY22, §3], Claim `negp_to_or`.  Given a certificate for
 `2 − f`, the *negated tensor product* `Φ^∨(x,y) := −Φ(x)Φ(y)` is a certificate
 for `f^∨`, with the margin squared.  The source calls the construction "an
 educated guess"; what makes it work is that the dual constraints are closed under
@@ -464,7 +497,7 @@ theorem orExt_eq_or {f : (V → Bool) → ℝ} (hf : ∀ α, f α = 0 ∨ f α =
   rcases hf (β ∘ Sum.inl) with h1 | h1 <;> rcases hf (β ∘ Sum.inr) with h2 | h2 <;>
     simp [h1, h2] <;> norm_num
 
-/-- **`cl: or`, the easy half** (`source/kc/goos/parts/applications.tex:9`): the
+/-- **`cl: or`, the easy half** ([GKY22, `cl:or`]): the
 doubled disjunction `f^∨` of a `{0,1}`-valued `f` is `1/4`-approximated by a
 conical junta of the *same* degree as `f`, so `deg⁺_{1/4}(f^∨) ≤ deg⁺(f)`.
 
@@ -585,7 +618,7 @@ theorem separates_orExt {Φ f : (V → Bool) → ℝ} {d : ℕ} {ε : ℝ} (hε 
 
 /-! ## Claim 16: the powering trick
 
-`source/kc/goos/parts/union.tex`, Claim `neg_to_negp`.  A conical junta
+[GKY22, §3], Claim `neg_to_negp`.  A conical junta
 `ε`-approximating `1 + f` is turned into one `δ`-approximating `f` by
 `g' := ((g + ε)/2)^k`: the shift and halving send the `f = 0` branch into
 `[0, 3/4]` and the `f = 1` branch into `[1, 1+ε]`, and raising to the `k`-th
@@ -884,7 +917,7 @@ theorem exists_separates_of_not_hasConicalApprox {d : ℕ} {ε ε' : ℝ}
 
 /-! ## Lemma 14: `∨` is at least as hard as `¬`
 
-`source/kc/goos/parts/union.tex`, Lemma `neg_to_or`.  Claims 15 and 16 composed
+[GKY22, §3], Lemma `neg_to_or`.  Claims 15 and 16 composed
 across the LP, which is what strong duality above makes possible.
 
 The source states it as `deg⁺_{ε²}(f^∨) ≥ Ω(deg⁺_δ(¬f))` with

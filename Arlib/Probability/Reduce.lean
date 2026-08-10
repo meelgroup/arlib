@@ -31,7 +31,7 @@ import Arlib.Probability.CondExpConstruction
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Fintype.Prod
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 
@@ -42,19 +42,20 @@ an independent `Bernoulli(pr)`.  `mass (ω,c) = Base.mass ω · (pr if c else 1-
 noncomputable def prodBernoulli (Base : FinProb) (pr : ℝ)
     (h0 : 0 ≤ pr) (h1 : pr ≤ 1) : FinProb where
   Ω := Base.Ω × Bool
-  mass := fun x => Base.mass x.1 * (bif x.2 then pr else 1 - pr)
-  mass_nonneg := by
-    intro x
-    apply mul_nonneg (Base.mass_nonneg _)
-    cases x.2 <;> simp <;> linarith
-  mass_sum := by
-    rw [Fintype.sum_prod_type]
-    have hb : ∀ a : Base.Ω,
-        (∑ c : Bool, Base.mass a * (bif c then pr else 1 - pr)) = Base.mass a := by
-      intro a
-      rw [Fintype.univ_bool, Finset.sum_pair (by decide : (true : Bool) ≠ false)]
-      simp only [cond_true, cond_false]; ring
-    rw [Finset.sum_congr rfl (fun a _ => hb a), Base.mass_sum]
+  μ :=
+    { p := fun x => Base.mass x.1 * (bif x.2 then pr else 1 - pr)
+      p_nonneg := by
+        intro x
+        apply mul_nonneg (Base.mass_nonneg _)
+        cases x.2 <;> simp <;> linarith
+      p_sum := by
+        rw [Fintype.sum_prod_type]
+        have hb : ∀ a : Base.Ω,
+            (∑ c : Bool, Base.mass a * (bif c then pr else 1 - pr)) = Base.mass a := by
+          intro a
+          rw [Fintype.univ_bool, Finset.sum_pair (by decide : (true : Bool) ≠ false)]
+          simp only [cond_true, cond_false]; ring
+        rw [Finset.sum_congr rfl (fun a _ => hb a), Base.mass_sum] }
 
 /-- **The `reduce` expectation identity, concretely.**
 For the fresh-coin experiment, the reduce indicator `𝟙_{x∈S}(ω)·c` has expectation
@@ -77,4 +78,4 @@ theorem Ex_reduce (Base : FinProb) (pr : ℝ) (h0 : 0 ≤ pr) (h1 : pr ≤ 1)
   ring
 
 end FinProb
-end Arlib
+end Arlib.Probability

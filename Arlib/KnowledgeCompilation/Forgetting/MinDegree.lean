@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # The min-degree lower bound for primal treewidth (`thm:bva`, clause (i))
 
 Umut Oztok and Adnan Darwiche, *On Compiling DNNFs without Determinism*
-(Appendix A, `source/kc/darwiche/draft.tex:821`).  This module carries the one
+(Appendix A, [OD17, §A]).  This module carries the one
 statement deferred in `Treewidth.lean`: the *unbounded* lower bound
 `treewidth(Δⁿₐ) ≥ n` — clause (i) of `thm:bva`.
 
@@ -319,7 +319,7 @@ theorem central_aux [Fintype ι] [DecidableEq ι] (hac : G.IsAcyclic) {Δ : CNF 
       obtain ⟨v, i, hiA', hvcnf, hvi, hconf⟩ := IH _ hsub hne' hconn' hcov'
       exact ⟨v, i, Finset.mem_of_mem_erase hiA', hvcnf, hvi, hconf⟩
 
-/-- **The min-degree core, for a jointree** (Appendix A, `source/kc/darwiche/draft.tex:821`).
+/-- **The min-degree core, for a jointree** (Appendix A, [OD17, §A]).
 Any jointree of a CNF with at least one nonempty clause has a variable `v` and a
 cluster `i` with `v` and every primal-neighbour of `v` inside `cluster i`. -/
 theorem exists_confined_var {Δ : CNF V} (J : Jointree Δ) (hne0 : ∃ γ₀ ∈ Δ, γ₀.Nonempty) :
@@ -406,7 +406,7 @@ lemma card_confined_bound {n : ℕ} {S : Finset (BVAVar n)} {v : BVAVar n}
   calc 2 * n + 1 = (insert v ((Finset.univ.image f) ∪ (Finset.univ.image g))).card := hcardI.symm
     _ ≤ S.card := Finset.card_le_card hsub
 
-/-- **`thm:bva`, clause (i)** (§5.3, `source/kc/darwiche/draft.tex:603`, `:821`):
+/-- **`thm:bva`, clause (i)** ([OD17, `thm:bva`]; proof in [OD17, §A]):
 the primal treewidth of `Δⁿₐ` is at least `n` — in fact any jointree width `w`
 satisfies `2n ≤ w`, since every variable of `Δⁿₐ` has `2n` primal-neighbours.
 

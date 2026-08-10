@@ -48,7 +48,7 @@ variable {Ω : Type*} [Fintype Ω] [DecidableEq Ω]
 
 /-- The **lazy version** of a chain: `P_lazy = ½(I + P)`, which holds with
 probability `½` and otherwise moves according to `P`. -/
-noncomputable def FinChain.lazy (P : FinChain Ω) : FinChain Ω where
+noncomputable def _root_.Arlib.Probability.FinChain.lazy (P : FinChain Ω) : FinChain Ω where
   P x y := (if x = y then 1 else 0) / 2 + P x y / 2
   P_nonneg x y := by
     have h1 : (0 : ℝ) ≤ (if x = y then 1 else 0) := by split <;> norm_num
@@ -62,11 +62,11 @@ noncomputable def FinChain.lazy (P : FinChain Ω) : FinChain Ω where
     rw [Finset.sum_add_distrib, h1, h2]
     norm_num
 
-theorem FinChain.lazy_apply (P : FinChain Ω) (x y : Ω) :
+theorem _root_.Arlib.Probability.FinChain.lazy_apply (P : FinChain Ω) (x y : Ω) :
     P.lazy x y = (if x = y then 1 else 0) / 2 + P x y / 2 := rfl
 
 /-- The lazy chain acts as the average of the identity and `P`: `P_lazy f = ½(f + P f)`. -/
-theorem FinKernel.act_lazy (P : FinChain Ω) (f : Ω → ℝ) :
+theorem _root_.Arlib.Probability.FinKernel.act_lazy (P : FinChain Ω) (f : Ω → ℝ) :
     P.lazy.act f = fun x => (f x + P.act f x) / 2 := by
   funext x
   show ∑ y, ((if x = y then 1 else 0) / 2 + P x y / 2) * f y = _
@@ -78,6 +78,22 @@ theorem FinKernel.act_lazy (P : FinChain Ω) (f : Ω → ℝ) :
   simp only [Finset.mem_univ, if_true]
   show _ = (f x + ∑ y, P x y * f y) / 2
   ring
+
+/-! `lazy` extends the `FinKernel` API of `Arlib.Probability.FinDist`, so it is
+declared there (that is what makes `P.lazy` resolve).  The aliases below keep the
+`Arlib.MarkovChains` spellings working. -/
+
+namespace FinChain
+
+export Arlib.Probability.FinChain (lazy lazy_apply)
+
+end FinChain
+
+namespace FinKernel
+
+export Arlib.Probability.FinKernel (act_lazy)
+
+end FinKernel
 
 /-- The quadratic form of the lazy chain is the average of the two forms. -/
 theorem ip_act_lazy (μ : FinDist Ω) (P : FinChain Ω) (f : Ω → ℝ) :

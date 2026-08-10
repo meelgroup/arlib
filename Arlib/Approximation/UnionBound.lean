@@ -50,7 +50,17 @@ vocabulary of `Arlib.Approximation.Counting`.
 
 ## The ACJR instance
 
-`theo:fpras-bta` (`fpras2.tex:385`, invariant at `400-403`) carries the invariant
+Throughout, [ACJR21] is Marcelo Arenas, Luis Alberto Croquevielle, Rajesh
+Jayaram, Cristian Riveros, *#NFA Admits an FPRAS: Efficient Enumeration,
+Counting, and Uniform Generation for Logspace Classes*, J. ACM 68(6), art. 48
+(2021), arXiv:1906.09226, together with its conjunctive-query companion *When Is
+Approximate Counting for Conjunctive Queries Tractable?*, STOC 2021,
+arXiv:2005.10029.  The statements quoted below are cited by the labels they
+carry in the authors' manuscript (`theo:fpras-bta`, `lem:estimatepart`,
+`prop:prop1`, …); that manuscript is a private multi-file source not distributed
+with this library, so no line numbers are given and the labels are the locator.
+
+`theo:fpras-bta` carries the invariant
 `Pr[⋀_{j ≤ i}(ℰ¹_j ∧ ℰ²_j)] ≥ 1 - 2^{-γ+2i}`, closed by
 `(1 - 2^{-γ+1})·(1 - 2^{-γ+2(i-1)}) ≥ 1 - 2^{-γ+2i}`.  Two observations, both
 formalized below.
@@ -65,15 +75,15 @@ formalized below.
 * **The bound is vacuous unless `γ > 2i`.**  With `γ = log₂(1/δ) + 2n` and
   `i ≤ n` that is `log₂(1/δ) > 0`, i.e. `δ < 1` — always available.  At the top
   level `i = n` the invariant evaluates to exactly `1 - δ`
-  (`two_rpow_neg_acjrGamma_add`).
+  (`two_rpow_neg_failureExponent_add`).
 
-`acjrGamma` and the lemmas around it also settle the conflation at
-`fpras2.tex:438`: with `γ = log₂(1/δ) + 2n` one has `2^{-γ} = δ/4^n`, which is
-*strictly smaller* than `δ` for `n ≥ 1` (`two_rpow_neg_acjrGamma_lt`), so reading
+`failureExponent` and the lemmas around it also settle the conflation in the
+paper's `FAIL` bound: with `γ = log₂(1/δ) + 2n` one has `2^{-γ} = δ/4^n`, which is
+*strictly smaller* than `δ` for `n ≥ 1` (`two_rpow_neg_failureExponent_lt`), so reading
 the `FAIL` bound `2^{-γ}` as `δ` is a conservative misstatement, not an unsound
 one.  What is unsound is the total: three budgets each spent in full sum to
 `2δ + δ/4^n`, which is `< 3δ` but emphatically not `δ`
-(`acjr_three_budgets`, `acjr_three_budgets_lt`).  Running each source at `δ/3`
+(`three_budgets_sum`, `three_budgets_sum_lt`).  Running each source at `δ/3`
 is what recovers the advertised `1 - δ` (`sum_div_card`).
 -/
 
@@ -87,7 +97,7 @@ open scoped ENNReal
 and then losing `b` costs at most `a + b`.
 
 This is the inequality every "and so the induction closes" step is really using,
-including `fpras2.tex:421`. -/
+including the closing step of [ACJR21, `theo:fpras-bta`]. -/
 theorem one_sub_add_le_one_sub_mul_one_sub {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
     1 - (a + b) ≤ (1 - a) * (1 - b) := by
   nlinarith [mul_nonneg ha hb]
@@ -207,7 +217,7 @@ theorem one_sub_sum_le_outProbR_biInter' (μ : PMF (β × ℕ)) (s : Finset ι) 
   linarith [h i hi]
 
 /-- The staged conjunction bound over the first `k` stages, the form the
-`fpras2.tex:402` induction is indexed by. -/
+[ACJR21, `theo:fpras-bta`] induction is indexed by. -/
 theorem one_sub_sum_le_outProbR_iInter_range (μ : PMF (β × ℕ)) (k : ℕ) (E : ℕ → Set β)
     (δ : ℕ → ℝ) (h : ∀ j < k, outProbR μ (E j)ᶜ ≤ δ j) :
     1 - ∑ j ∈ Finset.range k, δ j ≤ outProbR μ (⋂ j ∈ Finset.range k, E j) :=
@@ -261,7 +271,7 @@ end Budget
 
 /-! ## The geometric staged invariant
 
-The shape of the induction at `fpras2.tex:402-431`, stated in terms of
+The shape of the induction in [ACJR21, `theo:fpras-bta`], stated in terms of
 `x = 2^{-γ}` so that no `rpow` appears: the invariant `1 - 2^{-γ+2i}` becomes
 `1 - 4^i · x` and the per-stage margin `1 - 2^{-γ+1}` becomes `1 - 2x`. -/
 
@@ -295,7 +305,7 @@ The hypothesis `2 * x ≤ 1` is the one the paper leaves implicit: the step
 multiplies the induction hypothesis by `1 - 2x`, and that is only monotone when
 `1 - 2x ≥ 0`.  In the paper's variables `x = 2^{-γ}`, so it says `γ ≥ 1`.
 
-Indices are shifted by one relative to `fpras2.tex:402`, whose `i` runs over
+Indices are shifted by one relative to [ACJR21, `theo:fpras-bta`], whose `i` runs over
 `[n]`: `q k` is the paper's `p_{k+1}` and the invariant `1 - 4^{k+1} x` is the
 paper's `1 - 2^{-γ + 2i}` at `i = k + 1`. -/
 theorem one_sub_geom_le_of_geom_step {x : ℝ} (hx : 0 ≤ x) (hx2 : 2 * x ≤ 1) (q : ℕ → ℝ)
@@ -344,19 +354,22 @@ theorem one_sub_rpow_le_of_geom_step {γ : ℝ} (hγ : 1 ≤ γ) (q : ℕ → �
   · rwa [h2'] at hbase
   · intro j; rw [← h1]; exact hstep j
 
-/-! ## The ACJR parameter `γ = log₂(1/δ) + 2n`
+/-! ## The failure exponent `γ = log₂(1/δ) + 2n`
 
-`fpras2.tex:434` redefines `γ` this way at the very end of the proof of
-`theo:fpras-bta`, and `:438` then reads `2^{-γ}` as `δ`.  The three lemmas below
-say precisely what `2^{-γ}` is, where the reading is safe and where it is not. -/
+The source redefines `γ` this way at the very end of the proof of
+`theo:fpras-bta`, and then reads `2^{-γ}` as `δ`.  That reading is not
+unconditionally valid, which is the point of this section: the three lemmas
+below say precisely what `2^{-γ}` is, where the reading is safe and where it is
+not. -/
 
-/-- The paper's rescaled parameter, `γ = log₂(1/δ) + 2n` (`fpras2.tex:434`). -/
-noncomputable def acjrGamma (δ : ℝ) (n : ℕ) : ℝ := Real.logb 2 (1 / δ) + 2 * n
+/-- The paper's rescaled parameter, `γ = log₂(1/δ) + 2n` ([ACJR21,
+`theo:fpras-bta`]). -/
+noncomputable def failureExponent (δ : ℝ) (n : ℕ) : ℝ := Real.logb 2 (1 / δ) + 2 * n
 
-/-- **`2^{-γ} = δ / 4^n`, not `δ`.**  This is the identity `fpras2.tex:438`
-elides. -/
-theorem two_rpow_neg_acjrGamma {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
-    (2 : ℝ) ^ (-acjrGamma δ n) = δ / 4 ^ n := by
+/-- **`2^{-γ} = δ / 4^n`, not `δ`.**  This is the identity the paper's `FAIL`
+bound elides. -/
+theorem two_rpow_neg_failureExponent {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
+    (2 : ℝ) ^ (-failureExponent δ n) = δ / 4 ^ n := by
   have h2 : (0 : ℝ) < 2 := by norm_num
   have hlog : (2 : ℝ) ^ Real.logb 2 (1 / δ) = 1 / δ :=
     Real.rpow_logb h2 (by norm_num) (by positivity)
@@ -364,15 +377,16 @@ theorem two_rpow_neg_acjrGamma {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
     rw [show (2 : ℝ) * (n : ℝ) = ((2 * n : ℕ) : ℝ) by push_cast; ring, Real.rpow_natCast,
       pow_mul]
     norm_num
-  rw [acjrGamma, neg_add, Real.rpow_add h2, Real.rpow_neg h2.le, Real.rpow_neg h2.le, hlog, hpow]
+  rw [failureExponent, neg_add, Real.rpow_add h2, Real.rpow_neg h2.le, Real.rpow_neg h2.le, hlog,
+    hpow]
   field_simp
 
 /-- **The `FAIL` budget is conservative, not unsound.**  For `n ≥ 1`,
-`2^{-γ} < δ`, so `fpras2.tex:438`'s reading of the `FAIL` bound `2^{-γ}` as `δ`
+`2^{-γ} < δ`, so the paper's reading of the `FAIL` bound `2^{-γ}` as `δ`
 weakens a true statement rather than asserting a false one. -/
-theorem two_rpow_neg_acjrGamma_lt {δ : ℝ} (hδ : 0 < δ) {n : ℕ} (hn : 1 ≤ n) :
-    (2 : ℝ) ^ (-acjrGamma δ n) < δ := by
-  rw [two_rpow_neg_acjrGamma hδ n]
+theorem two_rpow_neg_failureExponent_lt {δ : ℝ} (hδ : 0 < δ) {n : ℕ} (hn : 1 ≤ n) :
+    (2 : ℝ) ^ (-failureExponent δ n) < δ := by
+  rw [two_rpow_neg_failureExponent hδ n]
   have h4 : (4 : ℝ) ≤ 4 ^ n := by
     calc (4 : ℝ) = 4 ^ 1 := by norm_num
     _ ≤ 4 ^ n := pow_le_pow_right₀ (by norm_num) hn
@@ -383,48 +397,49 @@ theorem two_rpow_neg_acjrGamma_lt {δ : ℝ} (hδ : 0 < δ) {n : ℕ} (hn : 1 �
 `γ = log₂(1/δ) + 2n`, the invariant `1 - 2^{-γ+2i}` at `i = n` reads `1 - δ`: the
 induction of `theo:fpras-bta` spends its whole budget, and none of the other
 sources of failure has any room left inside it. -/
-theorem two_rpow_neg_acjrGamma_add {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
-    (2 : ℝ) ^ (-acjrGamma δ n + 2 * (n : ℝ)) = δ := by
+theorem two_rpow_neg_failureExponent_add {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
+    (2 : ℝ) ^ (-failureExponent δ n + 2 * (n : ℝ)) = δ := by
   have h2 : (0 : ℝ) < 2 := by norm_num
   have hlog : (2 : ℝ) ^ Real.logb 2 (1 / δ) = 1 / δ :=
     Real.rpow_logb h2 (by norm_num) (by positivity)
-  have : -acjrGamma δ n + 2 * (n : ℝ) = -Real.logb 2 (1 / δ) := by
-    rw [acjrGamma]; ring
+  have : -failureExponent δ n + 2 * (n : ℝ) = -Real.logb 2 (1 / δ) := by
+    rw [failureExponent]; ring
   rw [this, Real.rpow_neg h2.le, hlog]
   field_simp
 
 /-- **`1 ≤ γ`**, the hypothesis `one_sub_rpow_le_of_geom_step` needs, holds for
 the paper's `γ` whenever `δ ≤ 1` and `n ≥ 1` — in particular for the paper's own
 standing `δ ∈ (0,1/2)`.  So the missing hypothesis is free, but it is missing. -/
-theorem one_le_acjrGamma {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) {n : ℕ} (hn : 1 ≤ n) :
-    1 ≤ acjrGamma δ n := by
+theorem one_le_failureExponent {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) {n : ℕ}
+    (hn : 1 ≤ n) :
+    1 ≤ failureExponent δ n := by
   have hlog : 0 ≤ Real.logb 2 (1 / δ) := by
     refine Real.logb_nonneg (by norm_num) ?_
     rw [le_div_iff₀ hδ0]; linarith
   have hn' : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
-  rw [acjrGamma]; linarith
+  rw [failureExponent]; linarith
 
 /-! ## The failure accounting of `theo:fpras-bta`
 
-`FINDINGS.md` §7.8 records three budgets, each spent in full: the induction
-invariant (`fpras2.tex:402`), which is exactly `δ`; the `FAIL` bound (`:438`),
-which is `2^{-γ}`; and `lem:estimatepart`'s (`:412`), which is again `δ`.  These
+The development notes record three budgets, each spent in full: the induction
+invariant of [ACJR21, `theo:fpras-bta`], which is exactly `δ`; its `FAIL` bound,
+which is `2^{-γ}`; and [ACJR21, `lem:estimatepart`]'s, which is again `δ`.  These
 are added here — the paper never adds them — and the sum is what the algorithm
 actually delivers. -/
 
 /-- **The exact total.**  The three budgets of `theo:fpras-bta` sum to
 `2δ + δ/4^n`. -/
-theorem acjr_three_budgets {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
-    δ + (2 : ℝ) ^ (-acjrGamma δ n) + δ = 2 * δ + δ / 4 ^ n := by
-  rw [two_rpow_neg_acjrGamma hδ n]; ring
+theorem three_budgets_sum {δ : ℝ} (hδ : 0 < δ) (n : ℕ) :
+    δ + (2 : ℝ) ^ (-failureExponent δ n) + δ = 2 * δ + δ / 4 ^ n := by
+  rw [two_rpow_neg_failureExponent hδ n]; ring
 
-/-- **`1 - 3δ`, and in fact slightly better.**  `FINDINGS.md` §7.8's "at best
+/-- **`1 - 3δ`, and in fact slightly better.**  The development notes' "at best
 `1 - 3δ`" is right as an upper bound on the loss, and is not tight: the true
 total is `2δ + δ/4^n`, strictly below `3δ` for `n ≥ 1`.  What it is emphatically
 not is `δ`. -/
-theorem acjr_three_budgets_lt {δ : ℝ} (hδ : 0 < δ) {n : ℕ} (hn : 1 ≤ n) :
-    δ + (2 : ℝ) ^ (-acjrGamma δ n) + δ < 3 * δ := by
-  have := two_rpow_neg_acjrGamma_lt hδ hn
+theorem three_budgets_sum_lt {δ : ℝ} (hδ : 0 < δ) {n : ℕ} (hn : 1 ≤ n) :
+    δ + (2 : ℝ) ^ (-failureExponent δ n) + δ < 3 * δ := by
+  have := two_rpow_neg_failureExponent_lt hδ hn
   linarith
 
 /-- **The repair.**  Three sources of failure, each run at `δ/3`, total `δ`.

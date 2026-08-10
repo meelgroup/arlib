@@ -26,7 +26,7 @@ No `sorry`.
 import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -178,4 +178,4 @@ equals the square of its weight, `aᵢᵀ M⁻¹ aᵢ = wᵢ²`. -/
 def IsLewis (w : ι → ℝ) (a : ι → d → ℝ) : Prop :=
   (gram w a).PosDef ∧ ∀ i, lev w a i = (w i) ^ 2
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

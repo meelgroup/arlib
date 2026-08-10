@@ -42,7 +42,7 @@ import Arlib.Probability.IIDProduct
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -418,5 +418,5 @@ theorem chernoff_two_sided (s : Finset ι) (A : ι → Finset X) {t : ℝ}
         add_le_add (Real.exp_le_exp.2 e1) (Real.exp_le_exp.2 e2)
     _ = 2 * Real.exp (-(t ^ 2 * indicMean μ s A) / 3) := by ring
 
-end Arlib
+end Arlib.Probability
 

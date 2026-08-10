@@ -17,7 +17,7 @@ It is the wrong shape for two other arguments in the area.
 * Automata (`Automata/`) read a word `xy`, and the split is at a *position*, not
   at a variable: Alice holds the prefix, Bob the suffix, and the two halves need
   not have the same length or even the same alphabet.
-* Sparse set disjointness (Göös–Kiefer–Yuan §5) has `X = Y = binom([n], k)`.
+* Sparse set disjointness ([GKY22, §4]) has `X = Y = binom([n], k)`.
   There is no ambient Boolean cube at all, and forcing one would mean carrying a
   `DependsOn` side condition through an argument that never looks at a variable.
 
@@ -56,7 +56,7 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 
-namespace Arlib.KnowledgeCompilation
+namespace Arlib.Communication
 
 variable {X Y : Type*}
 
@@ -308,4 +308,4 @@ theorem nnRank_le_tpPar (h : ∃ k, HasTPPartition F true k) :
   have hne : {r : ℕ | HasTPPartition F true r}.Nonempty := ⟨k, hk⟩
   exact nnRank_le_of _ (hasNNRankLE_of_hasTPPartition (Nat.sInf_mem hne))
 
-end Arlib.KnowledgeCompilation
+end Arlib.Communication

@@ -6,20 +6,20 @@ Authors: Kuldeep S. Meel
 /-
 # A witness for the parameters of `thm: main`
 
-`Separation.thm_main` is stated for *any* parameters `ι, m, F, Zι` satisfying four
-conditions: an injection `e : ι × Fin m → F`, an injection `rep : F × F → (Zι → Bool)`,
-`6|ι| < m`, and `8|Zι| ≤ |F|`.  This file exhibits parameters that satisfy all four,
-for every `n = |ι|`, and applies `thm: main` to them.
+`Separation.exists_dSDNNF_hard_negation` is stated for *any* parameters `ι, m, F, Zι`
+satisfying four conditions: an injection `e : ι × Fin m → F`, an injection
+`rep : F × F → (Zι → Bool)`, `6|ι| < m`, and `8|Zι| ≤ |F|`.  This file exhibits parameters
+that satisfy all four, for every `n = |ι|`, and applies `thm: main` to them.
 
 The point is vacuity.  A theorem whose hypotheses have no model is a theorem about
 nothing, and `#print axioms` cannot tell the difference.  Until the four conditions are
-jointly realized in Lean, `thm_main` is a conditional that might be conditional on the
-impossible; after this file it is a conditional on `Imported.FixedPartitionHard` alone
-(`ROADMAP.md` §6, gap G6).
+jointly realized in Lean, `Separation.exists_dSDNNF_hard_negation` is a conditional that
+might be conditional on the impossible; after this file it is a conditional on
+`Imported.FixedPartitionHard` alone (`docs/dev/KnowledgeCompilation-ROADMAP.md` §6, gap G6).
 
 ## The choice, and why it is forced
 
-The paper (`source/kc/arXiv.tex:421`, `:429`) works over `F` of order `n' = 2ᵗ` and
+The paper ([VS24, §4.4.2]) works over `F` of order `n' = 2ᵗ` and
 represents a member of `𝒫 ⊆ F × F` by `2t` bits.  Reading its constraints back:
 
 * `rep` injective needs `|F|² ≤ 2^{|Zι|}`, i.e. `2^{2t} ≤ 2^{|Zι|}`.  Taking `|Zι| = 2t`
@@ -34,12 +34,12 @@ So the only real constraint on `t` is `t ≥ 7` together with `2ᵗ ≥ n(6n+1)`
 
 **`t` has to be logarithmic, not merely large enough.**  Any `t ≥ 7` with `2ᵗ ≥ nm` makes
 all four hypotheses true, so for the bare purpose of non-vacuity `t = 7 + nm` would do and
-would be a one-line proof.  It would also be useless.  The upper bound of `thm_main`
-carries the factor `|𝒫| = (|F| − 1)|F| ≈ 2^{2t}`, and the paper's own count for that
-factor is the `n^{k+4}` of `thm: fixed_to_best` (`source/kc/arXiv.tex:335`), whose `n⁴`
-is `|F|²` *because* `|F| = O(n²)`.  With `t` linear in `nm` that factor becomes
-`2^{Θ(n²)}`, the d-SDNNF upper bound stops being `2^{Õ(k)}`, and the comparison the
-theorem exists to make collapses.  `card_Fld_le` records the polynomial bound
+would be a one-line proof.  It would also be useless.  The upper bound of
+`Separation.exists_dSDNNF_hard_negation` carries the factor `|𝒫| = (|F| − 1)|F| ≈ 2^{2t}`,
+and the paper's own count for that factor is the `n^{k+4}` of `thm: fixed_to_best`
+([VS24, §4.2]), whose `n⁴` is `|F|²` *because* `|F| = O(n²)`.  With `t` linear
+in `nm` that factor becomes `2^{Θ(n²)}`, the d-SDNNF upper bound stops being `2^{Õ(k)}`,
+and the comparison the theorem exists to make collapses.  `card_Fld_le` records the polynomial bound
 `|F| ≤ 256·n(6n+1)` that the logarithmic choice buys.
 
 ## `GaloisField` and its missing instances
@@ -53,14 +53,15 @@ found — and the whole area is about existence of circuits, never about computi
 
 ## The shape of the conclusion
 
-`thm_main_instance` is `thm_main` with every parameter discharged and every bound
-written out in numerals: the d-SDNNF upper bound becomes
+`Instance.exists_dSDNNF_hard_negation` is `Separation.exists_dSDNNF_hard_negation` with
+every parameter discharged and every bound written out in numerals: the d-SDNNF upper bound
+becomes
 
   `(2ᵗ − 1)·2ᵗ·(termBound·(6n+1)ᵏ)·(2(2t + k(6n+1)) + 2) + 1`,
 
 using `AffinePerms.card_maps` for `|𝒫| = (|F| − 1)|F|`.  Nothing here is asymptotic: the
 two displayed numbers are what the paper compares, and comparing them is the last step
-(`ROADMAP.md` §5).
+(`docs/dev/KnowledgeCompilation-ROADMAP.md` §5).
 
 ## What the asymptotic packaging would still need
 
@@ -84,6 +85,7 @@ import Mathlib.FieldTheory.Finite.GaloisField
 namespace Arlib.KnowledgeCompilation
 namespace Instance
 
+open Arlib.Communication
 open AffinePerms
 
 /-! ## The arithmetic
@@ -167,7 +169,7 @@ which `GaloisField` does not carry. -/
 noncomputable instance instDecidableEqFld (n : ℕ) : DecidableEq (Fld n) := Classical.decEq _
 
 /-- **The `z`-block index**, `Zι = Fin 2t`: the paper's `2t`-bit encoding of a member of
-`𝒫 ⊆ F × F` (`source/kc/arXiv.tex:423`). -/
+`𝒫 ⊆ F × F` ([VS24, `lem: indperm`]). -/
 abbrev Zid (n : ℕ) : Type := Fin (2 * exponent n)
 
 instance instNeZeroCopies (n : ℕ) : NeZero (copies n) := ⟨by simp [copies]⟩
@@ -180,7 +182,7 @@ instance instNeZeroCopies (n : ℕ) : NeZero (copies n) := ⟨by simp [copies]�
   Fintype.card_fin _
 
 /-- **The field is polynomially sized**: `|F| ≤ 256·n(6n+1)`, so `|𝒫| = (|F|−1)|F|` is
-`O(n⁴)` — the paper's `n^{k+4}` term count (`source/kc/arXiv.tex:335`).  This is the
+`O(n⁴)` — the paper's `n^{k+4}` term count ([VS24, §4.2]).  This is the
 property that makes the witness usable and not merely non-vacuous; see the module
 docstring. -/
 theorem card_Fld_le (n : ℕ) (hn : 1 ≤ n) : Fintype.card (Fld n) ≤ 256 * (n * copies n) := by
@@ -188,11 +190,12 @@ theorem card_Fld_le (n : ℕ) (hn : 1 ≤ n) : Fintype.card (Fld n) ≤ 256 * (n
 
 /-- **`|𝒫|` is polynomial in `n`**: `|𝒫| ≤ (256·n(6n+1))²`, so `|𝒫| = O(n⁴)`.
 
-This is the factor multiplying `termBound·mᵏ` in the d-SDNNF upper bound of `thm_main`,
-and it is exactly the `n⁴` of the paper's `O(ℓ·n^{k+4})` term count in `thm:
-fixed_to_best` (`source/kc/arXiv.tex:335`) — recovered with an explicit constant instead
-of an `O`.  It is the one place where the choice of `t` in `exponent` is visible in the
-final bound, and the reason that choice had to be logarithmic. -/
+This is the factor multiplying `termBound·mᵏ` in the d-SDNNF upper bound of
+`Separation.exists_dSDNNF_hard_negation`, and it is exactly the `n⁴` of the paper's
+`O(ℓ·n^{k+4})` term count in `thm: fixed_to_best` ([VS24, §4.2]) — recovered
+with an explicit constant instead of an `O`.  It is the one place where the choice of `t`
+in `exponent` is visible in the final bound, and the reason that choice had to be
+logarithmic. -/
 theorem card_maps_Fld_le (n : ℕ) (hn : 1 ≤ n) :
     (maps (Fld n)).card ≤ (256 * (n * copies n)) ^ 2 := by
   have h := card_Fld_le n hn
@@ -233,8 +236,8 @@ theorem eight_mul_card_Zid_le (n : ℕ) :
   omega
 
 /-- **G6, as a single statement**: for every `n` the four hypotheses of
-`Separation.thm_main` hold simultaneously, at `|ι| = n`, `m = 6n + 1`, `F = 𝔽_{2ᵗ}` and
-`|Zι| = 2t` with `t = 7 + ⌈log₂(n(6n+1))⌉`.
+`Separation.exists_dSDNNF_hard_negation` hold simultaneously, at `|ι| = n`, `m = 6n + 1`,
+`F = 𝔽_{2ᵗ}` and `|Zι| = 2t` with `t = 7 + ⌈log₂(n(6n+1))⌉`.
 
 Stated over the concrete `Fld n`/`Zid n` rather than with `t` existentially quantified,
 because the `Fintype` and `DecidableEq` instances the statement needs are attached to
@@ -248,18 +251,18 @@ theorem params_satisfiable (n : ℕ) :
 
 /-! ## `thm: main`, instantiated -/
 
-/-- **`thm: main` with its parameters discharged** (`source/kc/arXiv.tex:113`).
+/-- **`thm: main` with its parameters discharged** ([VS24]).
 
-Identical to `Separation.thm_main` except that `ι`, `m`, `F`, `Zι` are now the concrete
-choices above and all four side conditions have been proved, so the *only* remaining
-hypothesis is the imported fixed-partition hardness.  Both bounds are numerals in `n`, `k`
-and `termBound`:
+Identical to `Separation.exists_dSDNNF_hard_negation` except that `ι`, `m`, `F`, `Zι` are
+now the concrete choices above and all four side conditions have been proved, so the *only*
+remaining hypothesis is the imported fixed-partition hardness.  Both bounds are numerals in
+`n`, `k` and `termBound`:
 
 * upper: `(2ᵗ − 1)·2ᵗ·(termBound·(6n+1)ᵏ)·(2(2t + k(6n+1)) + 2) + 1`, with
   `(2ᵗ − 1)·2ᵗ = |𝒫|` by `AffinePerms.card_maps`;
 * lower: `coverBound`, unchanged — it is the hypothesis's own constant, and no step of
   the chain weakens it. -/
-theorem thm_main_instance (n k termBound coverBound : ℕ)
+theorem exists_dSDNNF_hard_negation (n k termBound coverBound : ℕ)
     (H : Imported.FixedPartitionHard (Finset.univ : Finset (Fin n)) k termBound coverBound) :
     ∃ ψ' : DNF (Fld n ⊕ Zid n),
       DNF.Unambiguous ψ' ∧
@@ -273,18 +276,19 @@ theorem thm_main_instance (n k termBound coverBound : ℕ)
   obtain ⟨e, he⟩ := exists_e n
   obtain ⟨rep, hrep⟩ := exists_rep n
   obtain ⟨ψ', hun, hup, hlow⟩ :=
-    Separation.thm_main H he hrep (six_mul_lt_copies n) (eight_mul_card_Zid_le n)
+    Separation.exists_dSDNNF_hard_negation H he hrep (six_mul_lt_copies n)
+      (eight_mul_card_Zid_le n)
   refine ⟨ψ', hun, fun T hT hTv => ?_, hlow⟩
   obtain ⟨C, h1, h2, h3, h4⟩ := hup T hT hTv
   refine ⟨C, h1, h2, h3, h4.trans (le_of_eq ?_)⟩
   rw [card_maps, card_Fld, card_Zid]
 
-/-- **`thm: sep` with its parameters discharged** (`source/kc/arXiv.tex:107`).
+/-- **`thm: sep` with its parameters discharged** ([VS24]).
 
-Same discharge as `thm_main_instance`, on the other headline theorem.  Two hypotheses
-remain, both imported and both genuinely external: the fixed-partition hardness and the
-polynomial-time complementation of SDD. -/
-theorem thm_sep_instance (n k termBound coverBound c d : ℕ)
+Same discharge as `exists_dSDNNF_hard_negation`, on the other headline theorem.  Two
+hypotheses remain, both imported and both genuinely external: the fixed-partition hardness
+and the polynomial-time complementation of SDD. -/
+theorem exists_dSDNNF_hard_sdd (n k termBound coverBound c d : ℕ)
     (H : Imported.FixedPartitionHard (Finset.univ : Finset (Fin n)) k termBound coverBound)
     (comp : Imported.SDDComplementation (Fld n ⊕ Zid n) c d) :
     ∃ ψ' : DNF (Fld n ⊕ Zid n),
@@ -298,25 +302,26 @@ theorem thm_sep_instance (n k termBound coverBound c d : ℕ)
   obtain ⟨e, he⟩ := exists_e n
   obtain ⟨rep, hrep⟩ := exists_rep n
   obtain ⟨ψ', hup, hlow⟩ :=
-    Separation.thm_sep H comp he hrep (six_mul_lt_copies n) (eight_mul_card_Zid_le n)
+    Separation.exists_dSDNNF_hard_sdd H comp he hrep (six_mul_lt_copies n)
+      (eight_mul_card_Zid_le n)
   refine ⟨ψ', fun T hT hTv => ?_, hlow⟩
   obtain ⟨C, h1, h2, h3, h4⟩ := hup T hT hTv
   refine ⟨C, h1, h2, h3, h4.trans (le_of_eq ?_)⟩
   rw [card_maps, card_Fld, card_Zid]
 
-/-- **`thm: union` with its parameters discharged** (`source/kc/arXiv.tex:471`).
+/-- **`thm: union` with its parameters discharged** ([VS24]).
 
 The same discharge again, on the disjunction theorem.  The parameters are shared
-with `thm_main_instance` — the copy count `6n+1`, the field `Fld n` and the
+with `exists_dSDNNF_hard_negation` — the copy count `6n+1`, the field `Fld n` and the
 identifier set `Zid n` do not depend on *which* hardness result is being lifted,
 only on `n` — so `exists_e`, `exists_rep` and the two cardinality side conditions
 are reused verbatim.  The single remaining hypothesis is `UnionHard`.
 
-The size bound is the same numeral as in `thm_main_instance`, and that is not a
+The size bound is the same numeral as in `exists_dSDNNF_hard_negation`, and that is not a
 coincidence: both come from compiling a lifted `k`-DNF with `termBound` terms
 through the same compiler.  Here it is asserted of *both* `ψ'` and `φ'`, against
 one prescribed v-tree. -/
-theorem thm_union_instance (n k termBound partBound : ℕ)
+theorem exists_dSDNNF_pair_hard_disjunction (n k termBound partBound : ℕ)
     (H : Imported.UnionHard (Finset.univ : Finset (Fin n)) k termBound partBound) :
     ∃ ψ' φ' : DNF (Fld n ⊕ Zid n),
       (∀ T : VTree (Fld n ⊕ Zid n), T.WellFormed → T.vars = Finset.univ →
@@ -332,7 +337,8 @@ theorem thm_union_instance (n k termBound partBound : ℕ)
   obtain ⟨e, he⟩ := exists_e n
   obtain ⟨rep, hrep⟩ := exists_rep n
   obtain ⟨ψ', φ', hup, hlow⟩ :=
-    Separation.thm_union H he hrep (six_mul_lt_copies n) (eight_mul_card_Zid_le n)
+    Separation.exists_dSDNNF_pair_hard_disjunction H he hrep (six_mul_lt_copies n)
+      (eight_mul_card_Zid_le n)
   refine ⟨ψ', φ', fun T hT hTv => ?_, hlow⟩
   obtain ⟨⟨C, h1, h2, h3, h4⟩, ⟨D, g1, g2, g3, g4⟩⟩ := hup T hT hTv
   have hcard : (maps (Fld n)).card = (2 ^ exponent n - 1) * 2 ^ exponent n := by
@@ -340,7 +346,7 @@ theorem thm_union_instance (n k termBound partBound : ℕ)
   exact ⟨⟨C, h1, h2, h3, h4.trans (le_of_eq (by rw [hcard, card_Zid]))⟩,
     ⟨D, g1, g2, g3, g4.trans (le_of_eq (by rw [hcard, card_Zid]))⟩⟩
 
-/-- **`cor: add` with its parameters discharged** (`source/kc/arXiv.tex:642`).
+/-- **`cor: add` with its parameters discharged** ([VS24]).
 
 The arithmetic corollary at the same concrete parameters as the three Boolean
 ones.  Nothing new is discharged here — `cor: add` is `thm: union` read through
@@ -351,7 +357,7 @@ for the fourth time.
 Clause (2) is the paper's: every dSD-`AC_p` for `f + g` is large.  It is
 conditional on `UnionHard` alone; see `LowerBounds/Arithmetic.lean` for why the
 sixth import the paper uses here does not appear. -/
-theorem cor_add_instance (n k termBound partBound : ℕ)
+theorem exists_dSDACp_pair_hard_sum (n k termBound partBound : ℕ)
     (H : Imported.UnionHard (Finset.univ : Finset (Fin n)) k termBound partBound) :
     ∃ f g : (Fld n ⊕ Zid n → Bool) → ℝ,
       (∀ T : VTree (Fld n ⊕ Zid n), T.WellFormed → T.vars = Finset.univ →
@@ -366,7 +372,8 @@ theorem cor_add_instance (n k termBound partBound : ℕ)
   obtain ⟨e, he⟩ := exists_e n
   obtain ⟨rep, hrep⟩ := exists_rep n
   obtain ⟨f, g, hup, hlow⟩ :=
-    Separation.cor_add_positive H he hrep (six_mul_lt_copies n) (eight_mul_card_Zid_le n)
+    Separation.exists_dSDACp_pair_hard_sum H he hrep (six_mul_lt_copies n)
+      (eight_mul_card_Zid_le n)
   refine ⟨f, g, fun T hT hTv => ?_, hlow⟩
   obtain ⟨⟨A, h1, h2, h3, h4⟩, ⟨B, g1, g2, g3, g4⟩⟩ := hup T hT hTv
   have hcard : (maps (Fld n)).card = (2 ^ exponent n - 1) * 2 ^ exponent n := by

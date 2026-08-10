@@ -7,8 +7,8 @@ Authors: Kuldeep S. Meel
 # Step 2 of the lifting: adding permutations
 
 The second half of the copy-and-permute construction (paper §4.4.2,
-`source/kc/arXiv.tex:419`), and the lifting theorem it exists for
-(`thm: fixed_to_best`, `source/kc/arXiv.tex:325`; proof at `:445`).
+[VS24, §4.4.2]), and the lifting theorem it exists for
+(`thm: fixed_to_best`, [VS24]; proof at [VS24, §4.5]).
 
 Step 1 (`LowerBounds/Copies.lean`) replaced each variable by `m` copies.  Step 2
 takes the resulting `ψ^∨`, whose variables are identified with the elements of a
@@ -24,7 +24,7 @@ fresh `z`-variables record *which* permutation a term was built from.
 
 **The variables of `ψ'` are `F ⊕ Zι`.**  A sum type, not an injection of two
 families into one index type.  The left summand is the paper's `V = var(ψ^∨)`,
-identified with the field (`source/kc/arXiv.tex:421`: `y_{i,j} := v_{im+j}`,
+identified with the field ([VS24, §4.4.2]: `y_{i,j} := v_{im+j}`,
 `n' = |F|`); the right summand is the `z`-block.  With a sum, "the `z`-block
 mentions no `V`-variable" is `Sum.inl ≠ Sum.inr` and needs no hypothesis, and a
 partition of `var(ψ')` splits into its `V`-part and its `Z`-part by
@@ -36,7 +36,7 @@ about images rather than about `Fintype.card`.
 
 **`rep` is a parameter, not a construction.**  The paper represents `σ ∈ 𝒫` by
 `2t` bits, having assumed `n' = |F| = 2^t` so that `𝒫 ⊆ F × F` is a set of
-`2t`-bit strings (`source/kc/arXiv.tex:423`).  Nothing in the argument uses
+`2t`-bit strings ([VS24, `lem: indperm`]).  Nothing in the argument uses
 anything about that encoding except that it is **injective on `𝒫`**: injectivity
 is what makes distinct `σ` give disjoint terms, and the width of the `z`-block is
 just `|Zι|`.  So `Zι` is an arbitrary finite index type and `rep : F × F →
@@ -80,6 +80,7 @@ namespace Arlib.KnowledgeCompilation
 namespace Lifting
 
 open Finset AffinePerms
+open Arlib.Communication
 
 /-! ## Two list lemmas
 
@@ -184,7 +185,7 @@ noncomputable def canonChoices (m : ℕ) [NeZero m] (t : Finset (Lit ι)) : List
 variable {t : Finset (Lit ι)}
 
 /-- **The count**: `m^{|posPart t|}` choice functions, which for a `k`-DNF is the
-paper's `m^k` derived terms per term (`source/kc/arXiv.tex:415`). -/
+paper's `m^k` derived terms per term ([VS24, §4.4.1]). -/
 theorem canonChoices_length :
     (canonChoices m t).length = m ^ (Copies.posPart t).card := by
   classical
@@ -237,7 +238,7 @@ section Copies
 
 variable {ι : Type*} [DecidableEq ι] {m : ℕ} [NeZero m]
 
-/-- **`ψ^∨`** (paper §4.4.1, `source/kc/arXiv.tex:389`), with the canonical
+/-- **`ψ^∨`** (paper §4.4.1, [VS24]), with the canonical
 choice-function enumeration. -/
 noncomputable def copiesDNF (m : ℕ) [NeZero m] (ψ : DNF ι) : DNF (ι × Fin m) :=
   Copies.copyDNF ψ (canonChoices m)
@@ -264,7 +265,7 @@ theorem sat_copiesDNF_of_sat {α : ι × Fin m → Bool} (hone : Copies.OneHot �
   rwa [Copies.copyTerm_congr hagree]
 
 /-- **Unambiguity of `ψ^∨` in the counting form** (paper's lemma at
-`source/kc/arXiv.tex:392`), which is what `Circuits/DNFtoCircuit.lean` consumes.
+[VS24, §4.4.1]), which is what `Circuits/DNFtoCircuit.lean` consumes.
 
 Step 1 proves the pairwise form for any enumeration; the counting form needs the
 enumeration to list each derived term once, which `canonChoices` does.  The
@@ -295,7 +296,7 @@ theorem unambiguous_copiesDNF (hψ : DNF.Unambiguous ψ) :
     obtain ⟨c, -, rfl⟩ := List.mem_map.mp hu
     exact decide_eq_true (Copies.sat_of_sat_copyTerm (of_decide_eq_true hpu))
 
-/-- **The term count** (paper `source/kc/arXiv.tex:415`): at most `m^k` derived
+/-- **The term count** ([VS24, §4.4.1]): at most `m^k` derived
 terms per term of a `k`-DNF, so `ℓ·m^k` in all. -/
 theorem numTerms_copiesDNF_le {k : ℕ} (hk : DNF.IsKDNF k ψ) (hm : 0 < m) :
     (copiesDNF m ψ).numTerms ≤ ψ.numTerms * m ^ k := by
@@ -306,7 +307,7 @@ theorem numTerms_copiesDNF_le {k : ℕ} (hk : DNF.IsKDNF k ψ) (hm : 0 < m) :
         Finset.card_le_card (fun i hi => Finset.mem_image_of_mem _ (Copies.mem_posPart.mp hi))
     _ ≤ Term.width t := Term.card_vars_le_width t
 
-/-- **The width** (paper's `O(km)`, `source/kc/arXiv.tex:415`): each of the at
+/-- **The width** (paper's `O(km)`, [VS24, §4.4.1]): each of the at
 most `k` variables of a term contributes `m` literals. -/
 theorem isKDNF_copiesDNF {k : ℕ} (hk : DNF.IsKDNF k ψ) :
     DNF.IsKDNF (k * m) (copiesDNF m ψ) := by
@@ -358,7 +359,7 @@ end Copies
 
 /-! ## Step 2: adding permutations
 
-The construction of `source/kc/arXiv.tex:432`.  `ψ'` lives over `F ⊕ Zι`: the
+The construction of [VS24, §4.4.2].  `ψ'` lives over `F ⊕ Zι`: the
 copy-variables of `ψ^∨`, identified with the field by `e` and then permuted, on
 the left; the block of variables recording the permutation on the right. -/
 
@@ -369,7 +370,7 @@ variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 variable {Zι : Type*} [Fintype Zι] [DecidableEq Zι]
 
 /-- **The `z`-block of `perm_σ(C)`**: the literals `zᵢ = rep(σ)ᵢ`
-(`source/kc/arXiv.tex:432`).
+([VS24, §4.4.2]).
 
 It is a term of width `|Zι|` mentioning only `z`-variables, and — this is its
 whole purpose — two blocks for different `σ` are jointly unsatisfiable as soon as
@@ -403,7 +404,7 @@ this pullback — `sat_permTerm` below. -/
 def pull (e : ι × Fin m → F) (p : F × F) (α : F ⊕ Zι → Bool) : ι × Fin m → Bool :=
   fun q => α (Sum.inl (toFun p (e q)))
 
-/-- **`perm_σ(C)`** (`source/kc/arXiv.tex:432`): the `z`-block pinning down `σ`,
+/-- **`perm_σ(C)`** ([VS24, §4.4.2]): the `z`-block pinning down `σ`,
 conjoined with `C` relabelled along `σ`. -/
 def permTerm (e : ι × Fin m → F) (rep : F × F → Zι → Bool) (p : F × F)
     (u : Finset (Lit (ι × Fin m))) : Finset (Lit (F ⊕ Zι)) :=
@@ -431,7 +432,7 @@ theorem width_permTerm_le {u : Finset (Lit (ι × Fin m))} :
   le_trans (Finset.card_union_le _ _)
     (Nat.add_le_add (le_of_eq card_zBlock) Finset.card_image_le)
 
-/-- **`ψ'`** (`source/kc/arXiv.tex:435`): the disjunction of `perm_σ(C)` over all
+/-- **`ψ'`** ([VS24, §4.4.2]): the disjunction of `perm_σ(C)` over all
 `σ ∈ 𝒫` and all terms `C` of `ψ^∨`.
 
 The enumeration of `𝒫` is `(maps F).toList` — fixed here rather than taken as a
@@ -448,13 +449,13 @@ lemma mem_permDNF {w : Finset (Lit (F ⊕ Zι))} :
       ∃ p ∈ maps F, ∃ u ∈ copiesDNF m ψ, permTerm e rep p u = w := by
   simp [permDNF, Finset.mem_toList]
 
-/-! ### The three syntactic facts (`lem: well_def`, `source/kc/arXiv.tex:439`) -/
+/-! ### The three syntactic facts (`lem: well_def`, [VS24]) -/
 
 /-- **The term count**: `|𝒫|` derived terms per term of `ψ^∨`, so
 `|𝒫|·ℓ·m^k` in all for a `k`-DNF `ψ` with `ℓ` terms.
 
 This is the paper's `O(ℓ n^{k+4})`, with `|𝒫| = n'(n'−1)` in place of the `n⁴`
-and no constant suppressed (`ROADMAP.md` §5). -/
+and no constant suppressed (`docs/dev/KnowledgeCompilation-ROADMAP.md` §5). -/
 theorem numTerms_permDNF (e : ι × Fin m → F) (rep : F × F → Zι → Bool) (ψ : DNF ι) :
     (permDNF e rep ψ).numTerms = (maps F).card * (copiesDNF m ψ).numTerms := by
   rw [permDNF, DNF.numTerms, length_flatMap_const (c := (copiesDNF m ψ).numTerms)
@@ -478,7 +479,7 @@ theorem isKDNF_permDNF {k : ℕ} (hk : DNF.IsKDNF k ψ) :
   exact le_trans width_permTerm_le
     (Nat.add_le_add_left (isKDNF_copiesDNF hk u hu) _)
 
-/-- **Unambiguity of `ψ'`** (`source/kc/arXiv.tex:437`: "if `φ^∨` is unambiguous
+/-- **Unambiguity of `ψ'`** ([VS24, §4.4.2]: "if `φ^∨` is unambiguous
 so is `ψ'`").
 
 The `z`-block makes at most one `σ` contribute — that is injectivity of `rep` —
@@ -530,7 +531,7 @@ theorem sat_of_sat_permDNF {α : F ⊕ Zι → Bool} (h : DNF.Sat (permDNF e rep
 
 /-- **Completeness of `ψ'` on the one-hot region.**  The one-hot hypothesis is
 Step 1's and is not removable; see the module docstring of `Copies.lean` and the
-protocol at `source/kc/arXiv.tex:452`, whose "every other variable of `V` is set
+protocol at [VS24, §4.5], whose "every other variable of `V` is set
 to zero" clause is exactly what supplies it. -/
 theorem sat_permDNF_of_sat {α : F ⊕ Zι → Bool} (hp : p ∈ maps F)
     (hz : ∀ z, α (Sum.inr z) = rep p z) (hone : Copies.OneHot (pull e p α))
@@ -547,7 +548,7 @@ end Perm
 worth knowing that the requirement is satisfiable, and with the paper's own
 number of bits: for `|F| = 2^t` the hypothesis below reads `2^{2t} ≤ 2^{|Zι|}`,
 i.e. `|Zι| = 2t` suffices — the paper's `2t`-bit strings
-(`source/kc/arXiv.tex:423`), recovered rather than assumed. -/
+([VS24, `lem: indperm`]), recovered rather than assumed. -/
 
 theorem exists_rep_injective (F Zι : Type*) [Fintype F] [DecidableEq F] [Fintype Zι]
     [DecidableEq Zι]
@@ -560,7 +561,7 @@ theorem exists_rep_injective (F Zι : Type*) [Fintype F] [DecidableEq F] [Fintyp
 
 /-! ## `thm: fixed_to_best`
 
-The lifting theorem (`source/kc/arXiv.tex:325`, proof at `:445`).  The paper
+The lifting theorem ([VS24, `thm: fixed_to_best`], proof at [VS24, §4.5]).  The paper
 argues by simulating a protocol; we build the substitution the simulation is,
 and hand it to `LowerBounds/Pullback.lean`.  See that file's docstring for why
 the rectangle formulation is the honest one.
@@ -570,7 +571,7 @@ The whole content is `exists_partitionMap_permDNF`: **for every balanced `Γ` of
 under which `ψ'` computes `ψ`.**  Everything the paper says about protocols for
 `ψ'` and for `¬ψ'` is then a one-line corollary, the two cases differing only in
 the Boolean `b` — which is why "the case for `¬ψ` is identical"
-(`source/kc/arXiv.tex:458`) really is identical here.
+([VS24, §4.5]) really is identical here.
 
 Two things about the hypotheses are worth flagging.
 
@@ -583,7 +584,7 @@ balancedness is used, and only through Claim `perm`.
 `|F| ≤ 3·|Γ_k ∩ V| + 2·|Z|`.  Claim `perm` is stated under `|F| ≤ 4·|Γ_k ∩ V|`
 precisely so that this is enough, and the arithmetic closes exactly when
 `8·|Z| ≤ |F|`.  For the paper's parameters, `|Z| = 2t` and `|F| = 2^t`, so it
-holds for every `t ≥ 7`.  See `ClaimPerm`'s docstring and `ROADMAP.md` §6 G2. -/
+holds for every `t ≥ 7`.  See `ClaimPerm`'s docstring and `docs/dev/KnowledgeCompilation-ROADMAP.md` §6 G2. -/
 
 section Lifted
 
@@ -595,7 +596,7 @@ variable {P : VarPartition (Finset.univ : Finset ι)}
 variable {Z' : Finset (F ⊕ Zι)} {Γ : VarPartition Z'}
 
 /-- **The substitution of the proof of `thm: fixed_to_best`**
-(`source/kc/arXiv.tex:452`), and the fact that it is compatible with the two
+([VS24, §4.5]), and the fact that it is compatible with the two
 partitions and turns `ψ'` into `ψ`.
 
 The three clauses of the paper's protocol appear as the three clauses of the
@@ -614,7 +615,7 @@ looks at a formula: the permutation `p` comes from Claim `perm`, which sees only
 `e` and the two sides of `Γ`; the chosen copies `sel`/`site` see only `p` and
 `P.X`.  The formula enters at the very last step, and only to be evaluated.
 
-`thm: union` (`source/kc/arXiv.tex:471`) is what needs this.  There the lifting
+`thm: union` ([VS24]) is what needs this.  There the lifting
 must be applied to `ψ` and `φ` *together* — the hardness is about `f ∪ g`, so
 the same substitution has to convert `ψ' ∪ φ'` into `ψ ∪ φ` in one step.  Two
 separate invocations would produce two unrelated `ρ`s, chosen from two
@@ -783,7 +784,7 @@ theorem exists_partitionMap_permDNF (he : Function.Injective e)
       refine sat_permDNF_of_sat hp (fun z => rfl) (hone a) ?_
       rwa [hcollapse a]
 
-/-- **`thm: fixed_to_best`, cover form** (`source/kc/arXiv.tex:325`).
+/-- **`thm: fixed_to_best`, cover form** ([VS24]).
 
 *A cover of `ψ'⁻¹(δ)` by `j` rectangles for **any** balanced partition of
 `var(ψ')` yields a cover of `ψ⁻¹(δ)` by `j` rectangles for `Π`.*
@@ -811,7 +812,7 @@ theorem hasPartitionOfSize_of_hasPartitionOfSize_permDNF (he : Function.Injectiv
   exact hasPartitionOfSize_comap ρ (hρ ψ) h
 
 /-- **The lifting, applied to a union** — the form `thm: union`
-(`source/kc/arXiv.tex:471`) consumes.
+([VS24, `thm: union`]) consumes.
 
 *A rectangular partition of `(ψ' ∪ φ')⁻¹(δ)` for any balanced `Γ` yields one of
 `(ψ ∪ φ)⁻¹(δ)` for `Π`, of the same size.*

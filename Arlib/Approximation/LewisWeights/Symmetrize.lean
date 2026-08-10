@@ -42,10 +42,10 @@ import Arlib.Approximation.LewisWeights.Probability
 import Arlib.Probability.FinProbProd
 import Mathlib.Analysis.MeanInequalitiesPow
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
-open Finset Arlib Arlib.Approximation
+open Finset Arlib Arlib.Approximation Arlib.Probability
 
 variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 
@@ -264,4 +264,4 @@ theorem sampled_central_moment_le_symm [Nonempty ι] (hw : ∀ i, 0 < w i)
           (fun q => (∑ r, Sgn (q.1 r) * sval w a m y (q.2 r)) ^ (2 * k)) := by
         rw [Ex_prodFinProb]
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

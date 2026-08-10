@@ -28,7 +28,7 @@ non-terminal states, which is the index set every `max_{(s,a)}` in the
 convergence proof ranges over.
 -/
 import Arlib.Combinatorics.FoldMax
-import Arlib.MarkovChains.Techniques.Chain
+import Arlib.Probability.FinDist
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Data.Finset.Fold
@@ -37,10 +37,22 @@ import Mathlib.Order.Filter.AtTopBot
 import Mathlib.Topology.Algebra.Order.LiminfLimsup
 import Mathlib.Topology.MetricSpace.Basic
 
+-- NOTE: this file deliberately declares into the bare `Arlib` namespace, so that
+-- the structure below is `Arlib.MDP` — the *same* name as the area namespace, and
+-- hence the dot-notation namespace of the type. That is what makes `M.kernel`,
+-- `M.H`, `M.extVal` resolve throughout `Arlib/MDP/`. It is Mathlib's own pattern
+-- (`Filter` at the root, its API in `namespace Filter`).
+--
+-- Do NOT "normalise" this to `namespace Arlib.MDP`: the structure would become
+-- `Arlib.MDP.MDP` while the rest of the area stays at `Arlib.MDP.*`, and every
+-- dot-notation call site in the area would break. Dot notation elaborates against
+-- the type's head symbol rather than being resolved as a name, so that breakage is
+-- invisible to grep and to name-resolution tooling — it surfaces only as a wall of
+-- `invalid field notation` errors. See CONVENTIONS.md.
 namespace Arlib
 
 open scoped BigOperators
-open Finset MarkovChains
+open Finset Arlib.Probability
 
 variable {S A : Type*} [Fintype S] [DecidableEq S] [Fintype A] [DecidableEq A]
 
@@ -62,7 +74,7 @@ structure MDP (S A : Type*) [Fintype S] [DecidableEq S] [Fintype A] [DecidableEq
   isTarget : S → Bool
   /-- Targets are terminal: `S_T ⊆ S_term`. -/
   target_isTerm : ∀ s, isTarget s = true → isTerm s = true
-  /-- The transition kernel `P(· ∣ s,a)`, as an this library row-stochastic kernel. -/
+  /-- The transition kernel `P(· ∣ s,a)`, as a row-stochastic kernel. -/
   kernel : FinKernel (S × A) S
   /-- Terminal states are absorbing: `P(s ∣ s,a) = 1` for `s ∈ S_term`. -/
   absorbing : ∀ s a, isTerm s = true → kernel (s, a) s = 1
@@ -113,8 +125,10 @@ theorem mk_mem_SAnt {s : S} {a : A} (hs : M.isTerm s = false) (ha : a ∈ M.enab
 
 /-! ## The greedy state value `max_{a ∈ A(s)} Q(s,a)` -/
 
-/-- **`V(s) = max_{a' ∈ A(s)} Q(s,a')`** — the greedy one-step lookahead of the
-paper's line 12, and the `max` inside the Bellman operator `H`. -/
+/-- **`V(s) = max_{a' ∈ A(s)} Q(s,a')`** — the greedy one-step lookahead of
+line 12 of the source paper's pseudocode (which paper that is is not recorded
+anywhere in this library; see `Arlib/MDP.lean`), and the `max` inside the
+Bellman operator `H`. -/
 noncomputable def vmax (Q : S → A → ℝ) (s : S) : ℝ :=
   (M.enabled s).sup' (M.enabled_nonempty s) fun a => Q s a
 

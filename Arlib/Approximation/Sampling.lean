@@ -24,9 +24,16 @@ defects, and neither is of that shape:
   (`1/2` after three repetitions, since `(3/4)³ < 1/2`) — **on an instance that
   has something to sample**.
 
-**The `FAIL` bound is conditional on `U ≠ ∅`, and must be.**  The source states
-`Pr[FAIL] ≤ 3/4` (`fpras2.tex:273`) under the standing proviso `T(sⁱ) ≠ ∅`
-(`fpras2.tex:29-31`), and there is no reading under which the proviso can be
+**The `FAIL` bound is conditional on `U ≠ ∅`, and must be.**  The source —
+[ACJR21]: Marcelo Arenas, Luis Alberto Croquevielle, Rajesh Jayaram, Cristian
+Riveros, *#NFA Admits an FPRAS: Efficient Enumeration, Counting, and Uniform
+Generation for Logspace Classes*, J. ACM **68**(6), art. 48, 2021
+(arXiv:1906.09226), with its conjunctive-query companion *When Is Approximate
+Counting for Conjunctive Queries Tractable?*, STOC 2021 (arXiv:2005.10029);
+statements are cited by the labels of the authors' manuscript, which is not
+distributed with this library — states `Pr[FAIL] ≤ 3/4` under the standing
+proviso `T(sⁱ) ≠ ∅` of its preliminaries, and there is no reading under which
+the proviso can be
 dropped: on an instance with no solutions the only correct output is `FAIL`, so
 `Pr[FAIL] = 1` there.  An unguarded `fail_le` therefore contradicts the `empty`
 clause below — the two together assert `1 ≤ 3/4` — and makes
@@ -34,8 +41,8 @@ clause below — the two together assert `1 ≤ 3/4` — and makes
 `PreprocessedSampler.fail_le` accordingly carries the hypothesis `(g w).Nonempty`,
 exactly as `uniform` does; the empty instance is the business of `empty` alone.
 
-This module closes both gaps, in the two steps the source
-(`fpras2.tex:462-472`, `Theorem thm:samplemain`) takes in one line each.
+This module closes both gaps, in the two steps [ACJR21, `thm:samplemain`]
+takes in one line each.
 
 ## Step 1 — additive to multiplicative
 
@@ -57,7 +64,7 @@ The bridge from "the preprocessing fails with probability `δ₀`" to "the outpu
 law is additively `δ₀`-close" is `abs_outProbR_mixPMF_sub_le`: a mixture that
 agrees with `μ` except on an event of probability `q` has every output
 probability within `q` of `μ`'s.  Crucially the failure branch is *arbitrary* —
-the footnote at `fpras2.tex:448` says in as many words that the bad event cannot
+a footnote of [ACJR21] says in as many words that the bad event cannot
 be detected, so it cannot be retried away, and the lemma assumes nothing about
 it.
 
@@ -236,7 +243,7 @@ theorem mem_support_mixPMF {β : Type u} {q : ℝ≥0∞} {ν μ : PMF β} {x : 
 
 /-! ## Step 1 — additive error becomes multiplicative
 
-The arithmetic of `fpras2.tex:463-469`.  It is stated first for a bare real
+The arithmetic inside the proof of [ACJR21, `thm:samplemain`].  It is stated first for a bare real
 `1/N`, then for `outProb`, and in both directions: at `δ₀ = δ/N` the additive and
 the multiplicative guarantees are *equivalent*, so working additively upstream
 costs nothing. -/
@@ -270,7 +277,7 @@ theorem abs_sub_le_of_between {N a δ : ℝ}
 If the sampler behaves as `μ` except on a preprocessing-failure event of
 probability `q`, on which it behaves as the *arbitrary* `ν`, then every output
 probability moves by at most `q`.  Nothing at all is assumed about `ν`: the
-footnote at `fpras2.tex:448` insists that the failure cannot be detected, hence
+footnote of [ACJR21] insists that the failure cannot be detected, hence
 cannot be conditioned away, and this lemma is the honest accounting of that. -/
 theorem abs_outProbR_mixPMF_sub_le {β : Type u} {q : ℝ} (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
     (ν μ : PMF (β × ℕ)) (S : Set β) (c : ℝ) :
@@ -632,7 +639,7 @@ The tolerance handed to the preprocessing step, the retry loop, and the mixture
 with the (arbitrary) preprocessing-failure branch. -/
 
 /-- **The preprocessing tolerance.**  `δ / (2(|g w| + 1))`, the calibration
-`δ₀ = δ|U|⁻¹` of `fpras2.tex:470` with two pieces of slack: the factor `2`
+`δ₀ = δ|U|⁻¹` of [ACJR21, `thm:samplemain`] with two pieces of slack: the factor `2`
 splits the error budget with the retry loop, and the `+ 1` keeps `δ₀` positive on
 an empty instance, where `IsFPAUS` asks a different question anyway. -/
 noncomputable def preTol {Ω : Type u} (g : α → Finset Ω) (w : α) (δ : ℝ) : ℝ :=
@@ -723,14 +730,14 @@ unconstrained apart from the empty-instance and cost clauses.
   uniform on `g w`.  This is `lem:sampmain` combined with Property 2, and it is
   an equality, not a window: all the approximation lives in the preprocessing.
 * `fail_le` — a good attempt **on an instance with a solution** returns `FAIL`
-  with probability at most `3/4` (`fpras2.tex:273`, under the standing proviso
-  `T(sⁱ) ≠ ∅` of `fpras2.tex:29-31`).  The source then repeats three times to
+  with probability at most `3/4` ([ACJR21], under its standing proviso
+  `T(sⁱ) ≠ ∅`).  The source then repeats three times to
   reach `1/2`; that step is not needed here, `retryCount` being calibrated
   against `3/4` directly.  The `(g w).Nonempty` guard is not decoration: without
   it this clause and `empty` assert `1 ≤ 3/4` on an instance with no solutions,
   and the structure is unsatisfiable whenever `g` takes the value `∅`.
 * `empty` — on an instance with no solutions *both* branches always return
-  `FAIL`.  The source justifies this at `fpras2.tex:470` by observing that
+  `FAIL`.  The source justifies this ([ACJR21, `thm:samplemain`]) by observing that
   membership in `L_n(𝒯)` is decidable in polynomial time, so a candidate output
   can always be checked before being returned — which is why the clause may be
   imposed on the failure branch too.
@@ -744,8 +751,8 @@ structure PreprocessedSampler {Ω : Type u} (size : α → ℕ) (g : α → Fins
     outProbR (good w δ₀) {some x}
       = (1 - outProbR (good w δ₀) {none}) / (g w).card
   /-- A good attempt **on an instance with a solution** returns `FAIL` with
-  probability at most `3/4` (`fpras2.tex:273`, under the standing proviso
-  `T(sⁱ) ≠ ∅` of `fpras2.tex:29-31`).  The `(g w).Nonempty` guard is what the
+  probability at most `3/4` ([ACJR21], under its standing proviso
+  `T(sⁱ) ≠ ∅`).  The `(g w).Nonempty` guard is what the
   source's proviso is; dropping it contradicts `empty`, which forces
   `Pr[FAIL] = 1` when `g w = ∅`. -/
   fail_le : ∀ w, ∀ δ₀ ∈ Set.Ioo (0:ℝ) 1, (g w).Nonempty →
@@ -895,7 +902,7 @@ polynomial in `log(1/δ₀) = log(1/δ) + log|g w| + O(1)`.  Nothing forces
 and without it the assembled sampler is not polynomial-time.  In the source's
 application it holds because `|L_n(𝒯)| ≤ exp(poly(n,m))`, which is the content of
 "`δ₀ = δ exp(-poly(n,m))` does not affect the stated polynomial runtime"
-(`fpras2.tex:470`).  The clause is polynomial in `log(1/δ₀)`, never in
+([ACJR21, `thm:samplemain`]).  The clause is polynomial in `log(1/δ₀)`, never in
 `1/δ₀`. -/
 theorem PreprocessedSampler.isFPAUS {Ω : Type u} {size : α → ℕ} {g : α → Finset Ω}
     {good bad : α → ℝ → PMF (Option Ω × ℕ)}

@@ -21,8 +21,10 @@ of everything here:
   something about, and they keep the general definitions honest by being
   instantiated against them.
 
-The development follows Chen, Štefankovič and Vigoda, *Spectral Independence and
-Local-to-Global Techniques for Optimal Mixing of Markov Chains*.
+The development follows Zongchen Chen, Daniel Štefankovič and Eric Vigoda,
+*Spectral Independence and Local-to-Global Techniques for Optimal Mixing of
+Markov Chains*, arXiv:2307.13826 (2023), cited throughout the area as [CSV23]
+and referred to as "the monograph".
 
 One convention is worth stating up front because it shapes every proof: **the
 spectral gap is defined variationally**, by the Poincaré inequality
@@ -37,11 +39,12 @@ real-symmetric-diagonalization machinery that would otherwise be needed.
 
 ### Techniques — the `L²` core
 
-* `Techniques.Chain` — `FinDist`, `FinKernel`, `FinChain`, the actions `act` and
+* `Arlib.Probability.FinDist` (moved down; imported here) — `FinDist`, `FinKernel`,
+  `FinChain`, the actions `act` and
   `push`, composition and iteration, `Stationary`, `Reversible`.
-* `Techniques.Bilinear` — Cauchy–Schwarz for a positive semidefinite symmetric
+* `Arlib.Probability.Bilinear` (moved down) — Cauchy–Schwarz for a positive semidefinite symmetric
   bilinear form, proved by the discriminant trick.
-* `Techniques.Functional` — the `L²(μ)` calculus: `Ex`, `ip`, `Var`, the pair
+* `Arlib.Probability.FinDistFunctional` (moved down) — the `L²(μ)` calculus: `Ex`, `ip`, `Var`, the pair
   form of the variance, `relDensity` and `chiSq`.
 * `Techniques.Dirichlet` — the Dirichlet form, its pair form, the two-sided
   bound `|⟪f, P f⟫_μ| ≤ ⟪f, f⟫_μ`, `SpectralGapAtLeast` (the Poincaré
@@ -56,7 +59,7 @@ real-symmetric-diagonalization machinery that would otherwise be needed.
   characterisation, the data-processing inequality, mixing time, and the
   Cauchy–Schwarz bridge `(2 · d_TV)² ≤ χ²`.
 * `Techniques.MixingTime` — `T_mix(ε) ≤ (2/γ) · ln(1 / (2ε√μ_min))`.
-* `Techniques.Coupling` — couplings, and total variation distance as exactly the
+* `Arlib.Probability.Coupling` (moved down) — couplings, and total variation distance as exactly the
   minimum disagreement probability.
 * `Techniques.Lazy` — the lazy chain `½(I + P)`: positive semidefiniteness at the
   cost of halving the gap.
@@ -88,7 +91,8 @@ real-symmetric-diagonalization machinery that would otherwise be needed.
   hypothesis to `HasProgressPaths`.
 * `Techniques.SinusoidalPotential` — Wilson's potential `Φ(i) = sin(Ci)/sin C`
   and the hitting-time bound it yields for the hole walk of Huber's bounding
-  chain for linear extensions (Huber 2006b, Theorem 5).  The engine is the
+  chain for linear extensions ([Hub06, Thm 5]: M. Huber, *Fast perfect sampling
+  from linear extensions*, Discrete Math. **306**(4) (2006) 420–428).  The engine is the
   second-difference identity `Φ(i-1) + Φ(i+1) = 2 cos(C)·Φ(i)`; the module also
   records two repairs to the published argument, one for a backward rate
   `q ≤ p` and one for the reflecting boundary.
@@ -174,7 +178,7 @@ real-symmetric-diagonalization machinery that would otherwise be needed.
   the eigenvalue-free equivalent of `λ_max(Ψ) ≤ η`.
 * `Techniques.SpectralIndependenceConverse` — the same identity read backwards,
   giving an exact *equivalence* between spectral independence and a Poincaré
-  inequality for the local walk.  Not the monograph's line 504, which is about
+  inequality for the local walk.  Not [CSV23, `lem:opt-relax-SI`], which is about
   the Glauber dynamics and needs a converse Random Walk Theorem.
 * `Techniques.LocalSpectralIndependence` — the payoff: spectral independence
   implies a Poincaré inequality for the local walk at any pinning, matching the
@@ -250,9 +254,16 @@ real-symmetric-diagonalization machinery that would otherwise be needed.
   `localEnt_le_entropyProduction`, which holds for *any* reversible chain.
 -/
 
-import Arlib.MarkovChains.Techniques.Bilinear
-import Arlib.MarkovChains.Techniques.Chain
-import Arlib.MarkovChains.Techniques.Functional
+-- The finite-probability primitives this area is built on — `FinDist`,
+-- `FinKernel`/`FinChain`, `Ex`/`ip`/`Var`, `Pr`/`tvDist`, `Coupling` — are not
+-- Markov-chain-specific and live in `Arlib.Probability`.  They are still
+-- reachable under their old `Arlib.MarkovChains.*` names via the `export`
+-- compatibility blocks at the foot of those modules.
+import Arlib.Probability.Bilinear
+import Arlib.Probability.FinDist
+import Arlib.Probability.FinKernelAlgebra
+import Arlib.Probability.FinDistFunctional
+import Arlib.Probability.FinDistTV
 import Arlib.MarkovChains.Techniques.Dirichlet
 import Arlib.MarkovChains.Techniques.SpectralGap
 import Arlib.MarkovChains.Techniques.TotalVariation
@@ -264,7 +275,7 @@ import Arlib.MarkovChains.Techniques.LocalWalk
 import Arlib.MarkovChains.Techniques.Entropy
 import Arlib.MarkovChains.Techniques.Comparison
 import Arlib.MarkovChains.Techniques.Conductance
-import Arlib.MarkovChains.Techniques.Coupling
+import Arlib.Probability.Coupling
 import Arlib.MarkovChains.Techniques.MixingTime
 import Arlib.MarkovChains.Techniques.PotentialDecay
 import Arlib.MarkovChains.Techniques.HittingTime

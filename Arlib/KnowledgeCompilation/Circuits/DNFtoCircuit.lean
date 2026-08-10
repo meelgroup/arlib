@@ -10,7 +10,7 @@ import Arlib.KnowledgeCompilation.Circuits.VTree
 # From an unambiguous DNF to a d-SDNNF
 
 The upper-bound half of the paper's main theorem (`thm: main`,
-`source/kc/arXiv.tex:113`, proof at `source/kc/arXiv.tex:340`).  The paper's
+[VS24, `thm: main`], proof at [VS24, §4.2]).  The paper's
 whole argument is one sentence:
 
 > since every term of `ψ'` is a conjunction of `O(km)` literals, they all admit
@@ -21,14 +21,14 @@ whole argument is one sentence:
 This file is that sentence, made into an actual circuit.  Nothing here depends on
 any imported hardness result: the statement is `unambiguous DNF ⟹ d-SDNNF of size
 `O(ℓ·k)`, it is fully constructive, and it is reused verbatim by `thm: sep` and
-by the disjunction/quantification separations (`PAPER-INVENTORY.md`, T8/T10).
+by the disjunction/quantification separations (`docs/dev/KnowledgeCompilation-PAPER-INVENTORY.md`, T8/T10).
 
 ## What is actually being built
 
 `exists_isdSDNNF_of_unambiguous` is a *construction*: the work is producing the
 `gate : Fin size → Gate V size` function, discharging `child_lt`, and then
 proving `eval`, `Respects`, `Decomposable`, `Deterministic` of the result.  The
-concrete circuit is `dnfCircuit T ψ`, and it is a DAG, as `ROADMAP.md` §1.1
+concrete circuit is `dnfCircuit T ψ`, and it is a DAG, as `docs/dev/KnowledgeCompilation-ROADMAP.md` §1.1
 insists — a list of gates whose children are earlier positions, not a tree.  No
 sharing is exploited (the size bound is the same either way), but nothing in the
 encoding rules it out.
@@ -91,7 +91,7 @@ discarded on entry to `dnfCircuit_respects` and `dnfCircuit_deterministic`.
 
 ## The bound is explicit
 
-`ROADMAP.md` §5: `∑_{t ∈ ψ} (2·width(t) + 2) + 1`, and `ℓ·(2k + 2) + 1` for a
+`docs/dev/KnowledgeCompilation-ROADMAP.md` §5: `∑_{t ∈ ψ} (2·width(t) + 2) + 1`, and `ℓ·(2k + 2) + 1` for a
 `k`-DNF with `ℓ` terms.  Not `O(·)`.
 -/
 
@@ -1189,7 +1189,7 @@ theorem dnfCircuit_computes (T : VTree V) (ψ : DNF V)
 
 /-- **The circuit respects the v-tree it was built for** — *any* v-tree
 containing the variables of `ψ`.  This is the content of the paper's "they all
-admit a d-DNNF respecting `T`" (`source/kc/arXiv.tex:340`). -/
+admit a d-DNNF respecting `T`" ([VS24, §4.2]). -/
 theorem dnfCircuit_respects (T : VTree V) (ψ : DNF V) : (dnfCircuit T ψ).Respects T := by
   intro i j k _ hg
   have hL := RawGate.eq_conj_of_toGate hg
@@ -1205,14 +1205,14 @@ theorem dnfCircuit_deterministic (T : VTree V) (ψ : DNF V) (hun : ψ.Unambiguou
     i.1 (Nat.zero_le _) i.2 i.2 j.1 k.1 j.2 k.2 hL
 
 /-- **The explicit size bound**, in the number of terms and their widths
-(`ROADMAP.md` §5: no `O(·)`). -/
+(`docs/dev/KnowledgeCompilation-ROADMAP.md` §5: no `O(·)`). -/
 theorem dnfCircuit_size_le (T : VTree V) (hT : T.WellFormed) (ψ : DNF V) :
     (dnfCircuit T ψ).size ≤ (ψ.map (fun t => 2 * Term.width t + 2)).sum + 1 := by
   simpa using dnfExt_length T hT ψ []
 
 /-- **The upper-bound half of the paper's main theorem** (`thm: main`,
-`source/kc/arXiv.tex:113`; the construction is inside its proof at
-`source/kc/arXiv.tex:340`).
+[VS24, `thm: main`]; the construction is inside its proof at
+[VS24, §4.2]).
 
 An unambiguous DNF admits a d-SDNNF respecting *any* prescribed v-tree over its
 variables, of size at most `∑_{t ∈ ψ} (2·width(t) + 2) + 1`.

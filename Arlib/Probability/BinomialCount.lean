@@ -52,7 +52,7 @@ Everything is proved from first principles with no `sorry`.
 import Arlib.Probability.IIDProduct
 import Arlib.Probability.PoissonThinning
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset FinProb
@@ -390,4 +390,4 @@ theorem Pr_prodSpace_count_univ_eq_binomial (mu : X → ℝ) (h0 : ∀ x, 0 ≤ 
   rw [← Finset.card_univ (α := ι)]
   exact Pr_prodSpace_count_eq_binomial mu h0 h1 Finset.univ p n
 
-end Arlib
+end Arlib.Probability

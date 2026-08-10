@@ -10,7 +10,7 @@ A tail bound on the number of events that occur among an independent family of
 "bad" events follows from independence together with the intersection tail bound.
 
 We already have the Chernoff-type **intersection tail bound**
-(`intersection_tail_bound_paper`): if `Pr[⋂_{i∈S} Eᵢ] ≤ p^{|S|}` for all `S`,
+(`intersection_tail_bound`): if `Pr[⋂_{i∈S} Eᵢ] ≤ p^{|S|}` for all `S`,
 then `Pr[∑ᵢ 𝟙_{Eᵢ} ≥ B/2] ≤ (4p)^{B/2}`.  Its hypothesis is *exactly* what
 independence provides: for an independent family with `Pr[Eᵢ] ≤ p`,
 
@@ -21,12 +21,12 @@ events with `Pr[Eᵢ] ≤ p`.  Proved with no `sorry`.
 
 **Probability model.**  Developed against the abstract `ProbSpace` interface:
 events are *predicates* `P.Ω → Prop`.  The Chernoff bridge inherits the
-`[IsAdm …]` guards of `intersection_tail_bound_paper` (auto-discharged over
+`[IsAdm …]` guards of `intersection_tail_bound` (auto-discharged over
 `FinProb`, supplied from bounded-measurability in the continuous-coin model).
 -/
 import Arlib.Probability.IntersectionTailBound
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators Classical
 open Finset ProbSpace
@@ -58,7 +58,7 @@ If `E₁,…,E_B` are independent with each `Pr[Eᵢ] ≤ p ≤ 1/2`, then the p
 that at least `B/2` of them occur is at most `(4p)^{B/2}`.
 
 The admissibility binders are inherited from
-`intersection_tail_bound_paper` — auto-discharged over `FinProb`. -/
+`intersection_tail_bound` — auto-discharged over `FinProb`. -/
 theorem chernoff_of_indep {p : ℝ} (hB : 1 ≤ B) (hp0 : 0 ≤ p) (hp1 : p ≤ 1 / 2)
     [IsAdm P (indic (P.atLeast E ⌈(B : ℝ) / 2⌉₊))]
     [IsAdm P (indic (fun ω => ∃ S ∈ Finset.univ.powersetCard ⌈(B : ℝ) / 2⌉₊,
@@ -68,8 +68,8 @@ theorem chernoff_of_indep {p : ℝ} (hB : 1 ≤ B) (hp0 : 0 ≤ p) (hp1 : p ≤ 
     (hindep : P.IndepEvents E) (hpi : ∀ i, P.Pr (E i) ≤ p) :
     P.Pr (fun ω => (B : ℝ) / 2 ≤ (P.numSat E ω : ℝ))
       ≤ (4 * p) ^ ((B : ℝ) / 2) :=
-  P.intersection_tail_bound_paper E hB hp0 hp1 hadm
+  P.intersection_tail_bound E hB hp0 hp1 hadm
     (P.interEvent_le_of_indep E hindep hpi)
 
 end ProbSpace
-end Arlib
+end Arlib.Probability

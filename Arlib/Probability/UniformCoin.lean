@@ -31,7 +31,7 @@ No `sorry`; this file is pure grid arithmetic.
 -/
 import Arlib.Probability.ProductSpace
 
-namespace Arlib
+namespace Arlib.Probability
 
 open Finset
 
@@ -80,4 +80,4 @@ theorem uniform_hcdf {Ω : Type*} (K : ℕ) (hK : 0 < K) (threshold : Ω → ℝ
   rw [hmeq]
   exact uniform_cdf_eq K hK m hm
 
-end Arlib
+end Arlib.Probability

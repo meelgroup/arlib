@@ -40,12 +40,14 @@ independent route to a mixing bound alongside the Poincaré inequality.
 
 Everything here is proved from first principles with no `sorry`.
 -/
-import Arlib.MarkovChains.Techniques.TotalVariation
+import Arlib.Probability.FinDistTV
 
-namespace Arlib.MarkovChains
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
+open FinDist (Pr Pr_apply Pr_le_one tvDist tvDist_apply tvDist_nonneg tvDist_comm
+  tvDist_self tvDist_le_one tvDist_eq_zero_iff tvDist_eq_sum_posPart tvDist_eq_Pr_sub)
 
 variable {Ω : Type*} [Fintype Ω]
 
@@ -113,8 +115,6 @@ def symm {μ ν : FinDist Ω} (c : Coupling μ ν) : Coupling ν μ where
   marginal_fst x := c.marginal_snd x
   marginal_snd y := c.marginal_fst y
 
-end Coupling
-
 /-! ## Two elementary identities about `min` and total variation -/
 
 /-- `u - min u v` is the positive part of `u - v`. -/
@@ -145,6 +145,8 @@ theorem sum_min_eq (μ ν : FinDist Ω) :
   have h := sum_sub_min_left μ ν
   rw [Finset.sum_sub_distrib, μ.sum_coe] at h
   linarith
+
+end Coupling
 
 section DecidableEq
 
@@ -213,8 +215,6 @@ coordinates differ — no sum over the state space is needed. -/
 theorem tvDist_le {μ ν : FinDist Ω} (c : Coupling μ ν) : tvDist μ ν ≤ c.disagree := by
   rw [tvDist_eq_Pr_sub]
   exact c.Pr_sub_le_disagree _
-
-end Coupling
 
 /-! ## The maximal coupling: the inequality is tight -/
 
@@ -350,7 +350,7 @@ theorem exists_coupling_disagree_eq_tvDist (μ ν : FinDist Ω) :
 /-! ## Zero disagreement -/
 
 /-- A coupling that never disagrees forces the two distributions to be equal. -/
-theorem Coupling.eq_of_disagree_eq_zero {μ ν : FinDist Ω} (c : Coupling μ ν)
+theorem eq_of_disagree_eq_zero {μ ν : FinDist Ω} (c : Coupling μ ν)
     (h : c.disagree = 0) : μ = ν := by
   refine (tvDist_eq_zero_iff μ ν).mp (le_antisymm ?_ (tvDist_nonneg μ ν))
   rw [← h]
@@ -366,6 +366,43 @@ theorem exists_coupling_disagree_eq_zero_iff (μ ν : FinDist Ω) :
   · rintro rfl
     exact ⟨maximalCoupling μ μ, by rw [maximalCoupling_disagree, tvDist_self]⟩
 
+end Coupling
+
 end DecidableEq
 
+end Arlib.Probability
+
+/-! ## Compatibility: the `Arlib.MarkovChains` spellings
+
+These declarations used to live in `namespace Arlib.MarkovChains` (in
+`Arlib/MarkovChains/Techniques/{Chain,Bilinear,Functional,TotalVariation,Coupling}.lean`).
+They are not Markov-chain-specific and now live in `Arlib.Probability`.  The
+aliases below reproduce the old fully-qualified names exactly, so that every
+`Arlib/MarkovChains/**` module keeps resolving them unchanged.  New code should
+use the `Arlib.Probability` names directly; this block can be deleted once the
+`Arlib.MarkovChains` call sites have been migrated. -/
+
+namespace Arlib.MarkovChains
+
+export Arlib.Probability (Coupling)
+
+export Arlib.Probability.Coupling (sub_min_eq_max_sub sum_sub_min_left sum_sub_min_right sum_min_eq
+  maxJointFun maxJointFun_nonneg sum_maxJointFun_right sum_maxJointFun_left maxJointFun_diag
+  maxJoint maximalCoupling maximalCoupling_disagree exists_coupling_disagree_eq_tvDist
+  exists_coupling_disagree_eq_zero_iff)
+
 end Arlib.MarkovChains
+
+namespace Arlib.MarkovChains.FinDist
+
+export Arlib.Probability.FinDist (prod prod_apply swap swap_apply)
+
+end Arlib.MarkovChains.FinDist
+
+namespace Arlib.MarkovChains.Coupling
+
+export Arlib.Probability.Coupling (joint marginal_fst marginal_snd mk indep indep_joint_apply
+  symm disagree disagree_apply
+  disagree_nonneg disagree_le_one Pr_sub_le_disagree tvDist_le eq_of_disagree_eq_zero)
+
+end Arlib.MarkovChains.Coupling

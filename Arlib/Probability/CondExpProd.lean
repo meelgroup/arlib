@@ -31,7 +31,7 @@ application.
 -/
 import Arlib.Probability.CoordIndep
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset FinProb
@@ -189,4 +189,4 @@ theorem condCE_forgetSet_mul (hpos : ∀ i c, 0 < C.coinMass i c) (U : Finset C.
   simpa [Fin.prod_univ_two] using h
 
 end CoinSpace
-end Arlib
+end Arlib.Probability

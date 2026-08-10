@@ -47,7 +47,7 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Nat.Nth
 import Mathlib.Order.Filter.AtTopBot
 
-namespace Arlib.StochApprox
+namespace Arlib.Probability.StochApprox
 
 open scoped BigOperators Topology
 open Filter Finset
@@ -218,4 +218,4 @@ theorem setOf_infinite_of_forall_exists_le {p : ℕ → Prop} (h : ∀ N, ∃ t,
   obtain ⟨t, ht, hpt⟩ := h (B + 1)
   exact absurd (hB hpt) (by omega)
 
-end Arlib.StochApprox
+end Arlib.Probability.StochApprox

@@ -44,7 +44,7 @@ No `sorry`.
 -/
 import Arlib.Approximation.LewisWeights.Rademacher
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset
@@ -116,4 +116,4 @@ theorem avg_abs_sign_pow_eq (c : ν → ℝ) (k : ℕ) :
   rw [hfun]
   exact avg_comp_perm e (fun σ => (∑ i, Sgn (σ i) * c i) ^ (2 * k))
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

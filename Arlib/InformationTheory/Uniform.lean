@@ -18,13 +18,14 @@ drawn uniformly from a finite range. Fano bounds the error probability in terms
 of `H P X`, and `H_of_dist_eq_unif` turns that into the concrete quantity
 `log (card α)` whenever the law of `X` is uniform.
 
-## Main definitions
-
-* `Arlib.InformationTheory.unifDist α` — the uniform distribution on `α`.
+The uniform distribution itself, `Arlib.Probability.unifDist`, is a law with no
+information-theoretic content and lives in `Arlib.Probability.Law`; it is
+re-exported by `Arlib.InformationTheory.Basic` under its old spelling
+`Arlib.InformationTheory.unifDist`, together with
+`Arlib.InformationTheory.isProbDist_unifDist`.
 
 ## Main results
 
-* `Arlib.InformationTheory.isProbDist_unifDist` — it is a probability distribution.
 * `Arlib.InformationTheory.Hdist_unifDist` — its entropy is `log (card α)`.
 * `Arlib.InformationTheory.H_of_dist_eq_unif` — a random variable with uniform
   law has entropy `log (card α)`.
@@ -32,13 +33,10 @@ of `H P X`, and `H_of_dist_eq_unif` turns that into the concrete quantity
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory
-
-/-- The uniform distribution on a nonempty finite type. -/
-noncomputable def unifDist (α : Type) [Fintype α] : α → ℝ :=
-  fun _ => ((Fintype.card α : ℝ))⁻¹
 
 /-- On a nonempty finite type the cardinality is nonzero as a real number; this
 is the side condition every computation below needs. -/
@@ -46,15 +44,6 @@ private theorem card_ne_zero (α : Type) [Fintype α] [Nonempty α] :
     ((Fintype.card α : ℝ)) ≠ 0 := by
   have h : 0 < Fintype.card α := Fintype.card_pos
   exact Nat.cast_ne_zero.mpr h.ne'
-
-/-- The uniform distribution is a probability distribution. -/
-theorem isProbDist_unifDist {α : Type} [Fintype α] [Nonempty α] :
-    IsProbDist (unifDist α) where
-  nonneg := fun _ => inv_nonneg.mpr (Nat.cast_nonneg _)
-  sum_eq_one := by
-    show ∑ _a : α, ((Fintype.card α : ℝ))⁻¹ = 1
-    rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-    exact mul_inv_cancel₀ (card_ne_zero α)
 
 /-- **The uniform distribution has maximal entropy**, exactly `log (card α)`. -/
 theorem Hdist_unifDist {α : Type} [Fintype α] [Nonempty α] :

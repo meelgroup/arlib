@@ -33,7 +33,7 @@ Also proved here is the single-coordinate marginal in `Pr` form
 -/
 import Arlib.Probability.IIDProduct
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -184,4 +184,4 @@ theorem Pr_prod_coord (μ : X → ℝ) (h0 : ∀ x, 0 ≤ μ x) (h1 : ∑ x, μ 
   · exact absurd (Finset.mem_filter.2 ⟨Finset.mem_univ ω, h3⟩) h1
   · rfl
 
-end Arlib
+end Arlib.Probability

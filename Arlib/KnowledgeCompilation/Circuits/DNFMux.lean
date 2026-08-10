@@ -9,7 +9,7 @@ import Arlib.KnowledgeCompilation.Circuits.DNFtoCircuit
 # The mux `(x ∧ ψ) ∨ (¬x ∧ φ)`, performed on DNFs
 
 The DNF-level ingredients for the paper's existential-quantification corollary
-(`thm: ex`, `source/kc/arXiv.tex:493`).  That corollary takes the two functions
+(`thm: ex`, [VS24]).  That corollary takes the two functions
 `f`, `g` and the v-tree `T` produced by `thm: union`, glues them with a fresh
 variable `x` into a single function `f_C`, and observes that `∃x f_C ≡ f ∨ g`,
 so that a small d-SDNNF for `∃x f_C` would give one for `f ∨ g`.
@@ -21,7 +21,7 @@ The paper glues at the *circuit* level: given d-SDNNFs `C_f` and `C_g` respectin
 top of the disjoint union of the two DAGs.  **We do not do that**, and the
 decision is recorded here rather than left to be rediscovered.
 
-Our circuits are DAGs with children named by `Fin size` (`ROADMAP.md` §1.1), so
+Our circuits are DAGs with children named by `Fin size` (`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.1), so
 a disjoint union of two circuits is not a pairing of two objects: it is a
 renumbering of every node of the second one, together with a transport of
 `child_lt`, `valAt`, `varsAt`, `Respects`, `Decomposable` and `Deterministic`
@@ -53,7 +53,7 @@ The fresh `x` is `Sum.inr ()` in `V ⊕ Unit`, and the original variables are
 `Sum.inl`-tagged.  This is the one design choice that pays for itself downstream.
 
 `existsFresh` projects the fresh variable away, `def: trans` clause 2
-(`source/kc/arXiv.tex:134`), and it maps `(V ⊕ Unit → Bool) → Bool` to
+([VS24, `def: trans`]), and it maps `(V ⊕ Unit → Bool) → Bool` to
 `(V → Bool) → Bool`.  So `∃x f_C` is literally a function of the *original*
 variables, which is what the paper's `∃x f_C ≡ f ∨ g` asserts, and
 `existsFresh_eval_muxDNF` is an equation between two functions of type
@@ -178,7 +178,7 @@ theorem width_muxTerm_le (b : Bool) (t : Finset (Lit V)) :
   exact Finset.card_insert_le _ _
 
 /-- **The mux** `(x ∧ ψ) ∨ (¬x ∧ φ)`, as a DNF over `V ⊕ Unit` with `x` the fresh
-variable `Sum.inr ()` (paper `thm: ex`, `source/kc/arXiv.tex:493`, where the same
+variable `Sum.inr ()` (paper `thm: ex`, [VS24], where the same
 formula is built as a circuit; see the module docstring for why we build it
 here). -/
 def muxDNF (ψ φ : DNF V) : DNF (V ⊕ Unit) :=
@@ -229,7 +229,7 @@ theorem satTerms_map_muxTerm (b : Bool) (ψ : DNF V) {β : V ⊕ Unit → Bool}
 
 /-- The half whose mux literal disagrees with the assignment contributes
 nothing.  This is the counting form of the paper's observation that the source
-`∨`-node is deterministic (`source/kc/arXiv.tex:502`). -/
+`∨`-node is deterministic ([VS24, §4.6]). -/
 theorem satTerms_map_muxTerm_eq_nil (b : Bool) (ψ : DNF V) {β : V ⊕ Unit → Bool}
     (hβ : β (Sum.inr ()) ≠ b) : DNF.satTerms (ψ.map (muxTerm b)) β = [] := by
   have h : (fun t : Finset (Lit V) => decide (Term.Sat (muxTerm b t) β)) = fun _ => false := by
@@ -292,7 +292,7 @@ end Mux
 /-! ## Existential quantification over the fresh variable -/
 
 /-- **Existential quantification** over the fresh variable `Sum.inr ()`
-(`def: trans` clause 2, `source/kc/arXiv.tex:134`).
+(`def: trans` clause 2, [VS24]).
 
 The paper's `∃x f` has `sat(∃x f) = π_Y(sat(f))` for `Y = {0,1}^{X ∖ {x}}`; here
 `X ∖ {x}` is `V` on the nose, so the projection is an honest change of type and
@@ -301,7 +301,7 @@ this is a statement about functions, not about terms. -/
 def existsFresh (f : (V ⊕ Unit → Bool) → Bool) : (V → Bool) → Bool :=
   fun α => f (Sum.elim α (fun _ => true)) || f (Sum.elim α (fun _ => false))
 
-/-- **`∃x f_C ≡ f ∨ g`** — the paper's identity at `source/kc/arXiv.tex:503`, and
+/-- **`∃x f_C ≡ f ∨ g`** — the paper's identity at [VS24, §4.6], and
 the point of the whole file.  Both sides are functions of the *original*
 variables, so this is an equation in `(V → Bool) → Bool` with nothing to
 transport. -/
@@ -325,7 +325,7 @@ variable [DecidableEq V] {ψ φ : DNF V}
 both inputs live inside `W`, every mux term lives inside the `Sum.inl`-image of
 `W` together with the fresh variable.  A v-tree `T'` over `V ⊕ Unit` with
 `T'.vars = insert (Sum.inr ()) (W.image Sum.inl)` — the paper's `T'`, obtained
-from `T` by adding a root and a leaf for `x` (`source/kc/arXiv.tex:503`) —
+from `T` by adding a root and a leaf for `x` ([VS24, §4.6]) —
 therefore discharges the hypothesis of `exists_isdSDNNF_of_unambiguous_kDNF`. -/
 theorem vars_subset_of_mem_muxDNF {W : Finset V} (hψ : ∀ t ∈ ψ, Term.vars t ⊆ W)
     (hφ : ∀ t ∈ φ, Term.vars t ⊆ W) {w : Finset (Lit (V ⊕ Unit))} (hw : w ∈ muxDNF ψ φ) :
@@ -336,7 +336,7 @@ theorem vars_subset_of_mem_muxDNF {W : Finset V} (hψ : ∀ t ∈ ψ, Term.vars 
   · rw [vars_muxTerm]
     exact Finset.insert_subset_insert _ (Finset.image_subset_image (hφ t ht))
 
-/-- **The upper-bound half of `thm: ex`** (`source/kc/arXiv.tex:493`), assembled.
+/-- **The upper-bound half of `thm: ex`** ([VS24]), assembled.
 
 From two unambiguous `k`-DNFs and *any* prescribed v-tree over `V ⊕ Unit`
 containing their variables and the fresh one, a single d-SDNNF respecting that

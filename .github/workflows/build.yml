@@ -1,0 +1,88 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A push that lands while an earlier run is still going supersedes it; there is
+# no value in finishing a build of a commit that is already stale.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pinned toolchain
+        uses: leanprover/lean-action@v1
+        with:
+          # We drive the build ourselves below so that the Mathlib cache is
+          # fetched before anything is compiled from source.
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+
+      - name: Fetch prebuilt Mathlib
+        run: lake exe cache get
+
+      - name: Build the library
+        run: lake build
+
+      - name: Reject any use of sorry, and any axiom beyond Mathlib's three
+        run: lake env lean scripts/AxiomAudit.lean
+
+      # `lake test` and `lake build ArlibTest` do the same work here, since the
+      # test driver is the ArlibTest library. Use the documented command, so
+      # that what CI runs is exactly what CONTRIBUTING.md tells a contributor
+      # to run locally.
+      - name: Build and run the smoke tests
+        run: lake test
+
+  docs:
+    runs-on: ubuntu-latest
+    # Documentation is generated only from the default branch: doc-gen4 builds
+    # Mathlib's docs too, which is far too slow to sit in the PR path.
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+
+      - name: Fetch prebuilt Mathlib
+        run: lake exe cache get
+
+      # doc-gen4 is appended here rather than committed to lakefile.toml, so
+      # that ordinary (and offline) builds never try to fetch it. This edit is
+      # ephemeral — it lives only in the CI checkout.
+      - name: Add doc-gen4 for this job only
+        run: |
+          cat >> lakefile.toml <<'EOF'
+
+          [[require]]
+          name = "doc-gen4"
+          scope = "leanprover"
+          git = "https://github.com/leanprover/doc-gen4"
+          rev = "v4.15.0"
+          EOF
+          lake update doc-gen4
+
+      - name: Generate API documentation
+        run: lake build Arlib:docs
+
+      - name: Upload the generated documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: .lake/build/doc
+          retention-days: 14

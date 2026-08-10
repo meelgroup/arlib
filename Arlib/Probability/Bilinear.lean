@@ -30,7 +30,7 @@ Everything is proved from first principles with no `sorry`.
 import Arlib.Prelude
 import Mathlib.Algebra.QuadraticDiscriminant
 
-namespace Arlib.MarkovChains
+namespace Arlib.Probability
 
 /-- A real-valued form `B` on functions `ι → ℝ` is *bilinear* if it is additive
 and homogeneous in each argument. -/
@@ -82,4 +82,26 @@ theorem isBilin_weighted {ι : Type*} [Fintype ι] (w : ι → ℝ) :
     exact Finset.sum_congr rfl fun x _ => by
       simp only [Pi.smul_apply, smul_eq_mul]; ring
 
+end Arlib.Probability
+
+/-! ## Compatibility: the `Arlib.MarkovChains` spellings
+
+These declarations used to live in `namespace Arlib.MarkovChains` (in
+`Arlib/MarkovChains/Techniques/{Chain,Bilinear,Functional,TotalVariation,Coupling}.lean`).
+They are not Markov-chain-specific and now live in `Arlib.Probability`.  The
+aliases below reproduce the old fully-qualified names exactly, so that every
+`Arlib/MarkovChains/**` module keeps resolving them unchanged.  New code should
+use the `Arlib.Probability` names directly; this block can be deleted once the
+`Arlib.MarkovChains` call sites have been migrated. -/
+
+namespace Arlib.MarkovChains
+
+export Arlib.Probability (IsBilin psd_cauchy_schwarz isBilin_weighted)
+
 end Arlib.MarkovChains
+
+namespace Arlib.MarkovChains.IsBilin
+
+export Arlib.Probability.IsBilin (mk add_left smul_left add_right smul_right)
+
+end Arlib.MarkovChains.IsBilin

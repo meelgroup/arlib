@@ -8,7 +8,19 @@ Authors: Kuldeep S. Meel
 
 Part of the `Arlib.Algorithms` area; see `Arlib/Algorithms.lean`.
 
-The Tootsie Pop Algorithm (Huber, 2010) estimates a ratio of measures
+**Which Huber paper this follows is unresolved in this library.**  These
+modules are described elsewhere in the tree as following "Huber, 2010" — Mark
+Huber and Sarah Schott, *Using TPA for Bayesian Inference*, Bayesian Statistics
+9, OUP, 2010, pp. 257–282 (arXiv:0907.2989) — whereas
+`Arlib.Algorithms.TPA.TwoPhase` analyses a "Theorem 5" and a two-phase
+run-count schedule matching Mark Huber, *Approximation Algorithms for the
+Normalizing Constant of Gibbs Distributions*, Ann. Appl. Probab. **25**(2):
+974–985, 2015 (arXiv:1206.2689).  The two attributions cannot both be right, and
+nothing in this repository decides between them; the question is left open here
+rather than guessed at.  Nothing below depends on the answer: every statement is
+proved from scratch.
+
+The Tootsie Pop Algorithm (Huber) estimates a ratio of measures
 `μ(B)/μ(B')` for a *centre* `B'` inside a *shell* `B`, given a family of nested
 sets interpolating between them whose measure varies continuously.  It replaces
 the classical self-reducibility product estimator, whose output is a product of

@@ -131,7 +131,18 @@ linear layer takes.
 
 The children's coordinate types carry `Fintype` instances because `tensorFeat`
 sums over them; the root's coordinate type `d` deliberately carries none, since
-nothing about a region *itself* requires the coordinates to be enumerable. -/
+nothing about a region *itself* requires the coordinates to be enumerable.
+
+**On universes.** `Region` and everything indexed by it are stated at `Type`
+rather than `Type*`, which is the one place in the library where that is
+deliberate rather than an oversight. The obstacle is that `leaf` introduces a
+fresh assignment type `X` and `node` fresh child-coordinate types `dl`, `dr`;
+universe-polymorphising the family means pinning all of them to a single
+universe `u`, since children at different universes cannot sit under one parent.
+That is possible, but it buys nothing: every region in practice is built over
+concrete finite coordinate types in `Type 0`, and `Region` exists precisely to be
+instantiated at such types. The generality would be paid for in universe
+annotations at every recursive definition below and never exercised. -/
 inductive Region : Type → Type 1 where
   | leaf (X : Type) [Fintype X] [DecidableEq X] {d : Type} (Φ : X → d → ℝ) : Region d
   | node {dl dr : Type} [Fintype dl] [Fintype dr] {d : Type} (l : Region dl) (r : Region dr)

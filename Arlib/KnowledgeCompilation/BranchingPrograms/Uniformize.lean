@@ -9,11 +9,11 @@ import Arlib.KnowledgeCompilation.BranchingPrograms.Separation
 # Discharging the uniformity hypothesis (Razgon, Appendix A)
 
 Igor Razgon, *On the read-once property of branching programs and CNFs of bounded
-treewidth*, Appendix A (`source/kc/razgon/FBDDJOURN.tex:1208`), turns an arbitrary
+treewidth*, Appendix A ([Raz16, §A]), turns an arbitrary
 {\sc nrobp} into a *uniform* one.  That appendix is what
 `Arlib/KnowledgeCompilation/BranchingPrograms/NROBP.lean` points at when it says that
 `NROBP.Uniform` "is carried as an explicit hypothesis of every statement that needs it",
-and it is what `Arlib/KnowledgeCompilation/ROADMAP.md` §8.4(2) lists as the open end.
+and it is what `docs/dev/KnowledgeCompilation-ROADMAP.md` §8.4(2) lists as the open end.
 This file closes it.
 
 Placeholder text.
@@ -134,7 +134,7 @@ open scoped Classical in
 /-- **`PVar_Z(a)`**: the variables carrying a literal on *some* directed path ending at
 `a`, the start of the path being unconstrained.
 
-The paper's `IVar_Z(a)` (`source/kc/razgon/FBDDJOURN.tex:1218`) is the same thing with the
+The paper's `IVar_Z(a)` ([Raz16, §A]) is the same thing with the
 path required to start at the root; `Uniformize.IVar` below is that.  `PVar` is what the
 construction actually runs on, because `NROBP.ReadOnce` is a statement about *all* paths
 and the read-once bookkeeping of the transformation therefore has to be too. -/
@@ -191,7 +191,7 @@ end PathVar
 
 /-! ## The paper's vocabulary: `IVar`, in-degree, cleanliness, relevance, regularity
 
-These are Razgon's Appendix-A definitions (`source/kc/razgon/FBDDJOURN.tex:1210`–`:1224`),
+These are Razgon's Appendix-A definitions ([Raz16, §A]),
 transcribed.  They are not what the construction below runs on — see the module docstring —
 but they are what its statements are compared against, and
 `Uniformize.prefixVars_of_clean_of_regular` is the one place where they earn their keep. -/
@@ -201,7 +201,7 @@ section PaperVocabulary
 variable {V : Type*} [Fintype V] [DecidableEq V] {size : ℕ} {Z : NROBP V size}
 
 open scoped Classical in
-/-- **`IVar_Z(v)`** (paper Appendix A, `source/kc/razgon/FBDDJOURN.tex:1218`): the set of
+/-- **`IVar_Z(v)`** (paper Appendix A, [Raz16, §A]): the set of
 variables having a literal on some *root*-to-`v` path.
 
 Contrast `Uniformize.PVar`, which drops the requirement that the path start at the root. -/
@@ -224,7 +224,7 @@ theorem varSet_subset_IVar {v : Fin size} {ls : List (Lit V)} (h : Z.Path Z.root
     varSet ls ⊆ IVar Z v := fun _ hx => mem_IVar.mpr ⟨ls, h, hx⟩
 
 /-- **`IVar(u) ⊆ IVar(v)` along an edge**, which is what makes the paper's
-`IVar(v) \ IVar(u) = {x₁,…,x_q}` (`source/kc/razgon/FBDDJOURN.tex:1224`) the right set to
+`IVar(v) \ IVar(u) = {x₁,…,x_q}` ([Raz16, §A]) the right set to
 insert on a subdivided edge, and makes "regular" and "`IVar(u) = IVar(v)`" synonymous. -/
 theorem IVar_subset_of_edge {u v : Fin size} {l : Option (Lit V)} (h : Z.edge u v l) :
     IVar Z u ⊆ IVar Z v := by
@@ -235,20 +235,20 @@ theorem IVar_subset_of_edge {u v : Fin size} {l : Option (Lit V)} (h : Z.edge u 
 
 open scoped Classical in
 /-- **`d⁺(v)`**, the in-degree of `v` (paper Appendix A,
-`source/kc/razgon/FBDDJOURN.tex:1210`): the number of in-*neighbours*, not of in-edges.
+[Raz16, §A]): the number of in-*neighbours*, not of in-edges.
 The paper is explicit that this is the essential point, "because of the possibility of
 multiple edges". -/
 noncomputable def InDegree (Z : NROBP V size) (v : Fin size) : ℕ :=
   (Finset.univ.filter fun u : Fin size => ∃ l, Z.edge u v l).card
 
-/-- **Clean, in the paper's sense** (`source/kc/razgon/FBDDJOURN.tex:1211`): every in-edge
+/-- **Clean, in the paper's sense** ([Raz16, §A]): every in-edge
 of a node of in-degree greater than one is unlabelled. -/
-def CleanPaper (Z : NROBP V size) : Prop :=
+def CleanInDegree (Z : NROBP V size) : Prop :=
   ∀ {u v : Fin size} {l : Option (Lit V)}, Z.edge u v l → 1 < InDegree Z v → l = none
 
 /-- **Clean, strengthened.**  A labelled in-edge is the *only* in-edge of its head.
 
-This is genuinely stronger than `Uniformize.CleanPaper`, and the difference is a gap in the
+This is genuinely stronger than `Uniformize.CleanInDegree`, and the difference is a gap in the
 paper: the paper's in-degree counts in-*neighbours*, so a node `v` with the single
 in-neighbour `u` but two parallel edges `u → v` labelled `x` and unlabelled has `d⁺(v) = 1`
 and is clean by the paper's definition, yet its two root-paths read different variable
@@ -257,18 +257,18 @@ def Clean (Z : NROBP V size) : Prop :=
   ∀ {u v : Fin size} {x : Lit V}, Z.edge u v (some x) →
     ∀ {u' : Fin size} {l' : Option (Lit V)}, Z.edge u' v l' → u' = u ∧ l' = some x
 
-/-- **A relevant edge** (paper Appendix A, `source/kc/razgon/FBDDJOURN.tex:1221`): one
+/-- **A relevant edge** (paper Appendix A, [Raz16, §A]): one
 whose head has in-degree greater than one. -/
 def Relevant (Z : NROBP V size) (u v : Fin size) : Prop :=
   (∃ l, Z.edge u v l) ∧ 1 < InDegree Z v
 
-/-- **A regular edge** (paper Appendix A, `source/kc/razgon/FBDDJOURN.tex:1221`): a
+/-- **A regular edge** (paper Appendix A, [Raz16, §A]): a
 relevant edge with `IVar(u) = IVar(v)`.  The paper says "not `IVar(u) ⊊ IVar(v)`", which by
 `Uniformize.IVar_subset_of_edge` is the same thing. -/
 def Regular (Z : NROBP V size) (u v : Fin size) : Prop :=
   Relevant Z u v ∧ IVar Z u = IVar Z v
 
-/-- **An irregular edge** (paper Appendix A, `source/kc/razgon/FBDDJOURN.tex:1221`): a
+/-- **An irregular edge** (paper Appendix A, [Raz16, §A]): a
 relevant edge with `IVar(u) ⊊ IVar(v)`.  These are the edges Razgon's local transformation
 repairs, one at a time. -/
 def Irregular (Z : NROBP V size) (u v : Fin size) : Prop :=
@@ -299,12 +299,12 @@ theorem one_lt_inDegree {u u' v : Fin size} {l l' : Option (Lit V)} (h : Z.edge 
     exact ⟨l', h'⟩
 
 /-- **The base case of Razgon's induction, corrected** (paper Appendix A,
-`source/kc/razgon/FBDDJOURN.tex:1341`: "if `q = 0` … it is easy to observe that in this
+[Raz16, §A]: "if `q = 0` … it is easy to observe that in this
 case `Z` is uniform").
 
 What is actually true is the *first* clause of `NROBP.Uniform`: in a clean program all of
 whose relevant edges are regular, any two root-to-`a` paths read the same set of variables.
-It needs the strengthened `Uniformize.Clean`, not the paper's `Uniformize.CleanPaper`.
+It needs the strengthened `Uniformize.Clean`, not the paper's `Uniformize.CleanInDegree`.
 
 The *second* clause, `NROBP.Uniform.full_vars`, does **not** follow, and no hypothesis of
 this kind can make it follow: a graph with an isolated vertex `v` has a read-once program
@@ -666,7 +666,7 @@ local conditions `uniformize_of_weight` asks for, `uProg Z W` replaces every edg
 where the `j`-th link of the chain is a *free binary choice* on the `j`-th variable if that
 variable lies in `W b \ (W a ∪ Var(l))`, and an unlabelled edge otherwise.  So the walk
 from `a` to `b` reads exactly `W b` beyond `W a`, whichever way it branches.  This is
-Razgon's local transformation (`source/kc/razgon/FBDDJOURN.tex:1226`–`:1236`) applied to
+Razgon's local transformation ([Raz16, §A]) applied to
 every edge at once rather than to one irregular edge at a time. -/
 
 section Construction
@@ -675,7 +675,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V] {m : ℕ}
 
 /-- **The gadget set of an edge**: the variables the chain inserted on `a → b` with label
 `l` has to read.  This is the paper's `IVar(v) \ IVar(u) = {x₁,…,x_q}`
-(`source/kc/razgon/FBDDJOURN.tex:1224`), with `W` in place of `IVar` and the edge's own
+([Raz16, §A]), with `W` in place of `IVar` and the edge's own
 label discounted. -/
 def uGad (W : Fin m → Finset V) (a b : Fin m) (l : Option (Lit V)) : Finset V :=
   W b \ (W a ∪ litVars l)
@@ -942,7 +942,7 @@ theorem agree_append {ls ms : List (Lit V)} {α : V → Bool} (h1 : Agree ls α)
 /-- **Traversing a gadget chain in accordance with an assignment.**  From any position `j`
 of the chain on `(a,b,l)` there is a walk to the copy of `b` all of whose free choices
 follow `α`.  This is the paper's "the in-edge for each `uᵢ` is the one labelled with the
-literal of `xᵢ` that belongs to `S`" (`source/kc/razgon/FBDDJOURN.tex:1283`).
+literal of `xᵢ` that belongs to `S`" ([Raz16, §A]).
 
 The recursion is on the *distance to the end* of the chain, `k`, because `Fin` has no
 downward recursor. -/
@@ -1015,7 +1015,7 @@ The four properties are:
 * `hWroot`, `hWleaf`: the weight is empty at the root and everything at the leaf, which is
   exactly what the two clauses of `NROBP.Uniform` need.
 
-This is Razgon's Appendix-A theorem (`source/kc/razgon/FBDDJOURN.tex:1338`) with the
+This is Razgon's Appendix-A theorem ([Raz16, §A]) with the
 one-irregular-edge-at-a-time induction replaced by a single simultaneous transformation;
 see the module docstring. -/
 theorem uniformize_of_weight {G : SimpleGraph V} {Z : NROBP V m} (W : Fin m → Finset V)
@@ -1213,7 +1213,7 @@ theorem plusWeight_fresh {Z : NROBP V size} (hro : Z.ReadOnce) {A B : Fin (size 
 
 `uniformize_exists` is the point of the file, and it carries no `Uniform` hypothesis and no
 `Clean` hypothesis: cleaning, which the paper performs as a separate preliminary step
-(`source/kc/razgon/FBDDJOURN.tex:1212`), is subsumed, because the transformation gives every
+([Raz16, §A]), is subsumed, because the transformation gives every
 labelled edge a private fresh head. -/
 
 /-- `uniformizeSize` spelled out. -/
@@ -1221,7 +1221,7 @@ theorem uniformizeSize_eq (m nv : ℕ) :
     uniformizeSize m nv = m * (m * (2 * nv + 1) * (nv + 1) + 1) := rfl
 
 /-- **From an arbitrary read-once NROBP to a uniform one** (paper Appendix A,
-`source/kc/razgon/FBDDJOURN.tex:1338`).
+[Raz16, §A]).
 
 A read-once `NROBP` on `size` nodes realising `φ(G)` has a read-once **and uniform**
 transform realising `φ(G)` on
@@ -1230,7 +1230,7 @@ transform realising `φ(G)` on
 
 nodes, where `n = |V|`.  The paper measures the blow-up in *edges* and gets `2qn` extra
 edges for `q` irregular edges; this development measures *nodes* — which is what
-`NROBP.nrobplbdmw` counts — and the number above is what the simultaneous transformation
+`NROBP.le_size_of_matchingWidthGe` counts — and the number above is what the simultaneous transformation
 costs: one block of `(size+2)·(2n+1)·(n+1) + 1` nodes per node of the bracketed program,
 holding its copy and one chain of `n+1` gadget nodes for each (head, label) pair. -/
 theorem uniformize_exists {G : SimpleGraph V} (Z : NROBP V size) (hro : Z.ReadOnce)
@@ -1241,7 +1241,7 @@ theorem uniformize_exists {G : SimpleGraph V} (Z : NROBP V size) (hro : Z.ReadOn
     uniformize_of_weight (plusWeight Z) plusWeight_step (plusWeight_fresh hro)
       (plusWeight_root Z) (plusWeight_leaf Z) (uPlus_realises hR)⟩
 
-/-- **The payoff** (`Arlib/KnowledgeCompilation/ROADMAP.md` §8.4(2)):
+/-- **The payoff** (`docs/dev/KnowledgeCompilation-ROADMAP.md` §8.4(2)):
 `Razgon.two_rpow_le_size` with its `Uniform` hypothesis removed.
 
 A read-once NROBP realising `φ(G)`, for `G` of matching width at least `t` and max-degree

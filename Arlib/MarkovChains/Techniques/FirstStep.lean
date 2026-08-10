@@ -11,7 +11,9 @@ and `Techniques.LinkRestriction` builds the honest link `linkShift` of a face
 together with its level distributions `linkShiftPi` (`π_{τ,j}`) and the
 restriction theorem `levelFun_linkShiftNorm` (`f_τ^{(j)}(ρ) = f^{(|τ|+j)}(τ ∪ ρ)`).
 This module proves the identity that joins them, `claim:first-step` of the
-monograph (§6.6, line 2371):
+monograph ([CSV23, §6.6] — Chen–Štefankovič–Vigoda, *Spectral Independence and
+Local-to-Global Techniques for Optimal Mixing of Markov Chains*,
+arXiv:2307.13826, 2023):
 
   **`Var_{π_{k+1}}(f^{(k+1)}) − Var_{π_{k−1}}(f^{(k−1)})
       = ∑_{τ ∈ 𝒫_{k−1}} π_{k−1}(τ) · Var_{π_{τ,2}}(f_τ^{(2)})`.**

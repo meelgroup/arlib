@@ -10,7 +10,9 @@ Everything in `Arlib.MarkovChains.Techniques` so far measures convergence in
 `L²(μ)`: the spectral gap makes `Var_μ(P^t f)` and `D_{χ²}(ν P^t ‖ μ)` decay
 geometrically.  What a sampling algorithm needs instead is a *uniform over
 starting states* bound in total variation, and this module supplies the missing
-link.  It is the formal counterpart of §3.5 of Chen–Štefankovič–Vigoda, the
+link.  It is the formal counterpart of §3.5 of Zongchen Chen, Daniel Štefankovič,
+Eric Vigoda, *Spectral Independence and Local-to-Global Techniques for Optimal
+Mixing of Markov Chains*, arXiv:2307.13826 (2023) — cited below as [CSV23] — the
 place where the analysis becomes an algorithmic guarantee.
 
 The chain of reasoning is short because every analytic ingredient is already in
@@ -223,7 +225,7 @@ steps whenever
   `ln (1 / (2 ε √m)) ≤ (γ/2) · t`,
 
 that is, after `t ≥ (2/γ) · ln(1 / (2 ε √m))` steps.  Compare
-`main.tex` §3.5: the monograph's `Tmix ≤ (2γ)⁻¹ ln(4/μ*)` differs only in
+[CSV23, §3.5]: the monograph's `Tmix ≤ (2γ)⁻¹ ln(4/μ*)` differs only in
 constants, the factor two coming from laziness. -/
 theorem mixesWithin_lazy_of_gap {μ : FinDist Ω} {P : FinChain Ω} {γ : ℝ}
     (hrev : Reversible μ P) (hpos : ∀ x, 0 < μ x)

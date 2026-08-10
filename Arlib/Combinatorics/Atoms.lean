@@ -36,7 +36,7 @@ open scoped BigOperators
 
 open Finset
 
-namespace Arlib
+namespace Arlib.Combinatorics
 
 /-- The atom of the family `A` with sign vector `s`: the points that lie in `A j`
 for exactly those `j` with `s j = true`. -/
@@ -113,4 +113,4 @@ theorem sum_card_atom_inter {ι Ω : Type*} [Fintype Ω] [DecidableEq Ω] [Finty
     (fun x _ => Finset.mem_univ _)]
   exact Finset.sum_congr rfl fun s _ => by rw [inter_atom_eq_filter]
 
-end Arlib
+end Arlib.Combinatorics

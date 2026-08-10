@@ -12,7 +12,8 @@ import Mathlib.Logic.Relation
 > Suppose that given a sequence `a₁ … a_t ∈ Γ^t`, we can test in time `T`
 > whether `aᵢ ∈ A` for each transition label `A`.  Then given any state `s_j`,
 > we can test whether `a₁ … a_t ∈ W(s_j)` in time `O(|Δ|·T)`.
-> — `partition-size2.tex:320-333`
+> — `prop:membertest` of the source manuscript (unpublished; source not
+> distributed with the library — see `SuccinctNFA.lean`)
 
 This file supplies the algorithm, its correctness proof, and its cost analysis.
 
@@ -411,7 +412,7 @@ most `|Δ|·T`.
 
 Both halves of the conclusion are the source's.  The cost bound is stated for an
 unrolled `𝒩`, which is the standing hypothesis of the section the proposition
-lives in (`partition-size2.tex:313`) and is, as `reachFromCost_le_levelCount`
+lives in and is, as `reachFromCost_le_levelCount`
 shows, exactly what removes the `t` factor.  The correctness half needs no
 acyclicity at all. -/
 theorem memberTest (e : N.Encoding) (O : LabelOracle Γ L) {ε₀ : ℝ} {g T : ℕ}
@@ -423,7 +424,7 @@ theorem memberTest (e : N.Encoding) (O : LabelOracle Γ L) {ε₀ : ℝ} {g T : 
 /-- The decision procedure of `prop:membertest`, packaged as a `Decidable`
 instance derived from `def:prop` alone.  This is the "membership in `W(sᵢ)` is
 polynomial-time testable given polynomial-time membership tests for each label
-`A`" of `partition-size2.tex:318`. -/
+`A`" of the source's `prop:membertest`. -/
 def decidableMemW_of_labelProps (e : N.Encoding) (O : LabelOracle Γ L) {ε₀ : ℝ} {g T : ℕ}
     (hp : LabelProps N O ε₀ g T) (w : List Γ) (s : S) : Decidable (w ∈ N.W s) :=
   e.decidableMemW O hp.memTest_correct w s

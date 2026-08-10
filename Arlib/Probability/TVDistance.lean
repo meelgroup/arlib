@@ -38,6 +38,14 @@ all about kernels acting on a finite state space, and a sampler correctness proo
 needs none of them.  What it does need, and what this module adds beyond the
 mirror, is the conditioning rule of the last section.
 
+Several statements below are labelled with the LaTeX names they carry in the
+source paper this module was extracted from — `lem:dtv`, `lem:condtv`,
+`lem:averagingtv`, `lem:condtvhelper`.  **That paper is not identified anywhere
+in this library, and its sources are not distributed with it**; the labels are
+retained because they are the only stable handle on the statements, and every
+one of them is proved here from scratch, so nothing below depends on locating
+it.
+
 ## Main declarations
 
 * `tvDist p q = ½ ∑'ᵢ |p i - q i|`, with `tvDist_apply` as its unfolding lemma,
@@ -54,16 +62,15 @@ mirror, is the conditioning rule of the last section.
 * `tsum_ite_sub_le_tvDist` and `abs_tsum_ite_sub_le_tvDist` — the one- and
   two-sided **event characterisation**: no event distinguishes two distributions
   by more than their total variation distance.  The source paper imports this
-  without proof as `lem:dtv` (`prelims.tex:229-233`); here it is a short
-  consequence of `tvDist_eq_tsum_max`.
+  without proof as its `lem:dtv`; here it is a short consequence of
+  `tvDist_eq_tsum_max`.
 * `condOn p a i = p i · a i / ∑'ⱼ p j · a j` — the law of `X ~ p` conditioned on
   an accept/reject draw that accepts with probability `a i` when `X = i` — and
   `tvDist_condOn_le`, the **conditional total variation chain rule**: for `X ~ p`
   accepted with probability `a i` and `X' ~ q` accepted with probability `b i`,
   conditioning both on acceptance costs a factor `2 / Pr[accept]`, plus an
   additive term for how differently the two acceptance rules behave.  This is the
-  source paper's `lem:condtv` (`prelims.tex:246-250`), proved by its own
-  two-lemma route (`extended-prelims.tex:1-98`):
+  source paper's `lem:condtv`, proved by its own two-lemma route:
   - `tvDist_mul_le` (`lem:averagingtv`) handles the *unnormalised* joint masses,
     by inserting and subtracting `p i · b i` inside `|p i a i - q i b i|` and
     splitting with the triangle inequality;
@@ -109,7 +116,7 @@ import Mathlib.Topology.Algebra.InfiniteSum.Ring
 import Mathlib.Topology.Algebra.InfiniteSum.Group
 import Mathlib.Analysis.Normed.Group.InfiniteSum
 
-namespace Arlib
+namespace Arlib.Probability
 
 variable {ι : Type*}
 
@@ -275,7 +282,7 @@ theorem tsum_ite_sub_le_tvDist {p q : ι → ℝ} (hp : ∀ i, 0 ≤ p i) (hq : 
 
 /-- **No event distinguishes two distributions by more than their total
 variation distance** — the source paper's `lem:dtv`, imported there without
-proof (`prelims.tex:229-233`); here a direct consequence of the definition. -/
+proof; here a direct consequence of the definition. -/
 theorem abs_tsum_ite_sub_le_tvDist {p q : ι → ℝ} (hp : ∀ i, 0 ≤ p i) (hq : ∀ i, 0 ≤ q i)
     (hps : HasSum p 1) (hqs : HasSum q 1) (S : ι → Prop) [DecidablePred S] :
     |(∑' i, if S i then p i else 0) - (∑' i, if S i then q i else 0)| ≤ tvDist p q := by
@@ -300,7 +307,7 @@ discrepancy between the two acceptance rates, plus the distance between `X`
 and `X'` themselves.
 
 Proved by inserting and subtracting `p i · b i` inside `p i a i - q i b i` and
-triangle-inequality-splitting, exactly as in `extended-prelims.tex:1-98`. -/
+triangle-inequality-splitting, exactly as in the source paper. -/
 theorem tvDist_mul_le {p q a b : ι → ℝ}
     (hp : ∀ i, 0 ≤ p i) (hq : ∀ i, 0 ≤ q i)
     (hps : Summable p) (hqs : Summable q)
@@ -341,7 +348,7 @@ No positivity hypothesis on `∑' g` is imposed: if it vanishes, `g`'s
 renormalisation is `0` by Lean's `x / 0 = 0` convention, and the bound still
 holds (via `abs_tsum_sub_le_two_mul_tvDist`). When `∑' g > 0` the bound is
 proved via the identity `f i / Z - g i / Z' = (f i - g i)/Z + g i ·(1/Z -
-1/Z')`, exactly as in `extended-prelims.tex:1-98`. -/
+1/Z')`, exactly as in the source paper. -/
 theorem tvDist_div_tsum_le {f g : ι → ℝ} (hf : ∀ i, 0 ≤ f i) (hg : ∀ i, 0 ≤ g i)
     (hfs : Summable f) (hgs : Summable g) (hZ : 0 < ∑' i, f i) :
     tvDist (fun i => f i / (∑' i, f i)) (fun i => g i / (∑' i, g i))
@@ -443,8 +450,8 @@ changes total variation by at most a factor of `2 / Pr[Y = 1]`, plus an
 additive term for how differently `Y` and `Y'` accept.
 
 Proved by chaining `tvDist_mul_le` (`lem:averagingtv`) into
-`tvDist_div_tsum_le` (`lem:condtvhelper`), exactly the route of
-`extended-prelims.tex:1-98`; the intermediate bound is actually tighter
+`tvDist_div_tsum_le` (`lem:condtvhelper`), exactly the route of the source
+paper; the intermediate bound is actually tighter
 (coefficient `1`, not `2`, on `∑' i, p i * |a i - b i|`) before the final
 step loosens it to match the coefficient the downstream application needs. -/
 theorem tvDist_condOn_le {ι : Type*} (p q a b : ι → ℝ)
@@ -581,4 +588,4 @@ theorem tvDist_condEvent_eq {p : ι → ℝ} {A : ι → Prop} [DecidablePred A]
   rw [hcancel]
   ring
 
-end Arlib
+end Arlib.Probability

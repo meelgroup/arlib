@@ -29,7 +29,7 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Probability
 import Arlib.Probability.UnionBound
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -98,4 +98,4 @@ theorem momBound_highProb (hL : IsLewis w a) (hw : ∀ i, 0 < w i) {U : ℝ}
   rw [(radProb ι).Pr_compl]
   linarith [finiteProcess_tail hL hw hU hk ht]
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

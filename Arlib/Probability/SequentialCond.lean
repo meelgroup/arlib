@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Probability.SequentialKernel
-import Arlib.InformationTheory.Basic
+import Arlib.Probability.Law
 
 /-!
 # Conditional laws of a sequential (history-dependent) kernel
@@ -33,8 +33,8 @@ in three steps.
   the cylinder `{c | histPrefix c i = w ∧ c i = s}` is the prefix weight times
   `k i w s`. This is the length-`(i+1)` prefix marginal at `Fin.snoc w s`, transported
   along `Arlib.restrictLt_succ_eq_snoc_iff`.
-* `Arlib.condDist_seqFinProb_coord` — **the headline**: in the `Arlib.FinProb` idiom of
-  `Arlib.InformationTheory`,
+* `Arlib.condDist_seqFinProb_coord` — **the headline**: in the `Arlib.Probability.FinProb`
+  idiom of `Arlib.Probability.Law`,
   `condDist (seqFinProb k _ _) (fun c => c i) (fun c => histPrefix c i) w = k i w`.
 * `Arlib.condDist_seqFinProb_coord_prefixFun` — the same, conditioning additionally on
   any statistic `g (histPrefix c i)` of the prefix. This is the form an adaptive
@@ -55,7 +55,7 @@ cases are `m ≤ q` (peel the last coordinate; the constraint is untouched) and
 
 ## Degenerate conditioning cells
 
-`Arlib.InformationTheory.condDist` is defined to be `0` on a conditioning cell of zero
+`Arlib.condDist` is defined to be `0` on a conditioning cell of zero
 mass (the `x / 0 = 0` convention), so the conditional-law statements carry the honest
 hypothesis `seqWeightUpTo k _ w ≠ 0`: the prefix `w` must be reachable. By the prefix
 marginal this is *exactly* the nondegeneracy `dist P (fun c => histPrefix c i) w ≠ 0`
@@ -64,10 +64,11 @@ that `condDist` needs, so nothing is lost.
 Everything here is proved from first principles with no `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
+open Arlib.Combinatorics (snocEquiv)
 
 /-- The first `m` coordinates of a length-`q` history, for any `m ≤ q`. -/
 def restrictLt {S : Type} {q : ℕ} (c : Fin q → S) {m : ℕ} (hm : m ≤ q) : Fin m → S :=
@@ -125,7 +126,7 @@ theorem sum_cylinder_snoc_split {S : Type} [Fintype S] [DecidableEq S] {q m : �
     ∑ c : Fin (q + 1) → S, (if restrictLt c hm = w then seqWeight k c else 0)
       = ∑ h : Fin q → S, ∑ s : S,
           (if restrictLt (Fin.snoc h s) hm = w then seqWeight k (Fin.snoc h s) else 0) := by
-  rw [← Equiv.sum_comp (snocEquiv S q)
+  rw [← Equiv.sum_comp (snocEquiv (n := q) S)
       (fun c => if restrictLt c hm = w then seqWeight k c else 0), Fintype.sum_prod_type]
   rfl
 
@@ -255,7 +256,7 @@ theorem dist_seqFinProb_histPrefix {S : Type} [Fintype S] [DecidableEq S] [Inhab
     (hk0 : ∀ (i : Fin q) (h : Fin i.val → S) (s : S), 0 ≤ k i h s)
     (hk1 : ∀ (i : Fin q) (h : Fin i.val → S), ∑ s, k i h s = 1)
     (i : Fin q) (w : Fin i.val → S) :
-    InformationTheory.dist (seqFinProb k hk0 hk1) (fun c => histPrefix c i) w = seqWeightUpTo k i.isLt.le w :=
+    dist (seqFinProb k hk0 hk1) (fun c => histPrefix c i) w = seqWeightUpTo k i.isLt.le w :=
   sum_seqWeight_histPrefix k hk1 i w
 
 /-- The joint law of the length-`i` prefix and the `i`-th letter under `seqFinProb`. -/
@@ -264,9 +265,9 @@ theorem dist_seqFinProb_pair_coord {S : Type} [Fintype S] [DecidableEq S] [Inhab
     (hk0 : ∀ (i : Fin q) (h : Fin i.val → S) (s : S), 0 ≤ k i h s)
     (hk1 : ∀ (i : Fin q) (h : Fin i.val → S), ∑ s, k i h s = 1)
     (i : Fin q) (w : Fin i.val → S) (s : S) :
-    InformationTheory.dist (seqFinProb k hk0 hk1) (InformationTheory.pair (fun c => histPrefix c i) (fun c => c i)) (w, s)
+    dist (seqFinProb k hk0 hk1) (pair (fun c => histPrefix c i) (fun c => c i)) (w, s)
       = seqWeightUpTo k i.isLt.le w * k i w s := by
-  unfold InformationTheory.dist InformationTheory.pair
+  unfold dist pair
   simp only [Prod.mk.injEq]
   exact sum_seqWeight_histPrefix_and_coord k hk1 i w s
 
@@ -282,10 +283,10 @@ theorem condDist_seqFinProb_coord {S : Type} [Fintype S] [DecidableEq S] [Inhabi
     (hk1 : ∀ (i : Fin q) (h : Fin i.val → S), ∑ s, k i h s = 1)
     (i : Fin q) (w : Fin i.val → S) (s : S)
     (hw : seqWeightUpTo k i.isLt.le w ≠ 0) :
-    InformationTheory.condDist (seqFinProb k hk0 hk1) (fun c => c i) (fun c => histPrefix c i) w s = k i w s := by
-  have hd : InformationTheory.dist (seqFinProb k hk0 hk1) (fun c => histPrefix c i) w ≠ 0 := by
+    condDist (seqFinProb k hk0 hk1) (fun c => c i) (fun c => histPrefix c i) w s = k i w s := by
+  have hd : dist (seqFinProb k hk0 hk1) (fun c => histPrefix c i) w ≠ 0 := by
     rw [dist_seqFinProb_histPrefix k hk0 hk1 i w]; exact hw
-  unfold InformationTheory.condDist
+  unfold condDist
   rw [if_neg hd, dist_seqFinProb_pair_coord k hk0 hk1 i w s,
     dist_seqFinProb_histPrefix k hk0 hk1 i w, mul_div_cancel_left₀ _ hw]
 
@@ -298,21 +299,21 @@ theorem condDist_seqFinProb_coord_prefixFun {S : Type} [Fintype S] [DecidableEq 
     (hk1 : ∀ (i : Fin q) (h : Fin i.val → S), ∑ s, k i h s = 1)
     (i : Fin q) (g : (Fin i.val → S) → T) (w : Fin i.val → S) (s : S)
     (hw : seqWeightUpTo k i.isLt.le w ≠ 0) :
-    InformationTheory.condDist (seqFinProb k hk0 hk1) (fun c => c i)
+    condDist (seqFinProb k hk0 hk1) (fun c => c i)
       (fun c => (histPrefix c i, g (histPrefix c i))) (w, g w) s = k i w s := by
-  have hd1 : InformationTheory.dist (seqFinProb k hk0 hk1)
+  have hd1 : dist (seqFinProb k hk0 hk1)
       (fun c => (histPrefix c i, g (histPrefix c i))) (w, g w)
-      = InformationTheory.dist (seqFinProb k hk0 hk1) (fun c => histPrefix c i) w := by
-    unfold InformationTheory.dist
+      = dist (seqFinProb k hk0 hk1) (fun c => histPrefix c i) w := by
+    unfold dist
     refine Finset.sum_congr rfl fun c _ => if_congr ?_ rfl rfl
     simp only [Prod.mk.injEq]
     exact ⟨fun h => h.1, fun h => ⟨h, by rw [h]⟩⟩
-  have hd2 : InformationTheory.dist (seqFinProb k hk0 hk1)
-      (InformationTheory.pair (fun c => (histPrefix c i, g (histPrefix c i))) (fun c => c i))
+  have hd2 : dist (seqFinProb k hk0 hk1)
+      (pair (fun c => (histPrefix c i, g (histPrefix c i))) (fun c => c i))
         ((w, g w), s)
-      = InformationTheory.dist (seqFinProb k hk0 hk1)
-          (InformationTheory.pair (fun c => histPrefix c i) (fun c => c i)) (w, s) := by
-    unfold InformationTheory.dist InformationTheory.pair
+      = dist (seqFinProb k hk0 hk1)
+          (pair (fun c => histPrefix c i) (fun c => c i)) (w, s) := by
+    unfold dist pair
     refine Finset.sum_congr rfl fun c _ => if_congr ?_ rfl rfl
     simp only [Prod.mk.injEq]
     constructor
@@ -320,11 +321,11 @@ theorem condDist_seqFinProb_coord_prefixFun {S : Type} [Fintype S] [DecidableEq 
       exact ⟨h1, h2⟩
     · rintro ⟨h1, h2⟩
       exact ⟨⟨h1, by rw [h1]⟩, h2⟩
-  have key : InformationTheory.condDist (seqFinProb k hk0 hk1) (fun c => c i)
+  have key : condDist (seqFinProb k hk0 hk1) (fun c => c i)
       (fun c => (histPrefix c i, g (histPrefix c i))) (w, g w) s
-      = InformationTheory.condDist (seqFinProb k hk0 hk1) (fun c => c i)
+      = condDist (seqFinProb k hk0 hk1) (fun c => c i)
           (fun c => histPrefix c i) w s := by
-    unfold InformationTheory.condDist
+    unfold condDist
     rw [hd1, hd2]
   rw [key, condDist_seqFinProb_coord k hk0 hk1 i w s hw]
 
@@ -398,5 +399,5 @@ theorem sum_seqWeight_histPrefix_le {S : Type} [Fintype S] [DecidableEq S] {q : 
       ≤ seqWeightUpTo k i.isLt.le w :=
   sum_seqWeight_restrictLt_le k hk0 hk i.isLt.le w
 
-end Arlib
+end Arlib.Probability
 

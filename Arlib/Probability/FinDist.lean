@@ -31,7 +31,7 @@ Everything here is proved from first principles with no `sorry`.
 -/
 import Arlib.Prelude
 
-namespace Arlib.MarkovChains
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -187,8 +187,8 @@ def row (K : FinKernel α β) (x : α) : FinDist β where
 
 /-- **Starting at `x` is pushing forward the point mass at `x`.**  Both sides put
 mass `K x y` on `y`, so this identifies the `push`-phrased χ² machinery of
-`Techniques.SpectralGap` with the `row`-phrased `MixesWithin` of
-`Techniques.TotalVariation`. -/
+`Arlib.MarkovChains.Techniques.SpectralGap` with the `row`-phrased `MixesWithin`
+of `Arlib.MarkovChains.Techniques.TotalVariation`. -/
 theorem push_dirac {Ω : Type*} [Fintype Ω] [DecidableEq Ω] (K : FinKernel Ω β) (x : Ω) :
     K.push (FinDist.dirac x) = K.row x := by
   refine FinDist.ext fun y => ?_
@@ -280,4 +280,48 @@ theorem Reversible.stationary {μ : FinDist Ω} {P : FinChain Ω} (h : Reversibl
 theorem Stationary.push_eq {μ : FinDist Ω} {P : FinChain Ω} (h : Stationary μ P) :
     P.push μ = μ := FinDist.ext fun y => h y
 
+end Arlib.Probability
+
+/-! ## Compatibility: the `Arlib.MarkovChains` spellings
+
+These declarations used to live in `namespace Arlib.MarkovChains` (in
+`Arlib/MarkovChains/Techniques/{Chain,Bilinear,Functional,TotalVariation,Coupling}.lean`).
+They are not Markov-chain-specific and now live in `Arlib.Probability`.  The
+aliases below reproduce the old fully-qualified names exactly, so that every
+`Arlib/MarkovChains/**` module keeps resolving them unchanged.  New code should
+use the `Arlib.Probability` names directly; this block can be deleted once the
+`Arlib.MarkovChains` call sites have been migrated. -/
+
+namespace Arlib.MarkovChains
+
+export Arlib.Probability (FinDist FinKernel FinChain finKernel_ext Stationary Reversible)
+
 end Arlib.MarkovChains
+
+namespace Arlib.MarkovChains.FinDist
+
+export Arlib.Probability.FinDist (p p_nonneg p_sum mk coe_eq coe_nonneg sum_coe
+  sum_coe_mul_const ext support mem_support_iff pos_of_mem_support dirac dirac_apply)
+
+end Arlib.MarkovChains.FinDist
+
+namespace Arlib.MarkovChains.FinKernel
+
+export Arlib.Probability.FinKernel (P P_nonneg P_sum mk coe_eq coe_nonneg sum_coe act
+  act_apply act_const act_add
+  act_sub act_sub_const act_add_const act_smul push push_apply row row_apply push_dirac comp
+  comp_apply act_comp id act_id iter iter_zero iter_succ act_iter_succ)
+
+end Arlib.MarkovChains.FinKernel
+
+namespace Arlib.MarkovChains.Reversible
+
+export Arlib.Probability.Reversible (stationary)
+
+end Arlib.MarkovChains.Reversible
+
+namespace Arlib.MarkovChains.Stationary
+
+export Arlib.Probability.Stationary (push_eq)
+
+end Arlib.MarkovChains.Stationary

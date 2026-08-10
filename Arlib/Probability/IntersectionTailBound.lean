@@ -21,7 +21,7 @@ holding.  The core bound
   `Pr[X ≥ k] ≤ C(B,k) · p^k`
 
 is proved with **no `sorry`**.  The closing numeric simplification to the exact
-form `(4p)^{B/2}` is `intersection_tail_bound_paper`.
+form `(4p)^{B/2}` is `intersection_tail_bound`.
 
 **Probability model.**  This file is developed against the abstract
 `ProbSpace` interface: events are *predicates* `P.Ω → Prop`, `P.Pr` is the
@@ -36,7 +36,7 @@ import Arlib.Probability.ProbSpace
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Data.Nat.Choose.Sum
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators Classical
 open Finset ProbSpace
@@ -142,14 +142,15 @@ theorem choose_le_two_pow (B k : ℕ) : (B.choose k : ℝ) ≤ (2 : ℝ) ^ B := 
     simp only [Nat.cast_zero]
     positivity
 
-/-- **Intersection tail bound, exact paper form.**
+/-- **Intersection tail bound**, in the fully assembled form a caller wants
+(the unassembled core is `intersection_tail_bound_core`).
 For `B ≥ 1` and `0 ≤ p ≤ 1/2`,
 `Pr[∑_b 𝟙_{E_b} ≥ B/2] ≤ (4p)^{B/2}`.
 
 The proof combines the core bound `Pr ≤ C(B,⌈B/2⌉)·p^{⌈B/2⌉}` with the numeric
 chain `C(B,·) ≤ 2^B`, `p^{⌈B/2⌉} ≤ p^{B/2}` (base ≤ 1, larger exponent), and
 `2^B·p^{B/2} = (4p)^{B/2}`. -/
-theorem intersection_tail_bound_paper
+theorem intersection_tail_bound
     {p : ℝ} (hB : 1 ≤ B) (hp0 : 0 ≤ p) (hp1 : p ≤ 1 / 2)
     [IsAdm P (indic (P.atLeast E ⌈(B : ℝ) / 2⌉₊))]
     [IsAdm P (indic (fun ω => ∃ S ∈ Finset.univ.powersetCard ⌈(B : ℝ) / 2⌉₊,
@@ -194,4 +195,4 @@ theorem intersection_tail_bound_paper
         apply mul_le_mul_of_nonneg_left hpk_le (by positivity)
 
 end ProbSpace
-end Arlib
+end Arlib.Probability

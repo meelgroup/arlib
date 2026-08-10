@@ -51,6 +51,7 @@ instances of one lemma, `dist_le_dist_of_imp`.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

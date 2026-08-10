@@ -57,7 +57,7 @@ Everything is proved from first principles with no `sorry`.
 -/
 import Arlib.Probability.IIDProduct
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset FinProb
@@ -525,4 +525,4 @@ theorem Ex_prodSpace_indep_of_disjoint (μ : ι → X → ℝ) (h0 : ∀ j x, 0 
       = (prodSpace μ h0 h1).toFinProb.Ex f * (prodSpace μ h0 h1).toFinProb.Ex g :=
   Ex_prodSpace_mul_of_disjoint μ h0 h1 hCD f g hf hg
 
-end Arlib
+end Arlib.Probability

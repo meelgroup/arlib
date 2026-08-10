@@ -12,7 +12,7 @@ the column space of `A`,
 `Π = A (AᵀW̄⁻¹A)⁻¹ AᵀW̄⁻¹ = A M⁻¹ AᵀW̄⁻¹`,   `M = gram w a`.
 
 This file records the three purely linear-algebraic identities Route A needs
-(§5 batch items 2–3 of `ROUTE_A_PLAN.md`):
+(§5 batch items 2–3 of `docs/dev/LewisWeights-ROUTE_A_PLAN.md`):
 
 * `gram_mulVec_eq_sum` — `M x` as the weighted outer-product sum `∑ⱼ wⱼ⁻¹(aⱼ·x)aⱼ`.
 * `gram_inv_mulVec_gram_mulVec` — `Π` fixes the column space: `M⁻¹ (M x) = x`.
@@ -26,7 +26,7 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Existence
 import Arlib.Approximation.LewisWeights.Rademacher
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -85,4 +85,4 @@ theorem projT_apply (s : ι → Bool) (i : ι) :
   rw [Matrix.mulVec_smul, dotProduct_smul, smul_eq_mul]
   ring
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

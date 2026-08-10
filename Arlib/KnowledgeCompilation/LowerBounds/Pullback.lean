@@ -7,7 +7,7 @@ Authors: Kuldeep S. Meel
 # Pulling rectangle covers back along a substitution
 
 The mechanism behind the proof of `thm: fixed_to_best`
-(`source/kc/arXiv.tex:446`), isolated from the particular substitution the paper
+([VS24, §4.5]), isolated from the particular substitution the paper
 uses so that it can be stated once and reused.
 
 ## What the paper does, and what it really needs
@@ -38,9 +38,11 @@ bound on the cover number of the *substituted* function gives a lower bound on
 the original.  That is the direction `thm: fixed_to_best` needs, and it is why
 the theorem reads `NCC_δ(ψ') ≥ NCC_δ^Π(ψ)` rather than the other way round.
 -/
-import Arlib.KnowledgeCompilation.Communication.Measures
+import Arlib.Communication.Measures
 
 namespace Arlib.KnowledgeCompilation
+
+open Arlib.Communication
 
 variable {V W : Type*} [DecidableEq V] [DecidableEq W]
 variable {Z : Finset V} {Z' : Finset W} {P : VarPartition Z} {Q : VarPartition Z'}
@@ -52,7 +54,7 @@ the values it produces on `Q.X` are determined by the values it was given on
 `P.X`, and likewise for `Y`.
 
 This is the abstraction of the substitution in the proof of `thm: fixed_to_best`
-(`source/kc/arXiv.tex:452`), where each original variable `xᵢ` is routed to a
+([VS24, §4.5]), where each original variable `xᵢ` is routed to a
 copy that the chosen permutation places on the *same side* of the partition —
 which is exactly what Claim `perm` is there to guarantee. -/
 structure PartitionMap (P : VarPartition Z) (Q : VarPartition Z') where

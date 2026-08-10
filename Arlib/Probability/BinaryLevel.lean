@@ -48,7 +48,7 @@ Everything is `sorry`-free.
 -/
 import Arlib.Probability.ProdPushforward
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
@@ -363,4 +363,4 @@ theorem levNat_ge_succ_event (K : ℕ) (i : ι) {j : ℕ} (hj : j < K) :
   simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and]
   exact le_succ_levNat_iff (fun l => g (i, l)) hj
 
-end Arlib
+end Arlib.Probability

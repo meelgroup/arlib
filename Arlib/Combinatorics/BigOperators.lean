@@ -20,7 +20,7 @@ All are stated over generic types.  No `sorry`.
 import Arlib.Prelude
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
-namespace Arlib
+namespace Arlib.Combinatorics
 
 open Finset
 
@@ -140,4 +140,4 @@ theorem zo_prod_eq_one_iff {α : Type*} (A : Finset α) (f : α → ℝ)
     · exact h1
   · exact fun hh => Finset.prod_eq_one hh
 
-end Arlib
+end Arlib.Combinatorics

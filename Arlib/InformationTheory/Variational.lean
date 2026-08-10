@@ -43,6 +43,7 @@ law and sums against a marginal is `dist_pair_marginal` / `dist_pair_marginal'`.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

@@ -33,7 +33,7 @@ import Arlib.Approximation.LewisWeights.Trace
 import Arlib.Approximation.LewisWeights.MNet
 import Arlib.Approximation.LewisWeights.Sampler
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix
 open Finset
@@ -180,4 +180,4 @@ theorem sampledWPS_lipschitz [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w
   rw [abs_sub_le_iff]
   constructor <;> linarith
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

@@ -6,6 +6,10 @@ Authors: Kuldeep S. Meel
 /-
 # Spectral independence implies a spectral gap for the Glauber dynamics
 
+Throughout, "the monograph" is Zongchen Chen, Daniel Štefankovič, Eric Vigoda,
+*Spectral Independence and Local-to-Global Techniques for Optimal Mixing of
+Markov Chains*, arXiv:2307.13826 (2023), cited below as [CSV23].
+
 This module exists to **join the chain**.  Every link of the monograph's central
 argument was proved separately elsewhere in this development, and each link was
 stated in the language of the module that proved it; nothing until now checked
@@ -69,11 +73,11 @@ negative for `γ_j < 1/2`, so `γ_j ≥ 1/2` is a hypothesis of
 (two free sites), where `γ_{n−2} = 2 − η`; `γ_{n−2} ≥ 1/2` is exactly
 `η ≤ 3/2`.  At `η = 3/2` the constant is `0` and the statement is vacuous.
 
-The monograph anticipates precisely this.  `source/main.tex` line 1987, and the
-closing remark of the proof of `lem:improved-technical` at line 2513, record that
-keeping the bound `1/(1 − γ_{k−1}/2)` in `missing-step` instead of weakening it to
+The monograph anticipates precisely this.  [CSV23] records it twice, the second
+time in the closing remark of the proof of `lem:improved-technical`: keeping the
+bound `1/(1 − γ_{k−1}/2)` in `missing-step` instead of weakening it to
 `2γ_{k−1}` replaces `2γ_j − 1` by **`γ_j/(2 − γ_j)`** throughout — the form of
-CLV21, Fact A.8 and Theorem A.9.  That factor is nonnegative for every
+[CLV21], Fact A.8 and Theorem A.9.  That factor is nonnegative for every
 `0 ≤ γ_j < 2`, so it carries *no* lower bound on `γ_j`.  With it the level factor
 here would be `γ_j/(2 − γ_j) = (d + 1 − η)/(d − 1 + η)`, positive for every
 `η ≥ 0` and `d ≥ 1`, and at the binding level `d = 1` it is `(2 − η)/η`; the

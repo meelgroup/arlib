@@ -3,6 +3,7 @@ Copyright (c) 2026 Kuldeep S. Meel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
+import Arlib.Communication.BooleanFunction
 import Arlib.KnowledgeCompilation.BranchingPrograms.DecisionDNNF
 import Arlib.KnowledgeCompilation.Circuits.DNFtoCircuit
 import Mathlib.Algebra.BigOperators.Fin
@@ -10,8 +11,8 @@ import Mathlib.Algebra.BigOperators.Fin
 /-!
 # Rooted tree decompositions and the running-intersection decomposability engine
 
-Towards Umut Oztok and Adnan Darwiche, *On compiling CNF into decision-DNNF*, CP 2014
-(`source/kc/darwiche/CP-45.pdf`).  Their Theorem 1 (§3.4) compiles a CNF of decision-width
+Towards Umut Oztok and Adnan Darwiche, *On compiling CNF into decision-DNNF*, CP 2014,
+LNCS 8656, pp. 42–57 ([OD14]).  Their Theorem 1 (§3.4) compiles a CNF of decision-width
 `w` over `n` variables into a decision-DNNF of size `O(n·2^w)`, and their Theorem 2 (§3.5)
 bounds decision-width by primal treewidth, so a CNF of primal treewidth `t` compiles to a
 decision-DNNF of size `O(n·2^t)` — the bound Razgon imports as the bundle
@@ -19,7 +20,7 @@ decision-DNNF of size `O(n·2^t)` — the bound Razgon imports as the bundle
 
 Their compiler (Algorithm 1, `c2d`) recurses over a *decision vtree*, a rooted binary tree
 of the variables; at a Shannon (leaf) node on variable `X` it emits a **decision node** on
-`X` (the only place an `∨`-node is created — `CP-45.pdf` p.6 — so every `∨`-node is a
+`X` (the only place an `∨`-node is created — [OD14] p.6 — so every `∨`-node is a
 decision node), and at an internal node it emits a **decomposable `∧`-node** joining the two
 subtrees, whose variable sets are disjoint by construction.  A **cache** keyed by the vtree
 node and the residual CNF (`cache(v, S)`) makes the object a DAG and is exactly what turns
@@ -64,6 +65,8 @@ Everything here is self-contained and unconditional; it introduces no circuit an
 
 namespace Arlib.KnowledgeCompilation
 
+open Arlib.Communication
+
 namespace DecisionDNNF
 
 variable {V : Type*}
@@ -88,7 +91,7 @@ subtree is `(c, parent c)`, this is precisely the standard "the nodes whose bag 
 are connected" (compare `TreeProduct.TreeDecomposition.bags_connected`), specialized to the
 separator the compilation uses.
 
-See the module docstring for the relationship to the compiler of `CP-45.pdf` Theorem 1. -/
+See the module docstring for the relationship to the compiler of [OD14] Theorem 1. -/
 structure RootedTD [DecidableEq V] (G : SimpleGraph V) where
   /-- The number of tree nodes. -/
   n : ℕ
@@ -229,20 +232,20 @@ theorem sibling_absent {D : RootedTD G} {i c c' : Fin D.n}
 
 The mathematical foundation of the Oztok–Darwiche DP.  Because every clause `(u ∨ v)` of
 `φ(G)` corresponds to an edge, and every edge lies inside some bag (`edge_bag`), the compiler
-assigns each clause to a tree node (`CP-45.pdf` §3.3: "each clause of `Δ` is assigned to the
+assigns each clause to a tree node ([OD14] §3.3: "each clause of `Δ` is assigned to the
 lowest vtree node that contains the clause variables").  Semantically this means `φ(G)` is
 satisfied exactly when *every bag's internal edges are covered* — the statement the tree DP
 verifies bag by bag. -/
 
 /-- **`S` is locally valid at node `i`**: it covers every edge with both endpoints in
-`bag i`.  These are the bag-assignments the DP enumerates at node `i` (`CP-45.pdf` §3.3). -/
+`bag i`.  These are the bag-assignments the DP enumerates at node `i` ([OD14] §3.3). -/
 def LocallyValid (D : RootedTD G) (i : Fin D.n) (S : Finset V) : Prop :=
   ∀ ⦃u v : V⦄, u ∈ D.bag i → v ∈ D.bag i → G.Adj u v → u ∈ S ∨ v ∈ S
 
 /-- **Every edge lives in a bag**, hence `φ(G)` reduces to per-bag coverage: `α` satisfies
 `φ(G)` exactly when, at every tree node `i`, every edge inside `bag i` is covered by `α`.
 
-This is `CP-45.pdf` §3.3's clause-to-node assignment read semantically, and it is the
+This is [OD14] §3.3's clause-to-node assignment read semantically, and it is the
 invariant the compiler's post-order recursion accumulates. -/
 theorem phi_iff_forall_bag [Fintype V] (D : RootedTD G) (α : V → Bool) :
     phi G α ↔ ∀ i : Fin D.n, ∀ ⦃u v : V⦄, u ∈ D.bag i → v ∈ D.bag i → G.Adj u v →
@@ -274,7 +277,7 @@ def WidthLe (D : RootedTD G) (w : ℕ) : Prop := ∀ i, (D.bag i).card ≤ w + 1
 
 /-- **The per-node block-size bound.**  When the width is at most `w`, node `i` has at most
 `2^(w+1)` bag-assignments (subsets of `bag i`).  This is the factor `2^w` in the `O(2^w·n)`
-node count of `CP-45.pdf` Theorem 1 (§3.4): the cache holds at most `2^{width}` entries per
+node count of [OD14] Theorem 1 (§3.4): the cache holds at most `2^{width}` entries per
 tree node, and there are `n` tree nodes. -/
 theorem card_powerset_bag_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) (i : Fin D.n) :
     (D.bag i).powerset.card ≤ 2 ^ (w + 1) := by
@@ -283,7 +286,7 @@ theorem card_powerset_bag_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) (i : 
 
 /-- **The total DP-node count is `≤ D.n · 2^{w+1}`.**  Summing the per-node block-size bound
 `card_powerset_bag_le` over the `D.n` tree nodes: at most `2^{width}` bag-assignments per
-node, `D.n` nodes.  This is the `2^w·n` factor of `CP-45.pdf` Theorem 1 (§3.4) made an
+node, `D.n` nodes.  This is the `2^w·n` factor of [OD14] Theorem 1 (§3.4) made an
 explicit closed form, and the arithmetic backbone of the shared-compilation size bound. -/
 theorem sum_pow_card_bag_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) :
     ∑ i : Fin D.n, 2 ^ (D.bag i).card ≤ D.n * 2 ^ (w + 1) := by
@@ -335,7 +338,7 @@ end RootedTD
 
 /-! ## The Shannon-node primitive: a decision tree for any function on finitely many variables
 
-The building block of Oztok–Darwiche's compiler (`CP-45.pdf` §3.3, Algorithm 1): a **decision
+The building block of Oztok–Darwiche's compiler ([OD14] §3.3, Algorithm 1): a **decision
 node** on a variable `x` is `(x ∧ hi) ∨ (¬x ∧ lo)` where `hi`, `lo` are the Shannon cofactors
 `f|x` and `f|¬x`.  Branching on the variables of a list `xs` one at a time yields a decision
 tree computing any Boolean function `f` that depends only on `xs`; it is a **decision-DNNF**
@@ -345,7 +348,7 @@ literal `x` off from a subtree that no longer mentions `x` (read-once, hence dec
 This is the honest, unconditional half of the compilation: `buildDecisionTree` compiles *any*
 `f` on `k` variables into a decision-DNNF of `≤ 6·2^k` nodes.  Applied to `φ(G)` over all of
 `V` it gives an unconditional decision-DNNF for `φ(G)` (`exists_decisionDNNF_phi`) — the naive
-`2^{|V|}` compiler.  The `2^{treewidth}·n` refinement of `CP-45.pdf` Theorem 1 additionally
+`2^{|V|}` compiler.  The `2^{treewidth}·n` refinement of [OD14] Theorem 1 additionally
 shares the cofactor DAGs across the tree decomposition using the running-intersection engine
 `RootedTD.sibling_absent`; that sharing is what this file's `RootedTD` layer is aimed at and is
 not carried out here. -/
@@ -354,11 +357,14 @@ namespace DecisionTree
 
 variable [DecidableEq V]
 
-/-- **`f` depends only on the variables `xs`**: it is unchanged by any reassignment that
-fixes `xs`.  The recursion invariant — a Shannon cofactor `f|x` depends on one fewer
-variable. -/
-def DependsOn (f : (V → Bool) → Bool) (xs : List V) : Prop :=
-  ∀ α β : V → Bool, (∀ x ∈ xs, α x = β x) → f α = f β
+/-! The recursion invariant of the Shannon expansion — "`f` is unchanged by any
+reassignment that fixes the variables in `xs`" — is
+`Arlib.Communication.DependsOnList`, which is the `List`-indexed reading of the
+`Finset`-indexed `DependsOn` that `Circuits/SDD.lean` and
+`Arlib/Communication/Measures.lean` use.  This file used to carry its own
+independent copy of the same notion; there is now one definition and one set of
+lemmas, and `dependsOnList_iff` converts between the `∀ x ∈ xs` shape a list
+recursion wants and the `Finset` shape everything else does. -/
 
 /-- The `¬x`/`x` Shannon cofactor `f|x=b`. -/
 def cofactor (f : (V → Bool) → Bool) (x : V) (b : Bool) : (V → Bool) → Bool :=
@@ -366,18 +372,17 @@ def cofactor (f : (V → Bool) → Bool) (x : V) (b : Bool) : (V → Bool) → B
 
 /-- A cofactor depends on one fewer variable. -/
 theorem dependsOn_cofactor {f : (V → Bool) → Bool} {x : V} {xs : List V}
-    (h : DependsOn f (x :: xs)) (b : Bool) : DependsOn (cofactor f x b) xs := by
-  intro α β hab
-  refine h _ _ fun y hy => ?_
+    (h : DependsOnList f (x :: xs)) (b : Bool) : DependsOnList (cofactor f x b) xs := by
+  refine dependsOnList_of_forall fun α β hab => h.apply _ _ fun y hy => ?_
   rcases List.mem_cons.mp hy with rfl | hy'
-  · simp
+  · simp [cofactor]
   · rcases eq_or_ne y x with rfl | hyx
-    · simp
-    · simp only [Function.update_of_ne hyx]; exact hab y hy'
+    · simp [cofactor]
+    · simp only [cofactor, Function.update_of_ne hyx]; exact hab y hy'
 
 /-- **The straight-line decision tree for `f` branching on `xs`.**  Extends the program `l`
 and returns the extended program together with the root position.  At `[]` the function is
-constant (`DependsOn f []`) and one `⊤`/`⊥` leaf suffices; at `x :: xs` it emits the two
+constant (`DependsOnList f []`) and one `⊤`/`⊥` leaf suffices; at `x :: xs` it emits the two
 cofactor subtrees followed by the two literals `x`, `¬x`, the two conjunctions `x ∧ hi`,
 `¬x ∧ lo`, and the decision `∨`. -/
 def dtCore (f : (V → Bool) → Bool) : List V → List (RawGate V) → List (RawGate V) × ℕ
@@ -409,7 +414,7 @@ theorem dtCore_cons (f : (V → Bool) → Bool) (x : V) (xs : List V) (l : List 
        (dtCore (cofactor f x true) xs (dtCore (cofactor f x false) xs l).1).1.length + 4) := rfl
 
 /-- **The program length is `l.length + 6·2^{|xs|} − 5`**, independent of `f`: a fully
-explicit node count (`CP-45.pdf` §3.4 counts `O(2^k)` nodes per Shannon subtree). -/
+explicit node count ([OD14] §3.4 counts `O(2^k)` nodes per Shannon subtree). -/
 theorem dtCore_length (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGate V)) :
     (dtCore f xs l).1.length = l.length + (6 * 2 ^ xs.length - 5) := by
   induction xs generalizing f l with
@@ -557,13 +562,13 @@ theorem dtCore_prefix_hi (f : (V → Bool) → Bool) (x : V) (xs : List V) (l L 
     (dtCore (cofactor f x true) xs (dtCore (cofactor f x false) xs l).1).1 <+: L :=
   (by rw [dtCore_cons]; exact List.prefix_append _ _ : _ <+: (dtCore f (x :: xs) l).1).trans hpre
 
-/-- **Correctness of the decision tree** (`CP-45.pdf` Lemma 1): the node at the root of the
+/-- **Correctness of the decision tree** ([OD14] Lemma 1): the node at the root of the
 block for `f` over `xs` computes `f α`, provided `f` depends only on `xs`.  Proved by
 induction on `xs`, unfolding the decision `∨` into `(x ∧ f|x) ∨ (¬x ∧ f|¬x)` and using
 `Function.update_eq_self` to collapse the taken cofactor back to `f`. -/
 theorem dtCore_valAt (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGate V))
     {L : List (RawGate V)} (hL : RawValid L) (rt : Fin L.length) (α : V → Bool)
-    (hf : DependsOn f xs) (hpre : (dtCore f xs l).1 <+: L)
+    (hf : DependsOnList f xs) (hpre : (dtCore f xs l).1 <+: L)
     (hroot : (dtCore f xs l).2 < L.length) :
     (hL.toNNF rt).valAt α ⟨(dtCore f xs l).2, hroot⟩ = f α := by
   induction xs generalizing f l with
@@ -571,10 +576,10 @@ theorem dtCore_valAt (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGat
     have hg : L[(dtCore f [] l).2]'hroot = RawGate.const (f (fun _ => false)) :=
       getElem_last_of_prefix hpre hroot
     rw [(hL.toNNF rt).valAt_const (hL.gate_eq_const rt hroot hg)]
-    exact (hf α (fun _ => false) (fun x hx => absurd hx (List.not_mem_nil x))).symm
+    exact (hf.apply α (fun _ => false) (fun x hx => absurd hx (List.not_mem_nil x))).symm
   | cons x xs ih =>
-    have hf0 : DependsOn (cofactor f x false) xs := dependsOn_cofactor hf false
-    have hf1 : DependsOn (cofactor f x true) xs := dependsOn_cofactor hf true
+    have hf0 : DependsOnList (cofactor f x false) xs := dependsOn_cofactor hf false
+    have hf1 : DependsOnList (cofactor f x true) xs := dependsOn_cofactor hf true
     have hpreLo := dtCore_prefix_lo f x xs l L hpre
     have hpreHi := dtCore_prefix_hi f x xs l L hpre
     have hbLo := dtCore_root_bounds (cofactor f x false) xs l
@@ -754,7 +759,7 @@ theorem dtCore_varsAt (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGa
     · exact Or.inl rfl
     · exact Or.inr (vlo hy)
 
-/-- **Every `∨`-node of the tree is a decision node** (`CP-45.pdf` p.6: `or` nodes are only
+/-- **Every `∨`-node of the tree is a decision node** ([OD14] p.6: `or` nodes are only
 created at Line 9 of Algorithm 1, and each is a Shannon decision).  Every disjunction is a top
 gate `(x ∧ hi) ∨ (¬x ∧ lo)` for some branch variable `x`. -/
 theorem dtCore_isDecisionNode (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGate V))
@@ -988,7 +993,7 @@ theorem dtCore_decomposableNode (f : (V → Bool) → Bool) (xs : List V) (l : L
 
 The Shannon cascade of `dtCore`, but with the leaves pointing at *already-emitted* nodes of
 the ambient DAG rather than fresh constants.  This is the gadget the treewidth-shared
-compiler of `CP-45.pdf` §3.4 needs: the inner disjunction `⋁_{τ} D[c,τ]` over the free
+compiler of [OD14] §3.4 needs: the inner disjunction `⋁_{τ} D[c,τ]` over the free
 variables `bag c \ bag i` is exactly a Shannon cascade whose leaves are the shared child
 nodes `D[c,τ]`.
 
@@ -1172,7 +1177,7 @@ theorem leaf_dep_update {leaf : (V → Bool) → ℕ} {x : V} {xs : List V}
     · simp only [Function.update_of_ne hyx]; exact h y hy'
 
 /-- **Correctness of the leaf-address cascade**: it evaluates to the value of the node the
-assignment `α` selects, `leaf α` (`CP-45.pdf` §3.3, the Shannon disjunction).  Mirrors
+assignment `α` selects, `leaf α` ([OD14] §3.3, the Shannon disjunction).  Mirrors
 `dtCore_valAt`, with the constant leaf replaced by the shared node. -/
 theorem dtCoreL_valAt (leaf : (V → Bool) → ℕ) (xs : List V) (l : List (RawGate V))
     {L : List (RawGate V)} (hL : RawValid L) (rt : Fin L.length) (α : V → Bool)
@@ -1646,7 +1651,7 @@ theorem dtCoreL_decomposableNode (leaf : (V → Bool) → ℕ) (xs : List V) (l 
 
 /-! ## The decomposable `∧`-chain over children
 
-The outer conjunction of the DP node `D[i,σ] = ⋀_c (cascade for child c)` (`CP-45.pdf` §3.3,
+The outer conjunction of the DP node `D[i,σ] = ⋀_c (cascade for child c)` ([OD14] §3.3,
 Line 13: `α ← (c2d(vˡ,S₁) ∧ c2d(vʳ,S₂))`).  `andChainCore` left-nests conjunctions over a
 list of already-emitted node addresses; an empty list is the constant `⊤`, a singleton is the
 address itself (no node), and each further address costs one `∧`-node.  Its decomposability
@@ -1891,13 +1896,13 @@ def buildDecisionTree (f : (V → Bool) → Bool) (xs : List V) : NNF V :=
   (dtCore_valid f xs [] rawValid_nil).toNNF ⟨(dtCore f xs []).2, (dtCore_root_bounds f xs []).2⟩
 
 /-- **Explicit size**: the decision tree for a function on `|xs|` variables has `6·2^{|xs|} − 5`
-nodes (`CP-45.pdf` §3.4's `O(2^k)`, made exact). -/
+nodes ([OD14] §3.4's `O(2^k)`, made exact). -/
 theorem buildDecisionTree_size (f : (V → Bool) → Bool) (xs : List V) :
     (buildDecisionTree f xs).size = 6 * 2 ^ xs.length - 5 := by
   rw [buildDecisionTree, RawValid.toNNF_size, dtCore_length]; simp
 
 /-- **The decision tree computes `f`**, provided `f` depends only on `xs`. -/
-theorem buildDecisionTree_eval (f : (V → Bool) → Bool) (xs : List V) (hf : DependsOn f xs)
+theorem buildDecisionTree_eval (f : (V → Bool) → Bool) (xs : List V) (hf : DependsOnList f xs)
     (α : V → Bool) : (buildDecisionTree f xs).eval α = f α :=
   dtCore_valAt f xs [] (dtCore_valid f xs [] rawValid_nil)
     ⟨(dtCore f xs []).2, (dtCore_root_bounds f xs []).2⟩ α hf List.prefix_rfl
@@ -1936,8 +1941,8 @@ variables (`buildDecisionTree` for `f = φ(G)`), yielding a decision-DNNF of at 
 `6·2^{|V|}` nodes.
 
 This is the *naive* compiler — the base case `S = ∅` of Oztok–Darwiche's Shannon recursion
-(`CP-45.pdf` Algorithm 1) with no caching — so its size is exponential in `|V|` rather than
-in the treewidth.  The `2^{treewidth}·|V|` refinement of `CP-45.pdf` Theorem 1 shares the
+([OD14] Algorithm 1) with no caching — so its size is exponential in `|V|` rather than
+in the treewidth.  The `2^{treewidth}·|V|` refinement of [OD14] Theorem 1 shares the
 Shannon cofactor DAGs across a tree decomposition using the running-intersection engine
 `RootedTD.sibling_absent`; assembling that sharing is the remaining work of the `RootedTD`
 layer above.  What is unconditional here is that the target language is nonempty on every
@@ -1948,10 +1953,10 @@ theorem exists_decisionDNNF_phi [Fintype V] [DecidableEq V] (G : SimpleGraph V)
       C.size ≤ 6 * 2 ^ Fintype.card V := by
   classical
   set f : (V → Bool) → Bool := fun α => decide (phi G α) with hf_def
-  have hdep : DecisionTree.DependsOn f Finset.univ.toList := by
-    intro α β h
-    have hαβ : α = β := funext fun x => h x (by simp)
-    rw [hαβ]
+  have hdep : DependsOnList f Finset.univ.toList :=
+    dependsOnList_of_forall fun α β h => by
+      have hαβ : α = β := funext fun x => h x (by simp)
+      rw [hαβ]
   have hnd : (Finset.univ.toList : List V).Nodup := Finset.nodup_toList _
   have hlen : (Finset.univ.toList : List V).length = Fintype.card V := by
     rw [Finset.length_toList, Finset.card_univ]
@@ -1962,7 +1967,7 @@ theorem exists_decisionDNNF_phi [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 
 /-! ## The treewidth-shared compiler: fold building blocks
 
-The shared DAG of `CP-45.pdf` §3.4: one node `D[i,σ]` per tree node `i` and bag-assignment
+The shared DAG of [OD14] §3.4: one node `D[i,σ]` per tree node `i` and bag-assignment
 `σ ⊆ bag i`, shared across the tree.  Processed in **decreasing index order** — since
 `parent_lt` makes every parent's index strictly smaller than its child's, a plain `List.foldl`
 over `(finRange D.n).reverse` visits every child before its parent, so the child addresses
@@ -2035,7 +2040,8 @@ theorem childCascade_length (D : RootedTD G) (table : Table D) (i : Fin D.n) (σ
   dtCoreL_length _ _ _
 
 /-- **`childLeaf` depends only on the free variables** `bag c \ bag i`: two assignments
-agreeing there select the same shared child node.  (`dtCoreL_valAt`'s `DependsOn` hypothesis.) -/
+agreeing there select the same shared child node.  (`dtCoreL_valAt`'s `DependsOnList`
+hypothesis.) -/
 theorem childLeaf_dep (D : RootedTD G) (table : Table D) (i c : Fin D.n) (σ : Finset V)
     (β γ : V → Bool) (h : ∀ x ∈ (D.bag c \ D.bag i).toList, β x = γ x) :
     childLeaf D table i c σ β = childLeaf D table i c σ γ := by
@@ -2245,7 +2251,7 @@ theorem anc_iff (D : RootedTD G) (i k : Fin D.n) :
     · exact Relation.ReflTransGen.refl
     · exact hck.tail ((mem_childrenList D i c).mp hc)
 
-/-- **The DP predicate** `CP-45.pdf` §3.3: `fDP D α i σ` holds iff `σ` is locally valid at `i`
+/-- **The DP predicate** [OD14] §3.3: `fDP D α i σ` holds iff `σ` is locally valid at `i`
 and, for every child `c`, the DP holds at `c` on the child assignment `τ` selected by `σ`
 (shared part) and `α` (free part) — exactly the recurrence the emitted block computes.
 Recursion terminates because children have strictly larger index (`childrenList_lt`). -/
@@ -2305,7 +2311,7 @@ theorem mergeAt_consistent (D : RootedTD G) (i c : Fin D.n) (σ : Finset V) (α 
     cases hw2 : α w <;> simp [hw2]
   · rw [if_neg hwi, if_neg hwc]
 
-/-- **The DP predicate is exactly subtree coverage** (`CP-45.pdf` §3.3, semantically): `fDP i σ`
+/-- **The DP predicate is exactly subtree coverage** ([OD14] §3.3, semantically): `fDP i σ`
 holds iff the merge of `σ` on `bag i` with `α` below covers every edge in the subtree at `i`.
 Proved by induction along the tree using `anc_iff` and `mergeAt_consistent`. -/
 theorem fDP_iff_covers (D : RootedTD G) (α : V → Bool) :
@@ -3114,7 +3120,7 @@ theorem compileNNF_eval_iff (D : RootedTD G) [Fintype V] (α : V → Bool) :
 /-- The circuit size is the length of the assembled program. -/
 theorem compileNNF_size (D : RootedTD G) : (compileNNF D).size = (Cfull D).length := rfl
 
-/-! ### Size accounting: `O(2^{2w}·n²)` (Milestone A; `CP-45.pdf` §3.5 Theorem 1 target `2^w·n`)
+/-! ### Size accounting: `O(2^{2w}·n²)` (Milestone A; [OD14] §3.5 Theorem 1 target `2^w·n`)
 
 Each Shannon cascade over a bag of width `≤ w+1` adds `≤ 5·2^{w+1}` nodes; a node emits one
 `∧`-block per bag-assignment (`≤ 2^{w+1}` of them), each with `≤ n` child cascades; there are
@@ -3296,7 +3302,7 @@ theorem Cfull_length_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) :
     mul_le_mul_right' hrn _
   omega
 
-/-- **Explicit size bound for the compiled decision-DNNF** (`CP-45.pdf` §3.5, Theorem 1;
+/-- **Explicit size bound for the compiled decision-DNNF** ([OD14] §3.5, Theorem 1;
 Milestone A's loose `O(2^{2w}·n²)` in place of the sharing-optimal `2^w·n`). -/
 theorem compileNNF_size_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) :
     (compileNNF D).size
@@ -4435,7 +4441,7 @@ theorem compileNNF_isDecisionDNNF (D : RootedTD G) [Fintype V] :
     IsDecisionDNNF (compileNNF D) :=
   ⟨compileNNF_isDecomposable D, compileNNF_isDecision D⟩
 
-/-- **Oztok–Darwiche, Theorem 1 (`CP-45.pdf` §3.4–3.5), constructive form.**  Every rooted tree
+/-- **Oztok–Darwiche, Theorem 1 ([OD14] §3.4–3.5), constructive form.**  Every rooted tree
 decomposition `D` of width `≤ w` yields a decision-DNNF for `φ(G)` of size
 `O(2^{2w}·n²)` (Milestone A's explicit loose bound; the sharing-optimal `2^w·n` is future work).
 The circuit is the treewidth-shared Shannon-cascade compilation `compileNNF D`. -/
@@ -6589,7 +6595,7 @@ theorem compileNNFSharp_size_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) :
   have e4 : D.n ≤ 2 ^ (w + 1) * D.n := Nat.le_mul_of_pos_left D.n (pow_pos (by norm_num) (w + 1))
   omega
 
-/-- **Oztok–Darwiche Theorem 1 (`CP-45.pdf` §3.4–3.5), the sharp `2^w·n` form.**  Every rooted
+/-- **Oztok–Darwiche Theorem 1 ([OD14] §3.4–3.5), the sharp `2^w·n` form.**  Every rooted
 tree decomposition `D` of width `≤ w` yields a decision-DNNF for `φ(G)` of size `≤ 15·2^{w+1}·n +
 1` — single-exponential in the width, linear in the number of tree nodes.  The circuit is the
 separator-shared Shannon-cascade compilation `compileNNFSharp D`. -/

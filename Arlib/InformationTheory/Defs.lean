@@ -40,6 +40,7 @@ single nonnegativity fact, `condI_nonneg`, proved in `Jensen.lean`.
 
 open scoped BigOperators
 open Finset
+open Arlib.Probability
 
 namespace Arlib
 namespace InformationTheory

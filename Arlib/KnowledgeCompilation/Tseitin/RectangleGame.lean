@@ -8,12 +8,12 @@ Authors: Kuldeep S. Meel
 
 Fourth module of `KnowledgeCompilation.Tseitin`, formalizing §4 of Florent
 de Colnet and Stefan Mengel, *Characterizing Tseitin-formulas with short regular
-resolution refutations* (`source/kc/decolnet/main.tex:494`).  This is the paper's
+resolution refutations* ([dCM21, §4]).  This is the paper's
 new lower-bound tool: an *adversarial* refinement of the Bova–Capelli–Mengel–
-Slivovsky rectangle-cover bound (`thm:bovaetal`, `:510`) in which the partition a
+Slivovsky rectangle-cover bound (`thm:bovaetal`) in which the partition a
 rectangle must respect is chosen by an adversary, not by the cover player.
 
-## The game (`source/kc/decolnet/main.tex:516`)
+## The game ([dCM21, §4])
 
 Two players build a set `𝓡` of combinatorial rectangles covering `S ⊆ sat(f)`,
 each rectangle *respecting* `f` (containing only models).  In each round the cover
@@ -35,34 +35,35 @@ partition that respects `f`, covers `a`, and leaves a set Charlotte can finish i
 `k` more rounds.  This mirrors `MatchingWidthGe`/`TreewidthLe`: a bound predicate,
 here an *upper* bound, avoiding a `sInf` over strategies.
 
-Rectangles and induced partitions reuse `Communication/Rectangle.lean`
+Rectangles and induced partitions reuse `Arlib/Communication/Rectangle.lean`
 (`VarPartition`, `Rectangle`, `mem_cross`) and `Circuits/VTree.lean`.
 
 ## Theorem 12 is imported
 
-**Theorem 12** (`thm:DNNFlower`, `:519`): a complete DNNF `D` computing `f`
+**Theorem 12** (`thm:DNNFlower`): a complete DNNF `D` computing `f`
 bounds the game, `aR(f, S) ≤ |D|`.  Its proof assigns each round a *distinct* gate
 of `D` via a proof-tree descent.  It is carried as the `structure`
-`DNNFtoRectangleGame`; the closely related, **fully proved** single-balanced-
+`Imported.DNNFtoRectangleGame`; the closely related, **fully proved** single-balanced-
 partition cover bound is `LowerBounds/RectangleLemma.lean`
 (`bestCov_le_size_of_respects`), which is the evidence that "circuit size bounds
 rectangle complexity" is real here — the adversarial-v-tree refinement is the extra
 content the import stands in for.
 -/
-import Arlib.KnowledgeCompilation.Communication.Rectangle
+import Arlib.Communication.Rectangle
 import Arlib.KnowledgeCompilation.Circuits.NNF
 import Arlib.KnowledgeCompilation.Circuits.VTree
 
 namespace Arlib.KnowledgeCompilation.Tseitin
 
 open Finset
+open Arlib.Communication
 
 variable {V : Type*} [DecidableEq V]
 
 /-! ## Partitions induced by a v-tree -/
 
 /-- **The variable partition induced by a subtree `s`** of a v-tree of `X`
-(`source/kc/decolnet/main.tex:516`, "a partition of `X` induced by `T`"): the
+([dCM21, §4], "a partition of `X` induced by `T`"): the
 left block is the variables below `s`, the right block the rest of `X`. -/
 def inducedPartition (X : Finset V) (s : VTree V) (hs : s.vars ⊆ X) : VarPartition X where
   X := s.vars
@@ -76,7 +77,7 @@ def inducedPartition (X : Finset V) (s : VTree V) (hs : s.vars ⊆ X) : VarParti
 /-! ## The game value -/
 
 /-- **The adversarial multi-partition rectangle complexity, as an upper-bound
-predicate** (`source/kc/decolnet/main.tex:516`).  `aRLe f X S k` holds when
+predicate** ([dCM21, §4]).  `aRLe f X S k` holds when
 Charlotte can finish covering `S ⊆ sat(f)` (variables `X = var(f)`) in at most `k`
 rounds, whatever partitions Adam chooses.
 
@@ -140,7 +141,7 @@ model with the rectangle "all assignments agreeing with `a` on `X`", which is a
 valid rectangle for *every* partition Adam might pick.  This is far weaker than
 Theorem 12's `|D|` (which can be exponentially smaller than `|S|`), but it is the
 non-adversarial-strength specialization that is provable without proof-tree
-machinery — see `DNNFtoRectangleGame`. -/
+machinery — see `Imported.DNNFtoRectangleGame`. -/
 
 /-- **The singleton rectangle at `a`**: the assignments agreeing with `a` on both
 sides of the partition — i.e. on all of the partitioned variables.  A valid
@@ -207,11 +208,13 @@ theorem aRLe_le_card (f : (V → Bool) → Bool) (X : Finset V) (hX : X.Nonempty
 
 /-! ## Theorem 12: a complete DNNF bounds the game — as an imported result -/
 
-/-- **`thm:DNNFlower`** (`source/kc/decolnet/main.tex:519`), as an
+namespace Imported
+
+/-- **`thm:DNNFlower`** ([dCM21]), as an
 imported hypothesis: a complete DNNF `D` computing `f` bounds the adversarial game
 by its size, `aR(f, S) ≤ |D|` for every `S ⊆ sat(f)`.
 
-The proof (`:522`) assigns each round a distinct gate of `D`: Charlotte plays a
+The proof ([dCM21, §4]) assigns each round a distinct gate of `D`: Charlotte plays a
 proof tree of `D` accepting `a`, reads a v-tree off it, and answers Adam's chosen
 subtree `v` with the rectangle `sat(D, v) = A × B`; because the chosen `a` is never
 again inside any previously used `sat(D, v)`, a fresh gate is used each round, so at
@@ -231,7 +234,7 @@ and both are load-bearing:
    *different* v-tree each round, read off a **proof tree of `D` accepting `a`** — and
    "read a v-tree off a proof tree of a decomposable-complete circuit, respected by
    that circuit on `a`" is proof-tree machinery the area deliberately does not build
-   (`ROADMAP.md` §4 records that proof trees were *not* needed — for the *structured*
+   (`docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §4 records that proof trees were *not* needed — for the *structured*
    rectangle lemma).
 2. **The round bound `≤ |D|` is a gate-charging argument, not a cover count.**  The
    descent covers *all* of `f⁻¹(true)` at once; the game plays adversarial *rounds*
@@ -239,8 +242,9 @@ and both are load-bearing:
    the fact that the chosen `a` never re-enters a used `sat(D, v)`.  That needs the
    `sat(D, v)` subcircuit-along-proof-trees semantics, again absent.
 
-So this is the deliberate `ROADMAP.md` §1.3 exception (cf. `Splitting.VertexSplitEquiv`,
-`Branchwidth.HarveyWood`): stated, never an `axiom`.
+So this is the deliberate `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 exception (cf.
+`Imported.VertexSplitEquiv` in `Splitting.lean`, `Imported.HarveyWood` in
+`Branchwidth.lean`): stated, never an `axiom`.
 
 **What is proved in reach** (this file): the game value is monotone in the budget
 (`aRLe_mono`) and the adversarial game always terminates in `≤ |S|` rounds
@@ -256,5 +260,7 @@ structure DNNFtoRectangleGame (V : Type*) [DecidableEq V] : Prop where
   bound : ∀ (C : NNF V) (f : (V → Bool) → Bool) (S : (V → Bool) → Prop),
     C.IsDNNF → C.Computes f → (∀ α, S α → f α = true) →
     aRLe f C.vars S C.size
+
+end Imported
 
 end Arlib.KnowledgeCompilation.Tseitin

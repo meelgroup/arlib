@@ -36,14 +36,14 @@ What remains to reach the *sampling* statement (as opposed to this Rademacher-
 process statement) is the classical `momentreduct` reduction — subtract an
 independent copy, random-sign-swap, and strip the `|·|` by the Ledoux–Talagrand
 `comparison` contraction — none of which uses matrix Chernoff; see
-`ROUTE_A_PLAN.md`.  This file proves the concentration core those steps feed.
+`docs/dev/LewisWeights-ROUTE_A_PLAN.md`.  This file proves the concentration core those steps feed.
 
 No `sorry`.
 -/
 import Arlib.Approximation.LewisWeights.SupBridge
 import Arlib.Approximation.LewisWeights.Probability
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators Matrix Classical
 open Finset Arlib
@@ -149,4 +149,4 @@ theorem process_uniform_tail_le_delta [Nonempty ι] (hL : IsLewis w a) (hw : ∀
       ≤ (Fintype.card ι : ℝ) * Real.exp (-(k : ℝ)) := by gcongr
     _ ≤ δ := hfin
 
-end Arlib.Approximation.Lewis
+end Arlib.Approximation.LewisWeights

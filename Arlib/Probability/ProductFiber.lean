@@ -96,7 +96,7 @@ positivity is used to obtain the factorization.
 Everything is proved from first principles with no `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset FinProb
@@ -597,4 +597,4 @@ theorem condPr_pull_le {S : Finset C.ι} (G : Event (C.block Sᶜ).toFinProb)
   C.condPr_le_of_blockPr_le (C.dependsOn_pull Sᶜ G) hF (by rwa [C.project_pull])
 
 end CoinSpace
-end Arlib
+end Arlib.Probability

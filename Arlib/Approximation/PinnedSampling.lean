@@ -9,6 +9,11 @@ import Arlib.Approximation.Pinned
 /-!
 # `thm:samplemain`'s assembly, with the constants surviving it
 
+`thm:samplemain` is the label the sampling theorem carries in [ACJR21]
+(Arenas–Croquevielle–Jayaram–Riveros; the full reference, and the reason
+statements of that work are cited by label rather than by page, are in
+`Arlib/Approximation/Sampling.lean`).
+
 `Approximation/Sampling.lean` turns a `PreprocessedSampler` into an `IsFPAUS`.
 Its running-time clause is `IsFPAUS.polytime`, an `∃ c d`, and the two numbers
 it quantifies away are *computed* in the proof: they are

@@ -8,12 +8,12 @@ Authors: Kuldeep S. Meel
 
 The smallest class in the hierarchy `SDD ⊆ d-SDNNF ⊆ d-DNNF ⊆ NNF`, and the
 class the paper's separation is ultimately *about*: `thm: sep`
-(`source/kc/arXiv.tex:465`) reads a lower bound for d-SDNNF as a lower bound for
+([VS24, §4.5]) reads a lower bound for d-SDNNF as a lower bound for
 SDD, and it can only do so through the containment proved at the end of this
 file.
 
 An SDD is a DNNF whose every `∨`-node realises an `X`-*decomposition* (`def:
-decomp`, `source/kc/arXiv.tex:244`) along a node of a v-tree: a family
+decomp`, [VS24, `def: decomp`]) along a node of a v-tree: a family
 `{(pᵢ, sᵢ)}` with `f = ⋁ᵢ pᵢ(X) ∧ sᵢ(Y)` in which the `pᵢ` are *mutually
 exclusive and exhaustive*.  That is a strengthening of determinism — the paper
 calls it strong determinism — and it is what makes SDDs closed under negation,
@@ -41,7 +41,7 @@ a function *of* `X` is one whose value is unchanged by moving a variable outside
 
 ## Fan-in two: the decomposition is a right-nested chain
 
-This is the part of `def: SDD` (`source/kc/arXiv.tex:254`) that the paper's
+This is the part of `def: SDD` ([VS24]) that the paper's
 footnote (line 268) calls cosmetic and that is not cosmetic here.  Every `∨` and
 `∧` in `Gate` is binary, so `⋁_{i=1}^n pᵢ ∧ sᵢ` cannot be a single node.  It
 appears instead as a right-nested chain
@@ -93,7 +93,7 @@ easiest thing in the definition to get backwards.
 
 ## Nodes, not subcircuits
 
-`ROADMAP.md` §1.2.  The paper's clause (3) quantifies over subcircuits `C(h)`;
+`docs/dev/KnowledgeCompilation-ROADMAP.md` §1.2.  The paper's clause (3) quantifies over subcircuits `C(h)`;
 here `IsSDDAt C i t` is a predicate on a *node* `i` of the circuit and a *node*
 `t` of the v-tree, recursive on `t`, and the paper's `C(h)` never appears.  An
 SDD is then `∃ T, T.WellFormed ∧ IsSDDAt C C.root T`.
@@ -110,17 +110,19 @@ containment can only hold because `Deterministic`, `Decomposable` and `Respects`
 (`Circuits/NNF`, `Circuits/VTree`) are themselves imposed on the nodes reachable
 from the source and not on every index of `Fin size`.  Were they imposed on
 every index the statement would be *false*: a circuit that is an SDD at its root
-may carry an unreachable nondeterministic `∨`-node.  This was `ROADMAP.md` gap
+may carry an unreachable nondeterministic `∨`-node.  This was `docs/dev/KnowledgeCompilation-ROADMAP.md` gap
 G1, now closed; the two halves `IsSDDAt.deterministicFrom` and
 `IsSDDAt.respectsFrom` are stated with `DeterministicFrom`/`RespectsFrom` at the
 node in hand, which at the root are `Deterministic`/`Respects` by definition.
 -/
-import Arlib.KnowledgeCompilation.Basic
+import Arlib.Communication.BooleanFunction
 import Arlib.KnowledgeCompilation.Circuits.VTree
 import Mathlib.Data.List.Infix
 import Mathlib.Tactic.FinCases
 
 namespace Arlib.KnowledgeCompilation
+
+open Arlib.Communication
 
 /-! ## `X`-decompositions -/
 
@@ -129,7 +131,7 @@ section XDecomp
 variable {V : Type*}
 
 /-- **An `X`-decomposition of `f`** (paper `def: decomp`,
-`source/kc/arXiv.tex:244`).  For disjoint variable sets `X`, `Y`, a family
+[VS24, `def: decomp`]).  For disjoint variable sets `X`, `Y`, a family
 `{(pᵢ, sᵢ)}` with `pᵢ` a function of `X`, `sᵢ` a function of `Y`, and
 `f = ⋁ᵢ pᵢ ∧ sᵢ`, such that the `pᵢ` partition the `X`-cube into nonempty
 pieces.
@@ -192,7 +194,7 @@ right-nested `∨`-chain
     ∨(∧(p₁,s₁), ∨(∧(p₂,s₂), … ∨(∧(p_{n-1},s_{n-1}), ∧(p_n,s_n))…))
 
 with `es = [(p₁,s₁), …, (p_n,s_n)]`.  This is the fan-in-two form of the
-unbounded disjunction in `def: SDD` clause (1) (`source/kc/arXiv.tex:254`); the
+unbounded disjunction in `def: SDD` clause (1) ([VS24]); the
 paper's footnote at line 268 declares the restriction cosmetic, and it is the
 one place where that is not true of a Lean transcription.
 
@@ -215,7 +217,7 @@ variable {C : NNF V} {i : Fin C.size} {es : List (Fin C.size × Fin C.size)}
 theorem ne_nil (h : C.IsChain i es) : es ≠ [] := by cases h <;> simp
 
 /-- **A chain computes the disjunction of its elements**, which is clause (1) of
-`def: SDD` (`source/kc/arXiv.tex:254`).  In this formalization that clause is a
+`def: SDD` ([VS24]).  In this formalization that clause is a
 *theorem*: the shape of the chain already forces the value, so `IsSDDAt` need
 carry only the `X`-decomposition side conditions. -/
 theorem valAt_iff (h : C.IsChain i es) (α : V → Bool) :
@@ -275,7 +277,7 @@ end IsChain
 variable [DecidableEq V]
 
 /-- A **terminal** of an SDD: the paper's first bullet of `def: SDD`
-(`source/kc/arXiv.tex:254`), a single node labelled `0`, `1`, `x` or `¬x` with
+([VS24, `def: SDD`]), a single node labelled `0`, `1`, `x` or `¬x` with
 `x` a variable of the v-tree it respects.
 
 The bullet is not restricted to leaf v-trees, and that generality is used: the
@@ -310,9 +312,9 @@ theorem IsTerminal.not_disj {C : NNF V} {i : Fin C.size} {t : VTree V}
   · rw [hp]; exact fun hh => Gate.noConfusion hh
 
 /-- **Node `i` of `C` is an SDD respecting the v-tree node `t`** (paper
-`def: SDD`, `source/kc/arXiv.tex:254`).
+`def: SDD`, [VS24]).
 
-Per `ROADMAP.md` §1.2 this is a predicate on a circuit node and a v-tree node,
+Per `docs/dev/KnowledgeCompilation-ROADMAP.md` §1.2 this is a predicate on a circuit node and a v-tree node,
 recursive on the v-tree; the paper's subcircuits `C(h)` are not rebuilt.  Either
 `i` is a terminal, or — at an internal v-tree node `node tl tr` — it is the top
 of a decomposition chain `es` (the fan-in-two form of `⋁ᵢ pᵢ ∧ sᵢ`, see
@@ -353,7 +355,7 @@ def IsSDDAt (C : NNF V) : Fin C.size → VTree V → Prop
             ¬(C.valAt α q.1 = true ∧ C.valAt α q'.1 = true)) ∧
           (∀ q ∈ es, ∃ α : V → Bool, C.valAt α q.1 = true) := Iff.rfl
 
-/-- **An SDD** (paper `def: SDD`, `source/kc/arXiv.tex:254`): a circuit whose
+/-- **An SDD** (paper `def: SDD`, [VS24]): a circuit whose
 source is an SDD respecting some well-formed v-tree.
 
 As with `IsSDNNF`, the existential over v-trees is genuine: it is data to supply
@@ -389,8 +391,8 @@ an assumption but a construction, and this is the theorem that carries it
 out — the check that `IsSDDAt` really says what `def: decomp` says. -/
 
 /-- **The elements of an SDD chain form an `X`-decomposition** (paper
-`def: decomp`, `source/kc/arXiv.tex:244`; `def: SDD` clause (1),
-`source/kc/arXiv.tex:254`), for `X = var(tl)` and `Y = var(tr)`. -/
+`def: decomp`, [VS24]; `def: SDD` clause (1),
+[VS24, `def: SDD`]), for `X = var(tl)` and `Y = var(tr)`. -/
 theorem xDecomposition_of_chain {C : NNF V} {i : Fin C.size} {tl tr : VTree V}
     {es : List (Fin C.size × Fin C.size)} (hdisj : Disjoint tl.vars tr.vars)
     (hch : C.IsChain i es)
@@ -437,7 +439,7 @@ theorem xDecomposition_of_chain {C : NNF V} {i : Fin C.size} {tl tr : VTree V}
 /-! ## SDD ⊆ d-SDNNF
 
 The containment that makes the paper's lower bounds for d-SDNNF say something
-about SDD (`thm: sep`, `source/kc/arXiv.tex:465`).  It is proved in two halves,
+about SDD (`thm: sep`, [VS24, §4.5]).  It is proved in two halves,
 each stated at the node in hand with the relativized `NNF.DeterministicFrom` and
 `NNF.RespectsFrom`; taken at `C.root` those *are* `Deterministic` and `Respects`,
 which is why the containment comes out unconditional. -/
@@ -521,10 +523,10 @@ theorem IsSDDAt.deterministicFrom {C : NNF V} :
           rw [List.pairwise_cons] at hpw'
           exact hpw'.1 q hq α ⟨hα.1, hq1⟩
 
-/-- **SDD ⊆ d-SDNNF** (paper, `source/kc/arXiv.tex:254`: "it follows from the
+/-- **SDD ⊆ d-SDNNF** ([VS24, `def: SDD`]: "it follows from the
 definition that SDDs are deterministic and structured").  This is the
 containment that lets the paper's lower bound for d-SDNNF be read as a lower
-bound for SDD in `thm: sep` (`source/kc/arXiv.tex:465`).
+bound for SDD in `thm: sep` ([VS24, §4.5]).
 
 There is no reachability hypothesis, and there had better not be: the paper
 states the containment outright.  It comes out that way because `Deterministic`
@@ -533,7 +535,7 @@ and `Respects` are imposed on the nodes reachable from the source — exactly wh
 `C.DeterministicFrom C.root` and `C.Respects T` is `C.RespectsFrom T C.root`.
 Under the older reading, over all indices of `Fin size`, the statement was false
 (an unreachable nondeterministic `∨`-node is a counterexample) and had to carry
-`∀ i, C.Reaches C.root i`; that was `ROADMAP.md` gap G1. -/
+`∀ i, C.Reaches C.root i`; that was `docs/dev/KnowledgeCompilation-ROADMAP.md` gap G1. -/
 theorem IsSDD.isdSDNNF {C : NNF V} (h : C.IsSDD) : C.IsdSDNNF := by
   obtain ⟨T, hT, hroot⟩ := h
   have hdet : C.Deterministic := IsSDDAt.deterministicFrom T C.root hroot
@@ -559,7 +561,7 @@ end NNF
 
 /-! ## A worked instance
 
-`ROADMAP.md` gap G4 records that nothing in this area yet checks the definitions
+`docs/dev/KnowledgeCompilation-ROADMAP.md` gap G4 records that nothing in this area yet checks the definitions
 against an object whose answer is known independently, and that this is exactly
 how an encoding error survives.  The definitions in this file are the ones most
 exposed to that risk — a chain assembled the wrong way round, or an inclusion
@@ -597,7 +599,7 @@ def xnorCircuit : NNF (Fin 2) where
   root := 6
 
 /-- `Fin xnorCircuit.size` is not syntactically `Fin (n+1)`, so numerals do not
-elaborate at that type without help; this is the friction `ROADMAP.md` gap G4
+elaborate at that type without help; this is the friction `docs/dev/KnowledgeCompilation-ROADMAP.md` gap G4
 warns about, in its mildest form. -/
 instance : NeZero xnorCircuit.size := ⟨by decide⟩
 
@@ -690,7 +692,7 @@ theorem xnor_reaches : ∀ i, xnorCircuit.Reaches xnorCircuit.root i := by
   exact h
 
 /-- **The containment, exercised end to end**: the XNOR circuit is an SDD, hence
-a d-SDNNF.  This is the validation `ROADMAP.md` gap G4 asks for, for the
+a d-SDNNF.  This is the validation `docs/dev/KnowledgeCompilation-ROADMAP.md` gap G4 asks for, for the
 definitions of this file. -/
 theorem xnor_isdSDNNF : xnorCircuit.IsdSDNNF := xnor_isSDD.isdSDNNF
 

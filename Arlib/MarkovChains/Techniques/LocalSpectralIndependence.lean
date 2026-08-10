@@ -7,12 +7,14 @@ Authors: Kuldeep S. Meel
 # Spectral independence gives a Poincaré inequality for the local walk
 
 This is the module the whole spin-system half of the development was built to
-reach.  The source monograph's `lem:QandPsi` (`source/main.tex` line 1488)
+reach.  The source monograph's `lem:QandPsi` — Zongchen Chen, Daniel Štefankovič,
+Eric Vigoda, *Spectral Independence and Local-to-Global Techniques for Optimal
+Mixing of Markov Chains*, arXiv:2307.13826 (2023), cited below as [CSV23] —
 relates the local walk `Q_τ` at a pinning to the influence matrix `Ψ_τ` by
 computing the *entire spectrum* of `Q_τ` from an `n`-partite block-matrix
 decomposition, and reads off `λ₂(Q_τ) = (λ_max(Ψ_τ) − 1)/(n − k − 1)`; the
 consequence actually consumed downstream is the Poincaré inequality
-`γ_k ≥ 1 − η/(n − k − 1)` recorded at line 1509.  Following `ROADMAP.md` §1.2 we
+`γ_k ≥ 1 − η/(n − k − 1)` recorded alongside it.  Following `docs/dev/MarkovChains-ROADMAP.md` §1.2 we
 never form `Ψ`, never mention a spectrum, and never invoke the block structure.
 Instead everything follows from a single **exact identity** between the
 Dirichlet form of the local walk and the covariance form of the conditional
@@ -645,8 +647,8 @@ theorem quadForm_Cov_freeRestrict_le (w : (V → S) → ℝ) (Λ : Finset V) (hw
 
 /-- **Spectral independence implies a Poincaré inequality for the local walk.**
 
-This is the eigenvalue-free form of `lem:QandPsi` (`source/main.tex` line 1488)
-and, more precisely, of the consequence stated at line 1509.  If the conditional
+This is the eigenvalue-free form of [CSV23, `lem:QandPsi`] and, more precisely,
+of the consequence stated alongside it.  If the conditional
 Gibbs measure `μ_η` is `η`-spectrally independent, then the local walk `Q_η` on
 one-site extensions of the pinning has Poincaré constant at least
 
@@ -713,8 +715,9 @@ theorem spectralGapAtLeast_pinLocalWalk_pinned (w : (V → S) → ℝ) (hw : ∀
 
 /-! ### The empty pinning
 
-The headline case, and the one the monograph proves in full (`main.tex` line
-1497: "we will prove the lemma for the case without a pinning").  Here `m = n`
+The headline case, and the one the monograph proves in full
+([CSV23, `lem:QandPsi`]: "we will prove the lemma for the case without a
+pinning").  Here `m = n`
 and the constant is `(n − η)/(n − 1)`.  Note that `pinLocalWalk` carries
 `|Λ| + 1 < n` in its data, so at `Λ = ∅` the hypothesis is `2 ≤ n`: with a
 single site there is no other site to walk to and the local walk does not

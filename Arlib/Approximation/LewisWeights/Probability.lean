@@ -8,7 +8,7 @@ Authors: Kuldeep S. Meel
 
 The `avg` functional of `Rademacher.lean` is the expectation under the uniform
 measure on sign patterns.  Here that measure is packaged as an honest
-`Arlib.FinProb` — the uniform mass `2^{-|ι|}` on `ι → Bool` — so that the general
+`Arlib.Probability.FinProb` — the uniform mass `2^{-|ι|}` on `ι → Bool` — so that the general
 tools of `Arlib.Probability` (Markov's inequality) apply.
 
 * `radProb ι` — the uniform Rademacher probability space.
@@ -23,29 +23,30 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.Concentration
 import Arlib.Probability.Markov
 
-namespace Arlib.Approximation.Lewis
+namespace Arlib.Approximation.LewisWeights
 
 open scoped BigOperators
 open Finset
 
 /-- The **uniform Rademacher probability space** on sign patterns `ι → Bool`:
 every one of the `2^{|ι|}` patterns has mass `2^{-|ι|}`. -/
-noncomputable def radProb (ι : Type) [Fintype ι] [DecidableEq ι] : Arlib.FinProb where
+noncomputable def radProb (ι : Type) [Fintype ι] [DecidableEq ι] : Arlib.Probability.FinProb where
   Ω := ι → Bool
-  mass := fun _ => ((2 : ℝ) ^ Fintype.card ι)⁻¹
-  mass_nonneg := fun _ => by positivity
-  mass_sum := by
-    have hcard : Fintype.card (ι → Bool) = 2 ^ Fintype.card ι := by
-      rw [Fintype.card_fun, Fintype.card_bool]
-    rw [Finset.sum_const, Finset.card_univ, hcard, nsmul_eq_mul]
-    push_cast
-    rw [mul_inv_cancel₀ (by positivity)]
+  μ :=
+    { p := fun _ => ((2 : ℝ) ^ Fintype.card ι)⁻¹
+      p_nonneg := fun _ => by positivity
+      p_sum := by
+        have hcard : Fintype.card (ι → Bool) = 2 ^ Fintype.card ι := by
+          rw [Fintype.card_fun, Fintype.card_bool]
+        rw [Finset.sum_const, Finset.card_univ, hcard, nsmul_eq_mul]
+        push_cast
+        rw [mul_inv_cancel₀ (by positivity)] }
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
 /-- The expectation on `radProb` is exactly the Rademacher average `avg`. -/
 theorem radProb_Ex (f : (ι → Bool) → ℝ) : (radProb ι).Ex f = avg f := by
-  simp only [Arlib.FinProb.Ex, radProb, avg, div_eq_mul_inv, Finset.sum_mul]
+  simp only [Arlib.Probability.FinProb.Ex, radProb, avg, div_eq_mul_inv, Finset.sum_mul]
   exact Finset.sum_congr rfl fun ω _ => by ring
 
 /-- **Markov's inequality**, read through `avg`. -/

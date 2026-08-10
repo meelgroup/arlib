@@ -35,10 +35,11 @@ no admissibility bookkeeping: the bridging lemmas `toProbSpace_Ex` and
 Everything here is proved with no `sorry`.
 -/
 
-namespace Arlib
+namespace Arlib.Probability
 
 open scoped BigOperators
 open Finset
+open Arlib.Combinatorics
 
 /-! ## Bridging the `FinProb` and `ProbSpace` expectations (both `rfl`) -/
 
@@ -152,4 +153,4 @@ theorem var_sum_le_ex_sum {ι : Type} [Fintype ι] [DecidableEq ι] {P : FinProb
   rw [hVar, hEx]
   linarith
 
-end Arlib
+end Arlib.Probability
