@@ -90,30 +90,6 @@ example (P : FinProb) (s : Finset ℕ) (E : ℕ → P.Event) :
 More examples are in `ArlibTest/` (five areas so far). They are compiled by
 CI, so unlike a README snippet they cannot silently rot.
 
-## Guarantees
-
-**No `sorry`.** Nothing in the library is admitted.
-
-**Axiom-clean.** No declaration under the `Arlib` namespace depends on any axiom
-beyond the three Mathlib itself is built on: `propext`, `Classical.choice` and
-`Quot.sound`. In particular nothing depends on `sorryAx`, so "no `sorry`" is
-checked semantically rather than by grepping for the token. The library defines
-no `axiom` of its own, and `native_decide` is not used.
-
-**CI enforces both.** Every push and pull request runs `lake build`, then the
-axiom audit `scripts/AxiomAudit.lean`, then the smoke tests in `ArlibTest/`. The
-audit walks everything reachable from every `Arlib.*` declaration and fails the
-build if it finds a disallowed axiom; on the most recent run it reported 8718
-declarations clean.
-
-**"Curated" means general.** What lives here is the reusable lemma, not the
-project capstone. The correctness proof of one particular algorithm belongs in
-the repository of that algorithm; the probability, communication-complexity,
-circuit and Markov chain machinery underneath it belongs here. Where an
-algorithm's analysis splits into a problem-independent half and a
-problem-specific half, only the first half is admitted — see `Arlib.Algorithms`,
-whose organising principle is exactly that split.
-
 ## Documentation
 
 - `ARCHITECTURE.md` — the structure of the library: every area, every directory,
