@@ -33,7 +33,7 @@ theorem measurable_merge (T : Finset C.ι) (ω : C.Ω) :
       (MeasurableEquiv.piEquivPiSubtypeProd C.Coin (· ∈ T)).symm
         (t, ((MeasurableEquiv.piEquivPiSubtypeProd C.Coin (· ∈ T)) ω).2)) :=
   (MeasurableEquiv.piEquivPiSubtypeProd C.Coin (· ∈ T)).symm.measurable.comp
-    (measurable_id.prod_mk measurable_const)
+    (measurable_id.prodMk measurable_const)
 
 /-- **Slice integrability.**  `t ↦ X (merge t ω)` is integrable over the `T`-marginal
 probability measure whenever `X` is bounded + measurable (`BddMeas`). -/
@@ -86,7 +86,7 @@ theorem BddMeas_condCE_forgetSet (T : Finset C.ι) {V : C.Ω → ℝ} (hV : C.Bd
   have hG : Measurable
       (fun rt : ((i : {i // ¬ (i ∈ T)}) → C.Coin i) × ((i : {i // i ∈ T}) → C.Coin i) =>
         V (E.symm (rt.2, rt.1))) :=
-    hmeas.comp (E.symm.measurable.comp (measurable_snd.prod_mk measurable_fst))
+    hmeas.comp (E.symm.measurable.comp (measurable_snd.prodMk measurable_fst))
   -- integrating out the first (`T`-block) coordinate is measurable in the rest.
   have hH : Measurable (fun r : (i : {i // ¬ (i ∈ T)}) → C.Coin i =>
       ∫ t, V (E.symm (t, r)) ∂νT) :=
@@ -105,7 +105,7 @@ theorem BddMeas_condCE_forgetSet (T : Finset C.ι) {V : C.Ω → ℝ} (hV : C.Bd
     calc |∫ t, V (E.symm (t, (E ω).2)) ∂νT|
         ≤ ∫ t, |V (E.symm (t, (E ω).2))| ∂νT := hstep1
       _ ≤ ∫ _t, C₀ ∂νT := integral_mono hint.abs (integrable_const C₀) (fun t => hbd _)
-      _ = C₀ := by rw [integral_const, measure_univ]; simp
+      _ = C₀ := by rw [integral_const, MeasureTheory.measureReal_def, measure_univ]; simp
 
 /-- **`condCE_forgetSet_congr_ae`** — the `T`-marginal respects a.e. equality:
 if `X =ᵐ Y` (both bounded-measurable), then `condCE_forgetSet T X =ᵐ condCE_forgetSet T Y`.
@@ -173,7 +173,7 @@ theorem condCE_forgetSet_smul (T : Finset C.ι) (c : ℝ) (X : C.Ω → ℝ) :
   funext ω
   show ∫ t, c * X _ ∂(Measure.pi fun i : {i // i ∈ T} => C.μ i)
       = c * ∫ t, X _ ∂(Measure.pi fun i : {i // i ∈ T} => C.μ i)
-  rw [integral_mul_left]
+  rw [integral_const_mul]
 
 /-- **Conditional expectation of `0`** is `0` (unconditional). -/
 theorem condCE_forgetSet_zero (T : Finset C.ι) :

@@ -75,7 +75,6 @@ theorem dist_cond [DecidableEq α] (P : FinProb) (G : Finset P.Ω) (hG : 0 < P.P
     dist (P.cond G hG) X a
       = P.Pr ((univ.filter fun ω => X ω = a) ∩ G) / P.Pr G := by
   rw [dist_eq_Pr (P.cond G hG) X a, Pr_cond]
-  rfl
 
 /-- **Conditioning inflates a law by at most `1 / Pr G`**, pointwise.  The law
 version of `FinProb.Pr_cond_le`; specialising `X` to an error indicator gives

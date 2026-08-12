@@ -192,7 +192,7 @@ theorem mixesWithin_of_log_le {μ : FinDist Ω} {P : FinChain Ω} (hrev : Revers
   calc (1 / 2) * c ^ t * Real.sqrt (1 / μ x - 1)
       ≤ (1 / 2) * (2 * ε * Real.sqrt m) * Real.sqrt (1 / μ x - 1) := by nlinarith
     _ ≤ (1 / 2) * (2 * ε * Real.sqrt m) * (Real.sqrt m)⁻¹ := by nlinarith
-    _ = ε := by field_simp; ring
+    _ = ε := by field_simp
 
 /-! ## The user-facing form: mixing from a Poincaré constant
 

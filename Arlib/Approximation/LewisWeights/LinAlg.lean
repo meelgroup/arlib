@@ -23,6 +23,7 @@ of that is proved here.
 
 No `sorry`.
 -/
+import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 
@@ -68,11 +69,11 @@ theorem posSemidef_sum (s : Finset ι) (f : ι → Matrix d d ℝ)
 positive semidefinite. -/
 theorem posSemidef_smul {M : Matrix d d ℝ} (hM : M.PosSemidef) {c : ℝ} (hc : 0 ≤ c) :
     (c • M).PosSemidef := by
-  refine ⟨?_, fun x => ?_⟩
+  refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg ?_ fun x => ?_
   · show (c • M)ᴴ = c • M
     rw [Matrix.conjTranspose_smul, star_trivial, hM.1]
-  · rw [Matrix.smul_mulVec_assoc, dotProduct_smul, smul_eq_mul]
-    exact mul_nonneg hc (hM.2 x)
+  · rw [Matrix.smul_mulVec, dotProduct_smul, smul_eq_mul]
+    exact mul_nonneg hc (hM.dotProduct_mulVec_nonneg x)
 
 /-! ## Rank-one outer products -/
 
@@ -103,7 +104,7 @@ theorem outer_isHermitian (v : d → ℝ) : (outer v).IsHermitian := by
 
 /-- A rank-one outer product is positive semidefinite. -/
 theorem outer_posSemidef (v : d → ℝ) : (outer v).PosSemidef := by
-  refine ⟨outer_isHermitian v, fun x => ?_⟩
+  refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg (outer_isHermitian v) fun x => ?_
   have hstar : (star x : d → ℝ) = x := by funext i; simp
   rw [hstar, dotProduct_outer_mulVec]
   exact mul_self_nonneg _
@@ -120,7 +121,7 @@ theorem gram_mulVec (w : ι → ℝ) (a : ι → d → ℝ) (x : d → ℝ) :
   unfold gram
   rw [sum_mulVec]
   refine Finset.sum_congr rfl fun i _ => ?_
-  rw [Matrix.smul_mulVec_assoc, outer_mulVec, smul_smul]
+  rw [Matrix.smul_mulVec, outer_mulVec, smul_smul]
 
 /-- The quadratic form of the Gram matrix:
 `y ⬝ᵥ gram w a *ᵥ x = ∑ᵢ wᵢ⁻¹ (aᵢ·y)(aᵢ·x)`. -/
@@ -157,7 +158,7 @@ noncomputable def lev (w : ι → ℝ) (a : ι → d → ℝ) (i : ι) : ℝ :=
 /-- `M (M⁻¹ aᵢ) = aᵢ` when `M = gram w a` is positive definite. -/
 theorem gram_mulVec_inv (hPD : (gram w a).PosDef) (i : ι) :
     gram w a *ᵥ ((gram w a)⁻¹ *ᵥ a i) = a i := by
-  have hdet : IsUnit (gram w a).det := isUnit_iff_ne_zero.mpr hPD.det_pos.ne'
+  have hdet : IsUnit (gram w a).det := isUnit_iff_ne_zero.mpr (Matrix.PosDef.det_pos hPD).ne'
   rw [Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hdet, Matrix.one_mulVec]
 
 /-- **The moment identity** at the heart of Cohen–Peng's `momBound`:

@@ -7,7 +7,7 @@ import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Fintype.Pi
-import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 /-!
 # Atoms of a finite family of sets

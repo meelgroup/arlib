@@ -230,8 +230,7 @@ noncomputable def maxJointFun (μ ν : FinDist Ω) (p : Ω × Ω) : ℝ :=
 
 theorem maxJointFun_nonneg (μ ν : FinDist Ω) (p : Ω × Ω) : 0 ≤ maxJointFun μ ν p := by
   refine add_nonneg ?_ (div_nonneg (mul_nonneg ?_ ?_) (tvDist_nonneg μ ν))
-  · dsimp only
-    split
+  · split
     · exact le_min (μ.coe_nonneg _) (ν.coe_nonneg _)
     · exact le_refl 0
   · simpa only [sub_nonneg] using min_le_left (μ p.1) (ν p.1)

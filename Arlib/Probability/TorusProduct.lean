@@ -6,7 +6,8 @@ Authors: Suguman Bansal
 /-
 # A countably-indexed family of independent uniform variables
 
-Mathlib v4.15 has **no** infinite product measure: `MeasureTheory.Measure.pi`
+When this module was written (Mathlib v4.15) there was **no** infinite product
+measure: `MeasureTheory.Measure.pi`
 requires `[Fintype ι]`, and there is no Kolmogorov extension theorem and no
 Ionescu–Tulcea construction — only `MeasureTheory.IsProjectiveLimit`, which
 gives *uniqueness* and no existence.  So the object every formalization of a
@@ -49,7 +50,7 @@ probability vector on a finite type.
 -/
 import Mathlib.MeasureTheory.Constructions.Cylinders
 import Mathlib.MeasureTheory.Constructions.Pi
-import Mathlib.MeasureTheory.Integral.Periodic
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.Probability.Independence.Basic
 import Mathlib.Probability.Notation
@@ -89,8 +90,8 @@ instance : (mu ι).IsAddLeftInvariant := by
 
 instance : IsProbabilityMeasure (mu ι) := by
   constructor
-  simpa [mu] using
-    MeasureTheory.Measure.addHaarMeasure_self (K₀ := (default : PositiveCompacts (Space ι)))
+  simpa [mu, show ((default : PositiveCompacts (Space ι)) : Set (Space ι)) = Set.univ from rfl]
+    using MeasureTheory.Measure.addHaarMeasure_self (K₀ := (default : PositiveCompacts (Space ι)))
 
 variable {ι}
 
@@ -130,7 +131,8 @@ theorem map_proj (F : Finset ι) :
   have h1 : ν univ = 1 := measure_univ
   rw [hsm] at h1
   have hc : ν.addHaarScalarFactor (Measure.pi (fun _ : F => (volume : Measure Circ))) = 1 := by
-    simpa [ENNReal.smul_def, ENNReal.coe_eq_one] using h1
+    rw [Measure.smul_apply, measure_univ] at h1
+    simpa using h1
   rw [hsm, hc, one_smul]
 
 /-- **Every coordinate is uniform on the circle.**  Same argument in dimension
@@ -154,16 +156,16 @@ theorem map_coord (i : ι) :
   have h1 : ν univ = 1 := measure_univ
   rw [hsm] at h1
   have hc : ν.addHaarScalarFactor (volume : Measure Circ) = 1 := by
-    simpa [ENNReal.smul_def, ENNReal.coe_eq_one] using h1
+    rw [Measure.smul_apply, measure_univ] at h1
+    simpa using h1
   rw [hsm, hc, one_smul]
 
 /-- **The coordinates are a mutually independent family**, indexed by the
 *countable* set `ι`.  This is the object this module exists for: `Measure.pi`
-stops at `Fintype`, and Mathlib v4.15 has no Kolmogorov extension, so there is no
+stops at `Fintype`, and there was no Kolmogorov extension, so there was no
 other route to a countably-indexed independent family. -/
 theorem iIndepFun_coord :
-    iIndepFun (fun _ : ι => (inferInstance : MeasurableSpace Circ))
-      (fun (i : ι) (ω : Space ι) => ω i) (mu ι) := by
+    iIndepFun (fun (i : ι) (ω : Space ι) => ω i) (mu ι) := by
   rw [iIndepFun_iff_measure_inter_preimage_eq_mul]
   intro F sets hsets
   classical
@@ -189,7 +191,7 @@ omit [Countable ι] in
 `cylinderEvents` of that block. -/
 theorem comap_proj_eq_cylinderEvents (F : Finset ι) :
     MeasurableSpace.comap (proj F : Space ι → F → Circ) MeasurableSpace.pi
-      = cylinderEvents (π := fun _ : ι => Circ) (↑F : Set ι) := by
+      = cylinderEvents (X := fun _ : ι => Circ) (↑F : Set ι) := by
   have h1 : MeasurableSpace.comap (proj F : Space ι → F → Circ) MeasurableSpace.pi
       = ⨆ i : F, MeasurableSpace.comap (fun ω : Space ι => ω (i : ι)) inferInstance := by
     rw [MeasurableSpace.pi, MeasurableSpace.comap_iSup]
@@ -203,8 +205,8 @@ theorem comap_proj_eq_cylinderEvents (F : Finset ι) :
 
 /-- **Disjoint coordinate blocks are independent.** -/
 theorem indep_cylinderEvents {F G : Finset ι} (h : Disjoint F G) :
-    Indep (cylinderEvents (π := fun _ : ι => Circ) (↑F : Set ι))
-      (cylinderEvents (π := fun _ : ι => Circ) (↑G : Set ι)) (mu ι) := by
+    Indep (cylinderEvents (X := fun _ : ι => Circ) (↑F : Set ι))
+      (cylinderEvents (X := fun _ : ι => Circ) (↑G : Set ι)) (mu ι) := by
   have h0 := (iIndepFun_coord (ι := ι)).indepFun_finset F G h (fun i => measurable_pi_apply i)
   have h1 : Indep (MeasurableSpace.comap (proj F : Space ι → F → Circ) MeasurableSpace.pi)
       (MeasurableSpace.comap (proj G : Space ι → G → Circ) MeasurableSpace.pi) (mu ι) := h0
@@ -260,14 +262,14 @@ variable (S A)
 time `t`.  Any quantity computed from the first `t` steps of a process driven by
 these draws is `ℱ t`-measurable; the draws made at time `t` are independent of
 `ℱ t` (`indep_filtration_step`). -/
-def filtration : MeasureTheory.Filtration ℕ (MeasurableSpace.pi (π := fun _ : Idx S A => Circ)) where
-  seq t := cylinderEvents (π := fun _ : Idx S A => Circ) (↑(past S A t) : Set (Idx S A))
+def filtration : MeasureTheory.Filtration ℕ (MeasurableSpace.pi (X := fun _ : Idx S A => Circ)) where
+  seq t := cylinderEvents (X := fun _ : Idx S A => Circ) (↑(past S A t) : Set (Idx S A))
   mono' _ _ h := cylinderEvents_mono (by exact_mod_cast Finset.coe_subset.2 (past_mono h))
   le' _ := cylinderEvents_le_pi
 
 @[simp] theorem filtration_apply (t : ℕ) :
     filtration S A t
-      = cylinderEvents (π := fun _ : Idx S A => Circ) (↑(past S A t) : Set (Idx S A)) := rfl
+      = cylinderEvents (X := fun _ : Idx S A => Circ) (↑(past S A t) : Set (Idx S A)) := rfl
 
 /-- **The draws at time `t` are independent of the past.**  This is the shape
 `MeasureTheory.condexp_indep_eq` consumes: with it, the conditional expectation
@@ -276,14 +278,14 @@ mean, and `MeasureTheory.condexp_stronglyMeasurable_mul` pulls any
 `ℱ t`-measurable factor out.  See `Arlib.Probability.CondExpFreshDraw`. -/
 theorem indep_filtration_step (t : ℕ) :
     Indep (filtration S A t)
-      (cylinderEvents (π := fun _ : Idx S A => Circ) (↑(now S A t) : Set (Idx S A)))
+      (cylinderEvents (X := fun _ : Idx S A => Circ) (↑(now S A t) : Set (Idx S A)))
       (mu (Idx S A)) :=
   indep_cylinderEvents (past_disjoint_now t)
 
 /-- Each individual draw's σ-algebra sits inside the time-`t` block. -/
 theorem comap_le_now (t : ℕ) (s : S) (a : A) :
     MeasurableSpace.comap (fun ω : Space (Idx S A) => ω (t, s, a)) inferInstance
-      ≤ cylinderEvents (π := fun _ : Idx S A => Circ) (↑(now S A t) : Set (Idx S A)) :=
+      ≤ cylinderEvents (X := fun _ : Idx S A => Circ) (↑(now S A t) : Set (Idx S A)) :=
   le_iSup₂ (f := fun (i : Idx S A) (_ : i ∈ (↑(now S A t) : Set (Idx S A))) =>
     MeasurableSpace.comap (fun ω : Space (Idx S A) => ω i) inferInstance)
     (t, s, a) (by simp [now, Finset.mem_product])

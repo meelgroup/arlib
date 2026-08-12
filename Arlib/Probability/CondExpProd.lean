@@ -41,7 +41,7 @@ namespace CoinSpace
 variable (C : CoinSpace)
 
 /-- The **sub-coin-space** on a block `U`: the product of exactly `U`'s coins. -/
-def subCoin (U : Finset C.ι) : CoinSpace where
+@[reducible] def subCoin (U : Finset C.ι) : CoinSpace where
   ι := {k : C.ι // k ∈ U}
   Coin := fun k => C.Coin k.1
   coinMass := fun k => C.coinMass k.1

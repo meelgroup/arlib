@@ -158,8 +158,10 @@ def Assign : {d : Type} → Region d → Type
   | _, @Region.leaf X _ _ _ _ => X
   | _, @Region.node _ _ _ _ _ l r _ => l.Assign × r.Assign
 
-/-- `Region.Assign` is finite, by the same recursion that defines it. -/
-def assignFintype : {d : Type} → (S : Region d) → Fintype S.Assign
+/-- `Region.Assign` is finite, by the same recursion that defines it.  It is
+`instance_reducible` because instance search must see through it to the
+instances the constructors store. -/
+@[instance_reducible] def assignFintype : {d : Type} → (S : Region d) → Fintype S.Assign
   | _, @Region.leaf _ instF _ _ _ => instF
   | _, @Region.node _ _ _ _ _ l r _ =>
       @instFintypeProd _ _ (assignFintype l) (assignFintype r)
@@ -246,7 +248,7 @@ theorem exactWPS_node {dl dr d : Type} [Fintype dl] [Fintype dr]
     (Region.node l r M).exactWPS = WPS.tensor M l.exactWPS r.exactWPS := by
   refine wps_ext ?_ ?_
   · funext x
-    simp
+    simp [Region.exactWPS, WPS.tensor]
   · funext x
     simp [Region.exactWPS, Region.Phi, WPS.tensor]
 
@@ -278,7 +280,9 @@ def Idx : {d : Type} → {S : Region d} → Reduction S → Type
   | _, _, @Reduction.node _ _ _ _ _ _ _ _ _ _ ι _ _ => ι
 
 /-- `Reduction.Idx` is finite: the leaf domain's own instance at a leaf, and the
-stored `Fintype` instance at an internal node. -/
+stored `Fintype` instance at an internal node.  It is `instance_reducible` for
+the same reason as `Region.assignFintype`. -/
+@[instance_reducible]
 def idxFintype : {d : Type} → {S : Region d} → (R : Reduction S) → Fintype R.Idx
   | _, _, @Reduction.leaf X instF instD _ Φ =>
       Region.assignFintype (@Region.leaf X instF instD _ Φ)
@@ -361,7 +365,13 @@ theorem embeds_exact {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1)
   induction R with
   | leaf X Φ =>
       intro instd hR
-      simpa using Embeds.refl (Region.leaf X Φ).exactWPS
+      -- The reduced set at a leaf *is* the exact set; only the (definitionally
+      -- equal) index type is spelled through `Reduction.Idx`, so the reflexive
+      -- embedding is transported pointwise.
+      have h : Embeds ((1 - δ) ^ (Region.leaf X Φ).steps) ((1 + δ) ^ (Region.leaf X Φ).steps)
+          (Region.leaf X Φ).exactWPS (Region.leaf X Φ).exactWPS := by
+        simpa using Embeds.refl (Region.leaf X Φ).exactWPS
+      exact fun y => h y
   | @node dl dr instl instr dd l r M Rl Rr ι instι C ihl ihr =>
       intro instd hR
       obtain ⟨hl, hr, hC⟩ := hR
@@ -426,10 +436,8 @@ Cartesian product of the children's sets, sparsifying nothing. -/
 def exactReduction : {d : Type} → (S : Region d) → Reduction S
   | _, @Region.leaf X instF instD _ Φ => @Reduction.leaf X instF instD _ Φ
   | _, @Region.node _ _ instl instr _ l r M =>
-      haveI := instl
-      haveI := instr
-      Reduction.node M (exactReduction l) (exactReduction r) _
-        (WPS.tensor M (exactReduction l).core (exactReduction r).core)
+      @Reduction.node _ _ instl instr _ _ _ M (exactReduction l) (exactReduction r) _ _
+        (@WPS.tensor _ _ _ _ _ instl instr M (exactReduction l).core (exactReduction r).core)
 
 /-- The trivial construction meets every tolerance, so `Sparsifies δ` is
 satisfiable for each `0 ≤ δ`. -/

@@ -168,7 +168,7 @@ theorem eq_of_leaf {i j : Fin C.size} (h : (C.gate i).children = []) (hr : C.Rea
     j = i := by
   cases hr with
   | refl => rfl
-  | step hc _ => rw [h] at hc; exact absurd hc (List.not_mem_nil _)
+  | step hc _ => rw [h] at hc; exact absurd hc (List.not_mem_nil)
 
 theorem of_conj_left {i j k : Fin C.size} (h : C.gate i = .conj j k) : C.Reaches i j :=
   child (by rw [h]; simp)

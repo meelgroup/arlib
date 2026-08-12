@@ -28,14 +28,17 @@ is a long docstring on what its subject is for and how it is organised.
 
 ## Getting started
 
-arlib is pinned to Lean `v4.15.0` and Mathlib `v4.15.0`. Your project must use
-the same toolchain, so its `lean-toolchain` must read:
+arlib is not tied to a fixed Lean release: it follows Mathlib, and the Mathlib
+revision it is currently built against is locked in `lake-manifest.json`. The one
+place a Lean version is written down is `lean-toolchain`, which must match
+Mathlib's own — today that is:
 
 ```
-leanprover/lean4:v4.15.0
+leanprover/lean4:v4.33.0
 ```
 
-Add arlib to your `lakefile.toml`:
+Your project must use the same toolchain, so copy that line into its
+`lean-toolchain`, then add arlib to your `lakefile.toml`:
 
 ```toml
 [[require]]
@@ -46,7 +49,8 @@ rev = "main"
 
 If you prefer SSH, use `git = "git@github.com:meelgroup/arlib.git"` instead.
 arlib requires Mathlib itself, so you do not need to require Mathlib separately
-unless you want to pin it yourself — if you do, pin it to `v4.15.0`.
+unless you want to pin it yourself — if you do, pin it to the revision in
+arlib's `lake-manifest.json`.
 
 Then:
 
@@ -79,7 +83,9 @@ noncomputable def fairCoin : FinProb where
       p_nonneg := by intro _; norm_num
       p_sum := by simp }
 
-example : fairCoin.Pr {true} = 1 / 2 := by simp [FinProb.Pr, FinProb.mass, fairCoin]
+example : fairCoin.Pr {true} = 1 / 2 := by
+  simp [FinProb.Pr, FinProb.mass, fairCoin]
+  rfl
 
 /-- The union bound over a `Finset` of events — the workhorse of the area. -/
 example (P : FinProb) (s : Finset ℕ) (E : ℕ → P.Event) :

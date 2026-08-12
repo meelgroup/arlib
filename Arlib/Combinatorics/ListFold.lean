@@ -26,7 +26,7 @@ theorem foldr_min_le_init : ∀ (l : List α) (a : α), l.foldr min a ≤ a
 
 /-- `List.foldr min a` is bounded above by every element of the list. -/
 theorem foldr_min_le_mem : ∀ (l : List α) (a : α) (v : α), v ∈ l → l.foldr min a ≤ v
-  | [], _, v, hv => absurd hv (List.not_mem_nil v)
+  | [], _, v, hv => absurd hv List.not_mem_nil
   | b :: s, a, v, hv => by
       rcases List.mem_cons.1 hv with rfl | hv'
       · exact min_le_left _ _
@@ -38,7 +38,7 @@ theorem le_foldr_min {m : α} :
     ∀ (l : List α) (a : α), m ≤ a → (∀ x ∈ l, m ≤ x) → m ≤ l.foldr min a
   | [], a, ha, _ => ha
   | b :: s, a, ha, h =>
-      le_min (h b (List.mem_cons_self b s))
+      le_min (h b (List.mem_cons_self))
         (le_foldr_min s a ha (fun x hx => h x (List.mem_cons_of_mem b hx)))
 
 /-- A strict lower bound for `List.foldr min a`: if `m < a` and `m < x` for every
@@ -48,7 +48,7 @@ theorem lt_foldr_min {m : α} :
     ∀ (l : List α) (a : α), m < a → (∀ x ∈ l, m < x) → m < l.foldr min a
   | [], a, ha, _ => ha
   | b :: s, a, ha, h =>
-      lt_min (h b (List.mem_cons_self b s))
+      lt_min (h b (List.mem_cons_self))
         (lt_foldr_min s a ha (fun x hx => h x (List.mem_cons_of_mem b hx)))
 
 end Arlib.Combinatorics

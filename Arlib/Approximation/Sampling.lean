@@ -6,7 +6,7 @@ Authors: Kuldeep S. Meel
 import Arlib.Approximation.Counting
 import Arlib.Approximation.MulError
 import Arlib.Approximation.Parsimonious
-import Mathlib.Algebra.GeomSum
+import Mathlib.Algebra.Ring.GeomSum
 
 /-!
 # From a defective sampler to an FPAUS
@@ -185,12 +185,12 @@ theorem outProb_bind {ι : Type*} (ρ : PMF ι) (F : ι → PMF (γ × ℕ)) (S 
 /-- A deterministic run whose output lands in `S` does so with probability `1`. -/
 theorem outProb_pure_of_mem {p : β × ℕ} {S : Set β} (hp : p.1 ∈ S) :
     outProb (PMF.pure p) S = 1 := by
-  simp [outProb, PMF.toOuterMeasure_pure_apply, Set.mem_setOf_eq, hp]
+  simp [outProb, PMF.toOuterMeasure_pure_apply, hp]
 
 /-- A deterministic run whose output misses `S` does so with probability `1`. -/
 theorem outProb_pure_of_not_mem {p : β × ℕ} {S : Set β} (hp : p.1 ∉ S) :
     outProb (PMF.pure p) S = 0 := by
-  simp [outProb, PMF.toOuterMeasure_pure_apply, Set.mem_setOf_eq, hp]
+  simp [outProb, PMF.toOuterMeasure_pure_apply, hp]
 
 end OutProbBasic
 
@@ -207,14 +207,16 @@ is that it perturbs every output probability by at most `δ₀`. -/
 condition; every lemma below carries `q ≤ 1` as a hypothesis and the clamp is
 then invisible. -/
 noncomputable def mixPMF {β : Type u} (q : ℝ≥0∞) (ν μ : PMF β) : PMF β :=
-  (PMF.bernoulli (min q 1) (min_le_right q 1)).bind fun b => cond b ν μ
+  (PMF.ofFintype (fun b => cond b (min q 1) (1 - min q 1))
+      (by rw [Fintype.sum_bool]; exact add_tsub_cancel_of_le (min_le_right q 1))).bind
+    fun b => cond b ν μ
 
 /-- The output law of a mixture is the mixture of the output laws. -/
 theorem outProb_mixPMF {β : Type u} {q : ℝ≥0∞} (hq : q ≤ 1) (ν μ : PMF (β × ℕ))
     (S : Set β) :
     outProb (mixPMF q ν μ) S = q * outProb ν S + (1 - q) * outProb μ S := by
   rw [mixPMF, outProb_bind, tsum_fintype, Fintype.sum_bool]
-  simp [PMF.bernoulli_apply, min_eq_left hq, add_comm]
+  simp [PMF.ofFintype_apply, min_eq_left hq]
 
 /-- The real-valued form of `outProb_mixPMF`, with a real mixing weight. -/
 theorem outProbR_mixPMF {β : Type u} {q : ℝ} (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
@@ -225,10 +227,10 @@ theorem outProbR_mixPMF {β : Type u} {q : ℝ} (hq0 : 0 ≤ q) (hq1 : q ≤ 1)
   have h1 : ENNReal.ofReal q * outProb ν S ≠ ⊤ :=
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top (outProb_ne_top ν S)
   have h2 : (1 - ENNReal.ofReal q) * outProb μ S ≠ ⊤ :=
-    ENNReal.mul_ne_top (by simp [ENNReal.sub_ne_top]) (outProb_ne_top μ S)
+    ENNReal.mul_ne_top (by simp) (outProb_ne_top μ S)
   rw [outProbR, outProb_mixPMF hq, ENNReal.toReal_add h1 h2, ENNReal.toReal_mul,
     ENNReal.toReal_mul, ENNReal.toReal_sub_of_le hq ENNReal.one_ne_top,
-    ENNReal.toReal_ofReal hq0, ENNReal.one_toReal]
+    ENNReal.toReal_ofReal hq0, ENNReal.toReal_one]
   rfl
 
 /-- Every run of a mixture is a run of one of the two branches — the fact that
@@ -291,7 +293,7 @@ theorem abs_outProbR_mixPMF_sub_le {β : Type u} {q : ℝ} (hq0 : 0 ≤ q) (hq1 
   have hsplit : q * outProbR ν S + (1 - q) * outProbR μ S - c
       = q * (outProbR ν S - outProbR μ S) + (outProbR μ S - c) := by ring
   rw [hsplit]
-  refine le_trans (abs_add _ _) (add_le_add_right ?_ _)
+  refine le_trans (abs_add_le _ _) (add_le_add_left ?_ _)
   rw [abs_mul, abs_of_nonneg hq0]
   have hd : |outProbR ν S - outProbR μ S| ≤ 1 := by
     rw [abs_le]; constructor <;> linarith
@@ -390,7 +392,7 @@ theorem outProb_retryPMF_succ (k : ℕ) (S : Set (Option Ω)) :
           (fun q : Option Ω × ℕ => (q.1, p.2 + q.2)) id (fun _ => rfl) S
         rwa [Set.preimage_id] at hm
       rw [if_neg (by simp [hp]), hmap,
-        Set.indicator_of_not_mem
+        Set.indicator_of_notMem
           (show p ∉ {q : Option Ω × ℕ | q.1 ∈ S \ {none}} from fun hc => hc.2 hp),
         Set.indicator_of_mem
           (show p ∈ {q : Option Ω × ℕ | q.1 ∈ ({none} : Set (Option Ω))} from hp)]
@@ -400,7 +402,7 @@ theorem outProb_retryPMF_succ (k : ℕ) (S : Set (Option Ω)) :
         | none => exact absurd hq hp
         | some _ => rfl
       rw [if_pos hsome,
-        Set.indicator_of_not_mem
+        Set.indicator_of_notMem
           (show p ∉ {q : Option Ω × ℕ | q.1 ∈ ({none} : Set (Option Ω))} from hp)]
       by_cases hs : p.1 ∈ S
       · rw [outProb_pure_of_mem hs,
@@ -408,7 +410,7 @@ theorem outProb_retryPMF_succ (k : ℕ) (S : Set (Option Ω)) :
             (show p ∈ {q : Option Ω × ℕ | q.1 ∈ S \ {none}} from ⟨hs, hp⟩)]
         ring
       · rw [outProb_pure_of_not_mem hs,
-          Set.indicator_of_not_mem
+          Set.indicator_of_notMem
             (show p ∉ {q : Option Ω × ℕ | q.1 ∈ S \ {none}} from fun hc => hs hc.1)]
         ring
   rw [tsum_congr key, ENNReal.tsum_add, ENNReal.tsum_mul_right,
@@ -438,7 +440,7 @@ theorem outProbR_retryPMF_none (k : ℕ) :
         outProb_pure_of_mem rfl
       simp [retryPMF, outProbR, h]
   | succ k ih =>
-      rw [outProbR_retryPMF_succ, ih, Set.diff_self, outProbR_empty]
+      rw [outProbR_retryPMF_succ, ih, Set.sdiff_self, outProbR_empty]
       ring
 
 /-- **Repetition does not bias the sample.**
@@ -456,7 +458,7 @@ the conclusion fails at `k = 0`, where the loop returns `none` with probability
 theorem outProbR_retryPMF {S : Set (Option Ω)} (hS : none ∉ S) (k : ℕ) :
     outProbR (retryPMF μ k) S
       = (∑ i ∈ Finset.range k, (outProbR μ {none}) ^ i) * outProbR μ S := by
-  have hSd : S \ {none} = S := Set.diff_singleton_eq_self hS
+  have hSd : S \ {none} = S := Set.sdiff_singleton_eq_self hS
   induction k with
   | zero =>
       have h : outProb (PMF.pure ((none : Option Ω), 0)) S = 0 :=
@@ -816,7 +818,7 @@ theorem abs_outProbR_retrySampler_sub_le (H : PreprocessedSampler size g good ba
   have hretry : |outProbR (retryPMF (good w (preTol g w δ)) (retryCount δ)) {some x}
       - 1 / (g w).card| ≤ δ / (2 * (g w).card) := by
     have heq : (1 - f ^ retryCount δ) / ((g w).card : ℝ) - 1 / (g w).card
-        = -(f ^ retryCount δ / (g w).card) := by field_simp
+        = -(f ^ retryCount δ / (g w).card) := by field_simp; ring
     rw [hgood, heq, abs_neg, abs_of_nonneg (div_nonneg hfk0 hcpos.le),
       div_le_div_iff₀ hcpos (by positivity)]
     calc f ^ retryCount δ * (2 * (g w).card)

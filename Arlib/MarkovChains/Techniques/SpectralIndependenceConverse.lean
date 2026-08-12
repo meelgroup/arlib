@@ -157,7 +157,6 @@ theorem numFree_mul_Var_pinDist (w : (V → S) → ℝ) (Λ : Finset V) (hw : �
   have hN : numFree Λ ≠ 0 := (numFree_pos hΛ).ne'
   rw [Var_eq_ip_sub_sq, ip_pinDist_self w Λ hw hZ hΛ f, Ex_pinDist w Λ hw hZ hΛ f]
   field_simp
-  ring
 
 /-- **`m·Var_π(f)` is at most the second moment of `f̃`.**  The deficit thrown
 away is the square of the mean; see `numFree_mul_Var_pinDist`. -/
@@ -222,7 +221,6 @@ theorem quadForm_Cov_freeRestrict_le_of_spectralGapAtLeast (w : (V → S) → �
   have heq : (numFree Λ / (numFree Λ - 1) * V₀ - γ * V₀) * (numFree Λ * (numFree Λ - 1))
       = (numFree Λ - γ * (numFree Λ - 1)) * (numFree Λ * V₀) := by
     field_simp
-    ring
   linarith [heq ▸ hmul]
 
 end Rearrange
@@ -261,7 +259,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V] {S : Type*} [Fintype S] [Decida
 theorem exists_not_mem_of_card_succ_lt {Λ : Finset V} (hΛ : Λ.card + 1 < Fintype.card V) :
     ∃ v : V, v ∉ Λ := by
   by_contra hc
-  push_neg at hc
+  push Not at hc
   have : (univ : Finset V) ⊆ Λ := fun v _ => hc v
   have hle : Fintype.card V ≤ Λ.card := by
     simpa [Finset.card_univ] using Finset.card_le_card this
@@ -329,7 +327,6 @@ theorem numFree_sub_mul_nonneg (w : (V → S) → ℝ) (Λ : Finset V) (hw : ∀
     have h1 : numFree Λ * (1 / numFree Λ - 1 / numFree Λ ^ 2)
         = (numFree Λ - 1) / numFree Λ := by
       field_simp
-      ring
     rw [h1]
     exact div_pos (by linarith) hN
   have hle := quadForm_Cov_freeRestrict_le_of_spectralGapAtLeast w Λ hw hZ hΛ hgap f
@@ -581,6 +578,7 @@ theorem spectralIndependence_iff_spectralGapAtLeast_pinLocalWalk (w : (V → S) 
     have hcon := spectralIndependence_of_spectralGapAtLeast_pinLocalWalk w hw Λ τ hZ hΛ h
     have harith : numFree Λ - (numFree Λ - η) / (numFree Λ - 1) * (numFree Λ - 1) = η := by
       field_simp
+      ring
     rwa [harith] at hcon
 
 /-! ### The unpinned case
@@ -604,7 +602,7 @@ theorem spectralIndependence_of_spectralGapAtLeast_pinLocalWalk_empty (w : (V �
       ((Fintype.card V : ℝ) - γ * ((Fintype.card V : ℝ) - 1)) := by
   have hid : freeRestrict (∅ : Finset V) = fun f : V × S → ℝ => f := by
     funext f p
-    rw [freeRestrict_apply, if_neg (Finset.not_mem_empty p.1)]
+    rw [freeRestrict_apply, if_neg (Finset.notMem_empty p.1)]
   refine (spectralIndependence_iff _).mpr fun a => ?_
   have h := quadForm_Cov_freeRestrict_le_marg_of_spectralGapAtLeast w ∅ hw hZ
     (by simpa using hn) hgap a
@@ -633,6 +631,7 @@ theorem spectralIndependence_iff_spectralGapAtLeast_pinLocalWalk_empty (w : (V �
         - ((Fintype.card V : ℝ) - η) / ((Fintype.card V : ℝ) - 1) * ((Fintype.card V : ℝ) - 1)
         = η := by
       field_simp
+      ring
     rwa [harith] at hcon
 
 end Converse

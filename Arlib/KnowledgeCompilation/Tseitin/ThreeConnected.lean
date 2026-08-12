@@ -15,7 +15,7 @@ charge `0`.
 ## Everything here is imported
 
 Every result in this section is an external theorem — Bodlaender–Koster on safe
-separators, and two lemmas turning on **topological minors**, which Mathlib v4.15
+separators, and two lemmas turning on **topological minors**, which Mathlib
 does not have.  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 each is a named `structure` in the
 area's `Imported` namespace:
 
@@ -38,7 +38,7 @@ area's `Imported` namespace:
 
 ## The topological-minor stand-in
 
-Mathlib v4.15 has no topological-minor relation (edge deletion, isolated-vertex
+Mathlib has no topological-minor relation (edge deletion, isolated-vertex
 deletion, subdivision elimination).  `IsTopMinor H G` is carried as the same-vertex
 *subgraph* relation `H ≤ G` — a reflexive under-approximation good enough to *state*
 the imports and to inhabit the reflexive cases; a faithful definition (allowing
@@ -79,7 +79,7 @@ def DNNFSizeLe (G : SimpleGraph V) [DecidableRel G.Adj] (c : V → ZMod 2) (s : 
 /-- **The topological-minor relation** ([dCM21, §6.1]), carried
 as the same-vertex subgraph relation `H ≤ G` — a reflexive under-approximation of
 the real notion (which allows subdivision elimination and vertex changes), absent
-from Mathlib v4.15.  See the module docstring. -/
+from Mathlib.  See the module docstring. -/
 def IsTopMinor (H G : SimpleGraph V) : Prop := H ≤ G
 
 omit [Fintype V] [DecidableEq V] in
@@ -105,7 +105,7 @@ structure ReduceToZeroCharge (c : V → ZMod 2) : Prop where
 provenance marker: every size-1 separator is safe for treewidth, and absent
 size-1 separators every size-2 separator is safe.  The "safe" predicate
 (`tw(G[S∪V']+clique(S)) = tw(G)`) needs a clique-augmented induced-subgraph
-treewidth construction absent from Mathlib v4.15; a faithful field is future work,
+treewidth construction absent from Mathlib; a faithful field is future work,
 so this carries only the marker `True`. -/
 structure SafeSeparators : Prop where
   /-- Opaque marker for the Bodlaender–Koster safe-separator theorem. -/

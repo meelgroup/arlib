@@ -191,7 +191,7 @@ theorem ecc_lt_card (K : FinChain Ω) (T : Finset Ω) [Nonempty Ω]
   -- Hence the chain stabilises before `|Ω|` steps.
   have hex : ∃ k, k < Fintype.card Ω ∧ R (k + 1) = R k := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have hg := grow (Fintype.card Ω) hcon
     have hle : (R (Fintype.card Ω)).card ≤ Fintype.card Ω := by
       simpa using Finset.card_le_univ (R (Fintype.card Ω))

@@ -617,7 +617,7 @@ Recorded because someone will otherwise re-derive them.
 
 - **The greedy independent set** (`:778`) — "there is an independent set `I ⊆ S` of size at
   least `|S|/(x+1)`" — is asserted with no proof. Proved here by strong induction. Mathlib
-  v4.15 has no usable `Finset`-level independent-set API, so `TCover.IsIndep` is local.
+  Mathlib has no usable `Finset`-level independent-set API, so `TCover.IsIndep` is local.
 - **`mincase`'s "w.l.o.g." is false as written** (`:855`). The paper argues that the copies
   of `H` containing only one class all lie in `V₁`; a non-partitioned copy may lie entirely
   in `V₂`. The repair (`exists_rich_copy`): a copy homogeneous on the far side would already
@@ -703,7 +703,7 @@ to an appendix. Each closed an open end and each turned up something.
    `DecisionDNNFCompile` (`exists_decisionDNNF_of_rootedTD_sharp`, the sharp `2^w·n` bound).
    The generic `DecisionDNNF.OztokDarwiche` bundle over an arbitrary graph is *not* discharged
    — that would need a general tree-decomposition→`RootedTD` normalization plus an `O(|V|)`
-   node bound, and Mathlib (v4.15) has no treewidth API to build on. It is not needed: for the
+   node bound, and Mathlib has no treewidth API to build on. It is not needed: for the
    actual separating class,
    `OztokDarwicheBundle.decisionDNNF_robp_separation_quintic_unconditional` bypasses the
    bundle entirely by constructing the `RootedTD` explicitly, and is fully unconditional.
@@ -756,7 +756,7 @@ it, `⊤`-substitution computes something strictly above `∃Y. g`. This is writ
   knowledge-compilation area where a paper statement was neither proved nor carried as a
   hypothesis. Clause (i) is the *unbounded* lower bound `treewidth(Δⁿₐ) ≥ n` (the proof in
   fact gives `2n ≤ w`). It is the paper's `min-degree ≤ treewidth` argument on the primal
-  graph of `Δⁿₐ` (every vertex has degree `2n`). The two things Mathlib v4.15 lacks were
+  graph of `Δⁿₐ` (every vertex has degree `2n`). The two things Mathlib lacks were
   built from scratch: (1) a **finite-tree-leaf lemma** — the actual blocker, obtained via the
   *farthest-vertex* route (a subtree's most-distant vertex from a fixed base has a unique
   neighbour), needing neither a handshake/degree-sum count nor induced-subgraph subtypes; and

@@ -73,7 +73,7 @@ submartingale and `Mathlib`'s theorem applies. -/
 theorem ae_exists_tendsto_of_nonneg_supermartingale
     {Ω : Type*} {m0 : MeasurableSpace Ω} {μ : Measure Ω} [IsProbabilityMeasure μ]
     {ℱ : Filtration ℕ m0} {Z : ℕ → Ω → ℝ}
-    (hadp : Adapted ℱ Z) (hint : ∀ n, Integrable (Z n) μ)
+    (hadp : StronglyAdapted ℱ Z) (hint : ∀ n, Integrable (Z n) μ)
     (hnn : ∀ n ω, 0 ≤ Z n ω)
     (hsup : ∀ n, μ[Z (n + 1)|ℱ n] ≤ᵐ[μ] Z n) :
     ∀ᵐ ω ∂μ, ∃ L : ℝ, Tendsto (fun n => Z n ω) atTop (𝓝 L) := by
@@ -88,15 +88,16 @@ theorem ae_exists_tendsto_of_nonneg_supermartingale
   have hbdd : ∀ n, eLpNorm ((-Z) n) 1 μ ≤ (R : ENNReal) := by
     intro n
     have h1 : eLpNorm ((-Z) n) 1 μ = ENNReal.ofReal (∫ ω, ‖Z n ω‖ ∂μ) := by
-      rw [eLpNorm_one_eq_lintegral_nnnorm]
-      simp only [Pi.neg_apply, nnnorm_neg]
-      exact (ofReal_integral_norm_eq_lintegral_nnnorm (hint n)).symm
+      rw [eLpNorm_one_eq_lintegral_enorm]
+      simp only [Pi.neg_apply, enorm_neg]
+      exact (ofReal_integral_norm_eq_lintegral_enorm (hint n)).symm
     have h2 : ∫ ω, ‖Z n ω‖ ∂μ = ∫ ω, Z n ω ∂μ := by
       refine integral_congr_ae ?_
       filter_upwards with ω
       exact Real.norm_of_nonneg (hnn n ω)
     have h3 : (R : ENNReal) = ENNReal.ofReal (∫ ω, Z 0 ω ∂μ) := by
       rw [hR, ENNReal.ofReal_eq_coe_nnreal hnonneg0]
+      rfl
     rw [h1, h2, h3]
     exact ENNReal.ofReal_le_ofReal (hI n)
   filter_upwards [hS.neg.ae_tendsto_limitProcess hbdd] with ω hω
@@ -113,8 +114,8 @@ theorem tendsto_zero_of_sa
     {Ω : Type*} {m0 : MeasurableSpace Ω} {μ : Measure Ω} [IsProbabilityMeasure μ]
     {ℱ : Filtration ℕ m0} {α err W : ℕ → Ω → ℝ} {B C : ℝ}
     (hB : 0 ≤ B)
-    (hW_adapted : Adapted ℱ W)
-    (hα_adapted : Adapted ℱ α)
+    (hW_adapted : StronglyAdapted ℱ W)
+    (hα_adapted : StronglyAdapted ℱ α)
     (hα01 : ∀ n ω, α n ω ∈ Set.Icc (0 : ℝ) 1)
     (herr_meas : ∀ n, StronglyMeasurable[ℱ (n + 1)] (err n))
     (hW_sq_int : ∀ n, Integrable (fun ω => (W n ω) ^ 2) μ)
@@ -200,17 +201,17 @@ theorem tendsto_zero_of_sa
       rw [heq]
       have h1 : (fun ω => f1 ω + (c * err n) ω + (d * e2) ω) = (f1 + c * err n) + d * e2 := rfl
       rw [h1]
-      refine (condexp_add (hf1i.add hf2i) hf3i).trans ?_
-      filter_upwards [condexp_add hf1i hf2i] with ω hω
+      refine (MeasureTheory.condExp_add (hf1i.add hf2i) hf3i _).trans ?_
+      filter_upwards [MeasureTheory.condExp_add hf1i hf2i (ℱ n)] with ω hω
       simp only [Pi.add_apply] at hω ⊢
       rw [hω]
     have h1 : μ[f1|ℱ n] =ᵐ[μ] f1 :=
       Filter.Eventually.of_forall
-        fun ω => congrFun (condexp_of_stronglyMeasurable (ℱ.le n) hf1m hf1i) ω
+        fun ω => congrFun (MeasureTheory.condExp_of_stronglyMeasurable (ℱ.le n) hf1m hf1i) ω
     have h2 : μ[c * err n|ℱ n] =ᵐ[μ] c * μ[err n|ℱ n] :=
-      condexp_stronglyMeasurable_mul hcm hf2i (herr_int n)
+      MeasureTheory.condExp_mul_of_stronglyMeasurable_left hcm hf2i (herr_int n)
     have h3 : μ[d * e2|ℱ n] =ᵐ[μ] d * μ[e2|ℱ n] :=
-      condexp_stronglyMeasurable_mul hdm hf3i he2i
+      MeasureTheory.condExp_mul_of_stronglyMeasurable_left hdm hf3i he2i
     filter_upwards [hce, h1, h2, h3, hmean n, hsecond n] with ω hω hω1 hω2 hω3 hωm hωs
     rw [hω, hω1, hω2, hω3]
     simp only [Pi.mul_apply, Pi.zero_apply] at hωm ⊢
@@ -230,10 +231,10 @@ theorem tendsto_zero_of_sa
     intro n g hgm hgi
     have hsum : (fun ω => (W (n + 1) ω) ^ 2 + g ω) = (fun ω => (W (n + 1) ω) ^ 2) + g := rfl
     rw [hsum]
-    have hadd := condexp_add (m := ℱ n) (hW_sq_int (n + 1)) hgi
+    have hadd := MeasureTheory.condExp_add (m := ℱ n) (hW_sq_int (n + 1)) hgi
     have hg : μ[g|ℱ n] =ᵐ[μ] g :=
       Filter.Eventually.of_forall
-        fun ω => congrFun (condexp_of_stronglyMeasurable (ℱ.le n) hgm hgi) ω
+        fun ω => congrFun (MeasureTheory.condExp_of_stronglyMeasurable (ℱ.le n) hgm hgi) ω
     filter_upwards [hadd, hg, hA n] with ω hω1 hω2 hω3
     simp only [Pi.add_apply] at hω1 ⊢
     rw [hω1, hω2]
@@ -249,12 +250,16 @@ theorem tendsto_zero_of_sa
   -- measurability of the pieces
   have hTm : ∀ n j, n ≤ j + 1 → StronglyMeasurable[ℱ j] (fun ω => ∑ k ∈ range n, (α k ω) ^ 2) := by
     intro n j hnj
+    rw [show (fun ω => ∑ k ∈ range n, (α k ω) ^ 2)
+        = ∑ k ∈ range n, (fun ω => (α k ω) ^ 2) from by funext ω; simp]
     refine Finset.stronglyMeasurable_sum _ fun k hk => ?_
     have hkj : k ≤ j := Nat.lt_succ_iff.mp (lt_of_lt_of_le (Finset.mem_range.mp hk) hnj)
     exact ((hα_adapted k).mono (ℱ.mono hkj)).pow 2
   have hSm : ∀ n j, n ≤ j + 1 → StronglyMeasurable[ℱ j] (Ssum n) := by
     intro n j hnj
     simp only [hSs]
+    rw [show (fun ω => ∑ k ∈ range n, α k ω * (W k ω) ^ 2)
+        = ∑ k ∈ range n, (fun ω => α k ω * (W k ω) ^ 2) from by funext ω; simp]
     refine Finset.stronglyMeasurable_sum _ fun k hk => ?_
     have hkj : k ≤ j := Nat.lt_succ_iff.mp (lt_of_lt_of_le (Finset.mem_range.mp hk) hnj)
     exact ((hα_adapted k).mono (ℱ.mono hkj)).mul (((hW_adapted k).mono (ℱ.mono hkj)).pow 2)
@@ -274,7 +279,7 @@ theorem tendsto_zero_of_sa
   have hSint : ∀ n, Integrable (Ssum n) μ := by
     intro n
     simp only [hSs]
-    refine integrable_finset_sum _ fun k _ => ?_
+    refine integrable_finsetSum _ fun k _ => ?_
     refine Integrable.mono' (hW_sq_int k)
       ((hαm k).mul ((hWm k).pow 2)).aestronglyMeasurable ?_
     filter_upwards with ω
@@ -294,10 +299,10 @@ theorem tendsto_zero_of_sa
     Finset.sum_nonneg fun k _ => mul_nonneg (hα01 k ω).1 (sq_nonneg _)
   have hMnn : ∀ n ω, 0 ≤ M n ω := fun n ω => add_nonneg (hUnn n ω) (hSnn n ω)
   -- adaptedness
-  have hUadp : Adapted ℱ U := by
+  have hUadp : StronglyAdapted ℱ U := by
     intro n
     exact ((hW_adapted n).pow 2).add (hgm n n (Nat.le_succ n))
-  have hMadp : Adapted ℱ M := by
+  have hMadp : StronglyAdapted ℱ M := by
     intro n
     exact (hUadp n).add (hSm n n (Nat.le_succ n))
   -- the supermartingale inequalities

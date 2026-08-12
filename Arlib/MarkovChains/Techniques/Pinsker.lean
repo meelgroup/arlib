@@ -213,7 +213,9 @@ private theorem hasDerivAt_phiAux {t : ℝ} (ht : t ≠ 0) :
     have h1 : HasDerivAt (fun s : ℝ => s * Real.log s) (1 * Real.log t + t * t⁻¹) t :=
       (hasDerivAt_id t).mul (Real.hasDerivAt_log ht)
     have h2 := (h1.sub (hasDerivAt_id t)).add_const 1
-    have he : 1 * Real.log t + t * t⁻¹ - 1 = Real.log t := by field_simp
+    have he : 1 * Real.log t + t * t⁻¹ - 1 = Real.log t := by
+      field_simp
+      ring
     rwa [he] at h2
   have hv : HasDerivAt (fun s : ℝ => s + 2) 1 t := (hasDerivAt_id t).add_const 2
   have hw : HasDerivAt (fun s : ℝ => 3 / 2 * (s - 1) ^ 2) (3 / 2 * (2 * (t - 1))) t := by
@@ -256,7 +258,7 @@ theorem three_div_two_mul_sq_le_mul_log {t : ℝ} (ht : 0 ≤ t) :
       simp only [hF, Real.log_one, mul_zero]
       norm_num
     have hkey : 0 ≤ F t := by
-      rcases le_or_lt 1 t with h1 | h1
+      rcases le_or_gt 1 t with h1 | h1
       · -- `F` is monotone on `[1, ∞)`
         have hmono : MonotoneOn F (Set.Ici 1) := by
           refine monotoneOn_of_deriv_nonneg (convex_Ici 1) ?_ ?_ ?_

@@ -52,7 +52,7 @@ what Proposition 4's count `2^{|E| − |V| + K}` is about.
   edge contributions cancel mod `2`.
 * **Proposition 3, the converse** (even charge ⟹ satisfiable) is carried as an
   inhabited bundle `Imported.TseitinSatisfiabilityConverse`, per `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md`
-  §1.3: it needs a spanning-forest construction that Mathlib v4.15's tree API does
+  §1.3: it needs a spanning-forest construction that Mathlib's tree API does
   not support cheaply.  `tseitin_satisfiable_iff` assembles the two directions into
   the paper's biconditional.
 * **Proposition 4, the model count**, is carried as an inhabited bundle
@@ -63,7 +63,9 @@ statements are known not to be vacuous.
 -/
 import Arlib.Prelude
 import Mathlib.Combinatorics.SimpleGraph.Finite
-import Mathlib.Combinatorics.SimpleGraph.Connectivity.WalkCounting
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Finite
+import Mathlib.Combinatorics.SimpleGraph.Walk.Counting
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Algebra.CharP.Two
 
@@ -158,7 +160,7 @@ theorem condChargePos_apply_of_ne (c : V → ZMod 2) {a b v : V}
 
 /-- **The vertices of a connected component**, as a `Finset`
 ([dCM21, `proposition:satisfiability_tseitin_formula`], the set `U`).  Equality of connected
-components carries no `Decidable` instance in Mathlib v4.15, so the filter is
+components carries no `Decidable` instance in Mathlib, so the filter is
 taken classically; this object appears only inside `Prop`s. -/
 noncomputable def componentFinset (K : G.ConnectedComponent) : Finset V := by
   classical exact Finset.univ.filter (fun v => G.connectedComponentMk v = K)
@@ -205,7 +207,7 @@ private theorem even_filter_card (K : G.ConnectedComponent)
       exact even_two
     · have hset : (componentFinset G K).filter (fun v => v ∈ s(a, b)) = ∅ := by
         ext v
-        simp only [Finset.mem_filter, mem_componentFinset, Finset.not_mem_empty,
+        simp only [Finset.mem_filter, mem_componentFinset, Finset.notMem_empty,
           iff_false, Sym2.mem_iff, not_and]
         rintro hv (rfl | rfl)
         · exact hK hv
@@ -253,7 +255,7 @@ theorem even_charge_of_sat {c : V → ZMod 2} (h : ∃ α, Formula G c α)
 The converse — even charge on every component implies satisfiability — needs a
 spanning-forest construction (choose a spanning tree of each component, set the
 non-tree edges to `0`, and propagate the tree edges from the leaves inward),
-which Mathlib v4.15 does not support cheaply.  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 it is
+which Mathlib does not support cheaply.  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 it is
 carried as a named bundle, threaded into the biconditional as a hypothesis, and
 inhabited below so the conditional is not vacuous. -/
 
@@ -335,7 +337,7 @@ def tseitinModelCount_empty :
         {α : Assignment (⊥ : SimpleGraph (Fin 0)) // Formula (⊥ : SimpleGraph (Fin 0)) 0 α}
         = 1 := by
       haveI hemp : IsEmpty {e // e ∈ (⊥ : SimpleGraph (Fin 0)).edgeSet} :=
-        ⟨fun e => Set.not_mem_empty e.1 (SimpleGraph.edgeSet_bot ▸ e.2)⟩
+        ⟨fun e => Set.notMem_empty e.1 (SimpleGraph.edgeSet_bot ▸ e.2)⟩
       haveI : Subsingleton (Assignment (⊥ : SimpleGraph (Fin 0))) :=
         ⟨fun f g => funext fun e => isEmptyElim e⟩
       rw [Nat.card_eq_one_iff_unique]

@@ -49,7 +49,7 @@ namespace MixedCoinSpace
 coin `i`.  Instances (`Fintype`/`DecidableEq` on the index, `MeasurableSpace` and
 `IsProbabilityMeasure` on each coin) resolve from `Fintype (Fin μ)`, `C.ιFin`,
 `C.ιDec`, `C.coinMS`, `C.isProb`. -/
-noncomputable def runProduct (C : MixedCoinSpace) (μ : ℕ) : MixedCoinSpace where
+@[reducible] noncomputable def runProduct (C : MixedCoinSpace) (μ : ℕ) : MixedCoinSpace where
   ι      := Fin μ × C.ι
   Coin   := fun p => C.Coin p.2
   coinMS := fun p => C.coinMS p.2

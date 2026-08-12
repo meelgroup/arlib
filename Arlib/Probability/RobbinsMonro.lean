@@ -45,7 +45,7 @@ import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Nat.Nth
-import Mathlib.Order.Filter.AtTopBot
+import Mathlib.Order.Filter.AtTopBot.Basic
 
 namespace Arlib.Probability.StochApprox
 
@@ -172,7 +172,7 @@ theorem tendsto_sum_atTop_of_strictMono_harmonic_le {α : ℕ → ℝ}
     Tendsto (fun n => ∑ t ∈ Finset.range n, α t) atTop atTop := by
   have hmono : Monotone fun n => ∑ t ∈ Finset.range n, α t := by
     intro m n hmn
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset.mpr hmn)
+    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset_range.mpr hmn)
       fun i _ _ => hα i
   refine tendsto_atTop_atTop_of_monotone hmono fun b => ?_
   obtain ⟨m, hm⟩ :=

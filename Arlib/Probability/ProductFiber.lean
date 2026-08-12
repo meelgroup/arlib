@@ -111,7 +111,7 @@ abbrev BlockΩ (T : Finset C.ι) : Type := ∀ i : {i // i ∈ T}, C.Coin i.1
 
 /-- The sub-product space on a block `T ⊆ ι` of coordinates: the coins indexed by
 `T`, each with its own law, and nothing else. -/
-def block (T : Finset C.ι) : CoinSpace where
+@[reducible] def block (T : Finset C.ι) : CoinSpace where
   ι := {i : C.ι // i ∈ T}
   ιFin := inferInstance
   ιDec := inferInstance
@@ -182,7 +182,6 @@ theorem mass_merge (S : Finset C.ι) (a : C.BlockΩ S) (b : C.BlockΩ Sᶜ) :
     have hi : i.1 ∉ S := Finset.mem_compl.1 i.2
     simp [merge, hi]
   rw [hS, hSc, Finset.prod_mul_prod_compl S (fun i => C.coinMass i (C.merge S a b i))]
-  rfl
 
 /-- The mass of a full outcome is the product of the masses of its two blocks. -/
 theorem mass_eq_block_mul (S : Finset C.ι) (ω : ∀ i, C.Coin i) :
@@ -396,9 +395,9 @@ theorem inter_fiber_eq_empty {T : Finset C.ι} {E : Event C.toFinProb}
     (hE : C.DependsOn E T) {a : C.BlockΩ T} (ha : a ∉ C.project T E) :
     E ∩ fiber (C.restrict T) a = ∅ := by
   ext ω
-  simp only [Finset.mem_inter, mem_fiber, Finset.not_mem_empty, iff_false, not_and]
+  simp only [Finset.mem_inter, Finset.notMem_empty, iff_false, not_and]
   intro hωE hωa
-  exact ha (by rw [← hωa]; exact (C.mem_project_restrict_iff hE ω).2 hωE)
+  exact ha (by rw [← mem_fiber.mp hωa]; exact (C.mem_project_restrict_iff hE ω).2 hωE)
 
 /-- **The law of a block-measurable event is computed on its own block.**  No
 positivity or support hypothesis: this is an identity of finite sums. -/

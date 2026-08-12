@@ -242,7 +242,7 @@ theorem eval_eq_of_isKDNF_zero {κ : Type} [DecidableEq κ] {χ : DNF κ}
   induction χ with
   | nil => rfl
   | cons t χ ih =>
-    have ht : t = (∅ : Finset (Lit κ)) := hempty t (List.mem_cons_self _ _)
+    have ht : t = (∅ : Finset (Lit κ)) := hempty t (List.mem_cons_self)
     subst ht
     simp only [DNF.eval, List.any_cons, Term.sat_empty, decide_true, Bool.true_or]
 
@@ -261,7 +261,8 @@ def unambiguousDNFHardCNF_witness (k : ℕ) :
     simp [Term.width]
   unambiguous := by
     intro α
-    simpa [projDNF, DNF.satTerms] using List.length_filter_le _ _
+    simpa [projDNF, DNF.satTerms] using
+      (List.length_filter_le (fun t => decide (Term.Sat t α)) [{(0, true)}])
   numTerms_le := le_refl 1
   hardCNF := by
     intro χ hχ

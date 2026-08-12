@@ -123,7 +123,6 @@ theorem hasSum_poissonPMF_mul_pow (mu c : ℝ) :
   have hn : (Nat.factorial n : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero n)
   rw [poissonPMF, mul_pow]
   field_simp
-  ring
 
 /-- `∑ₙ poissonPMF μ n · cⁿ = e^{μ(c-1)}`. -/
 theorem tsum_poissonPMF_mul_pow (mu c : ℝ) :
@@ -169,7 +168,6 @@ theorem hasSum_poissonPMF_mul_binomialPMF (mu r : ℝ) (k : ℕ) :
       have hrw : Real.exp (-mu) * (r * mu) ^ k / (Nat.factorial k) * Real.exp (mu * (1 - r))
           = (Real.exp (-mu) * Real.exp (mu * (1 - r))) * (r * mu) ^ k / (Nat.factorial k) := by
         field_simp
-        ring
       rw [hrw, hexp, poissonPMF]
     rw [hval] at h
     refine h.congr_fun ?_
@@ -186,7 +184,6 @@ theorem hasSum_poissonPMF_mul_binomialPMF (mu r : ℝ) (k : ℕ) :
     rw [poissonPMF, binomialPMF, hsub, ← hfact]
     simp only [mul_pow, pow_add]
     field_simp
-    ring
   -- Terms below `k` vanish.
   have hzero : ∀ i ∈ range k, poissonPMF mu i * binomialPMF i r k = 0 := by
     intro i hi
@@ -225,7 +222,7 @@ supported on `[0, A+B]`. -/
 theorem convPMF_of_lt {p q : ℕ → ℝ} {A B : ℕ} (hp : ∀ n, A < n → p n = 0)
     (hq : ∀ n, B < n → q n = 0) {k : ℕ} (hk : A + B < k) : convPMF p q k = 0 := by
   refine Finset.sum_eq_zero fun j hj => ?_
-  rcases lt_or_le A j with h | h
+  rcases lt_or_ge A j with h | h
   · rw [hp j h, zero_mul]
   · have hjk : j < k + 1 := Finset.mem_range.mp hj
     have hB : B < k - j := by omega
@@ -248,7 +245,7 @@ theorem tsum_convPMF {p q : ℕ → ℝ} {A B : ℕ}
     · have h2 : x.2 ∉ range (B + 1) := fun h => hx ⟨h1, h⟩
       rw [hq x.2 (by simpa [Nat.lt_succ_iff] using h2), mul_zero]
     · rw [hp x.1 (by simpa [Nat.lt_succ_iff] using h1), zero_mul]
-  rw [tsum_mul_tsum_eq_tsum_sum_range hpS hqS hpq]
+  rw [Summable.tsum_mul_tsum_eq_tsum_sum_range hpS hqS hpq]
   rfl
 
 /-- **The moment generating function of a convolution factorises.**  For mass
@@ -283,7 +280,7 @@ theorem tsum_convPMF_mul_exp {p q : ℕ → ℝ} {A B : ℕ}
       rw [hq x.2 (by simpa [Nat.lt_succ_iff] using h2), zero_mul, mul_zero]
     · simp only [hf]
       rw [hp x.1 (by simpa [Nat.lt_succ_iff] using h1), zero_mul, zero_mul]
-  rw [tsum_mul_tsum_eq_tsum_sum_range hfS hgS hfg]
+  rw [Summable.tsum_mul_tsum_eq_tsum_sum_range hfS hgS hfg]
   refine tsum_congr fun n => ?_
   rw [convPMF, Finset.sum_mul]
   refine Finset.sum_congr rfl fun j hj => ?_

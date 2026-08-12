@@ -7,17 +7,27 @@ statement shape, docstrings, and the standing design commitments — read
 
 ## Toolchain
 
-arlib is pinned to **Lean `v4.15.0`** and **Mathlib `v4.15.0`**:
+Nothing in the library is written against a particular Lean release: arlib
+follows Mathlib, and the version appears only in the build files, as a **lock**
+that keeps builds reproducible.
 
-| File | Pin |
+| File | Role |
 | --- | --- |
-| `lean-toolchain` | `leanprover/lean4:v4.15.0` |
-| `lakefile.toml` | `mathlib` at `rev = "v4.15.0"` |
+| `lean-toolchain` | the toolchain elan installs; must equal Mathlib's own |
+| `lakefile.toml` | `mathlib` at a `rev` — pinned so Lake does not re-resolve on every build |
+| `lake-manifest.json` | the resolved revision of Mathlib and its own dependencies |
 
-**The two move together.** A toolchain bump is also a Mathlib bump: edit
-`lean-toolchain`, edit the `rev` in `lakefile.toml` to the matching Mathlib tag,
-then `lake update` followed by `lake exe cache get`. Bumping one without the
-other produces a build that fails in confusing ways deep inside Mathlib.
+**They move together.** To upgrade (this is the whole procedure):
+
+```bash
+lake update mathlib
+cp .lake/packages/mathlib/lean-toolchain lean-toolchain   # follow Mathlib
+lake exe cache get
+lake build
+```
+
+Bumping the toolchain without the Mathlib revision (or vice versa) produces a
+build that fails in confusing ways deep inside Mathlib.
 
 Do not bump the toolchain as a side effect of an unrelated pull request. It
 touches every module and should be its own change.
@@ -32,7 +42,7 @@ lake build Arlib.MarkovChains.Techniques.Dirichlet   # or one module
 
 **Never compile Mathlib from source.** If `lake build` starts building
 `Mathlib.*` modules, stop it: you skipped `lake exe cache get`, or your
-`lean-toolchain` and the pinned Mathlib `rev` have drifted apart. Compiling
+`lean-toolchain` and the Mathlib revision in `lake-manifest.json` have drifted apart. Compiling
 Mathlib takes hours and is never the right answer.
 
 A build may pause waiting on a Lake lock if something else is compiling in the
@@ -99,7 +109,7 @@ To do the same locally, append to `lakefile.toml`:
 name = "doc-gen4"
 scope = "leanprover"
 git = "https://github.com/leanprover/doc-gen4"
-rev = "v4.15.0"
+rev = "v4.33.0"
 ```
 
 then:
@@ -171,7 +181,7 @@ the compiler rather than the kernel, which is a different trust story from the
 rest of the library, and it does not appear anywhere here.
 
 When a result you need is genuinely out of reach — it is somebody else's paper,
-or it needs Mathlib API that does not exist at v4.15 — you have two legitimate
+or it needs Mathlib API that does not exist in the pinned Mathlib — you have two legitimate
 moves:
 
 1. **A named hypothesis** on the theorems that consume it. The statement then

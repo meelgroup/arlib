@@ -77,12 +77,12 @@ def Ainf (A : ℕ → Finset P.Ω) (l : ℕ) : Finset P.Ω :=
 /-- Peeling off the top level: `⋂_{j < ℓ+1} A j = (⋂_{j < ℓ} A j) ∩ A ℓ`. -/
 theorem Ainf_succ (A : ℕ → Finset P.Ω) (l : ℕ) :
     Ainf A (l + 1) = Ainf A l ∩ A l := by
-  rw [Ainf, Ainf, Finset.range_succ, Finset.inf_insert, inf_comm, Finset.inf_eq_inter]
+  rw [Ainf, Ainf, Finset.range_add_one, Finset.inf_insert, inf_comm, Finset.inf_eq_inter]
 
 /-- `Ainf A` is antitone: a longer conjunction is a smaller event. -/
 theorem Ainf_mono (A : ℕ → Finset P.Ω) {l l' : ℕ} (h : l ≤ l') :
     Ainf A l' ⊆ Ainf A l :=
-  Finset.le_iff_subset.1 (Finset.inf_mono (f := A) (Finset.range_subset.2 h))
+  Finset.le_iff_subset.1 (Finset.inf_mono (f := A) (Finset.range_subset_range.2 h))
 
 /-- Each individual event of the conjunction contains it. -/
 theorem Ainf_subset (A : ℕ → Finset P.Ω) {j l : ℕ} (h : j < l) :
@@ -117,7 +117,7 @@ theorem compl_Ainf_subset (A E : ℕ → Finset P.Ω) (n : ℕ) :
   -- The conjunction fails, so some level `j ≤ n` has `ω ∉ A j`.
   have hex : ∃ j < n + 1, ω ∉ A j := by
     by_contra hc
-    push_neg at hc
+    push Not at hc
     exact hω.2 ((mem_Ainf_iff A (n + 1) ω).2 hc)
   -- Take the first such level `l`; minimality says `ω ∈ Ainf A l`.
   obtain ⟨l, hln, hAl, hmin⟩ := exists_first hex
@@ -131,7 +131,7 @@ theorem compl_Ainf_subset (A E : ℕ → Finset P.Ω) (n : ℕ) :
   · -- The coupling broke first; take the first level `l' < l` at which it did.
     have hex' : ∃ j < l, ω ∉ E j := by
       by_contra hc
-      push_neg at hc
+      push Not at hc
       exact hE ((mem_Ainf_iff E l ω).2 hc)
     obtain ⟨l', hl'l, hEl', hmin'⟩ := exists_first hex'
     have hωE : ω ∈ Ainf E l' :=

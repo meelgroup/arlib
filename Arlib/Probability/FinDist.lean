@@ -84,7 +84,7 @@ variable [DecidableEq Ω]
 /-- The **point mass** at `x`: the distribution putting all its mass on `x`. -/
 def dirac (x : Ω) : FinDist Ω where
   p y := if y = x then 1 else 0
-  p_nonneg y := by dsimp only; split <;> norm_num
+  p_nonneg y := by split <;> norm_num
   p_sum := by simp
 
 @[simp] theorem dirac_apply (x y : Ω) :
@@ -223,7 +223,7 @@ theorem act_comp [Fintype γ] (K : FinKernel α β) (L : FinKernel β γ) (f : �
 /-- The identity kernel. -/
 def id (Ω : Type*) [Fintype Ω] [DecidableEq Ω] : FinChain Ω where
   P x y := if x = y then 1 else 0
-  P_nonneg x y := by dsimp only; split <;> norm_num
+  P_nonneg x y := by split <;> norm_num
   P_sum x := by simp
 
 @[simp] theorem act_id {Ω : Type*} [Fintype Ω] [DecidableEq Ω] (f : Ω → ℝ) :

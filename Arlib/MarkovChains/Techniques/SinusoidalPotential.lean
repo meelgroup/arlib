@@ -82,7 +82,7 @@ operator exhibited by hand, not produced by a spectral theorem).  No `sorry`.
 -/
 import Arlib.MarkovChains.Techniques.PotentialDecay
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
-import Mathlib.Data.Real.Pi.Bounds
+import Mathlib.Analysis.Real.Pi.Bounds
 
 namespace Arlib.MarkovChains
 
@@ -144,7 +144,7 @@ theorem sinC_mul_le_pi_div_two (hn : 2 ≤ n) (hi : i ≤ n - 1) :
     mul_le_mul_of_nonneg_left hi' (sinC_pos hn).le
   have hne : ((n : ℝ) - 1) ≠ 0 := by linarith
   have : sinC n * ((n : ℝ) - 1) = Real.pi / 2 := by
-    rw [sinC]; field_simp; ring
+    rw [sinC]; field_simp
   linarith [hstep, this.le, this.ge]
 
 /-- The angles actually used are nonnegative. -/
@@ -226,7 +226,11 @@ theorem pi_div_le_sin_sinC (hn : 2 ≤ n) : Real.pi / (2 * n) ≤ Real.sin (sinC
       have hrhs : 0 ≤ sinC n * (4 - (n : ℝ) * (sinC n) ^ 2) / (4 * (n : ℝ)) :=
         div_nonneg (mul_nonneg hcpos.le (by linarith)) (by linarith)
       linarith [hid, hrhs]
-    linarith [Real.sin_gt_sub_cube hcpos hcle1]
+    -- Mathlib's `sin_gt_sub_cube` now gives the sharper `x - x^3/6 < sin x`;
+    -- the `/4` form used here follows since `x^3 ≥ 0`.
+    have hcube := Real.sin_gt_sub_cube hcpos
+    have hc3 : 0 ≤ (sinC n) ^ 3 := by positivity
+    linarith
   · have hn2 : n = 2 := by omega
     subst hn2
     have hc : sinC 2 = Real.pi / 2 := by norm_num [sinC]
@@ -279,7 +283,7 @@ theorem sinPot_second_diff (n : ℕ) (i : ℕ) (hi : 1 ≤ i) :
     ring
   simp only [sinPot]
   push_cast
-  rw [div_add_div_same, key]
+  rw [← add_div, key]
   ring
 
 /-! ## The one-step drift inequality
@@ -345,8 +349,10 @@ theorem two_sub_two_cos_lower {c : ℝ} (hc0 : 0 < c) (hc2 : c ≤ 2) :
     c ^ 2 * (1 - c ^ 2 / 16) ^ 2 ≤ 2 - 2 * Real.cos c := by
   have hhalf : (0 : ℝ) < c / 2 := by linarith
   have hhalf1 : c / 2 ≤ 1 := by linarith
-  have h1 : c / 2 - (c / 2) ^ 3 / 4 < Real.sin (c / 2) :=
-    Real.sin_gt_sub_cube hhalf hhalf1
+  have h1 : c / 2 - (c / 2) ^ 3 / 4 < Real.sin (c / 2) := by
+    have hcube := Real.sin_gt_sub_cube hhalf
+    have hc3 : 0 ≤ (c / 2) ^ 3 := by positivity
+    linarith
   have h2 : Real.sin (c / 2) ^ 2 = 1 / 2 - Real.cos c / 2 := by
     have h := Real.sin_sq_eq_half_sub (c / 2)
     rwa [show 2 * (c / 2) = c by ring] at h

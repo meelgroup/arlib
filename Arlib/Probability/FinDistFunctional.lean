@@ -386,7 +386,7 @@ theorem Ex_relDensity {ν μ : FinDist Ω} (hac : ∀ x, μ x = 0 → ν x = 0) 
     intro x
     by_cases hx : μ x = 0
     · simp [relDensity, hx, hac x hx]
-    · field_simp [relDensity, hx]
+    · simp only [relDensity, if_neg hx]; field_simp
   rw [Finset.sum_congr rfl fun x _ => this x, ν.sum_coe]
 
 /-- With absolute continuity, `D_{χ²}(ν ‖ μ) = ∑ x, (ν x - μ x)² / μ x`

@@ -190,7 +190,8 @@ private theorem sum_seqWeight_restrictLt_aux {S : Type} [Fintype S] [DecidableEq
         ih (fun (i : Fin q) hh t => k i.castSucc hh t) (fun i hh => hk i.castSucc hh) m hm' w]
       rfl
     · obtain rfl : m = q + 1 := le_antisymm hm hge
-      simp [restrictLt_self, seqWeightUpTo_self]
+      simp only [restrictLt_self, seqWeightUpTo_self]
+      exact Finset.sum_ite_eq' Finset.univ w (seqWeight k) |>.trans (if_pos (Finset.mem_univ w))
 
 /-- **The prefix marginal.** Under a normalised sequential kernel, the total weight of
 the cylinder of histories whose first `m` letters are `w` is exactly the product of the
@@ -375,7 +376,8 @@ private theorem sum_seqWeight_restrictLt_le_aux {S : Type} [Fintype S] [Decidabl
             ih _ (fun i hh t => hk0 i.castSucc hh t) (fun i hh => hk i.castSucc hh) m hm' w
         _ = seqWeightUpTo k hm w := rfl
     · obtain rfl : m = q + 1 := le_antisymm hm hge
-      simp [restrictLt_self, seqWeightUpTo_self]
+      simp only [restrictLt_self, seqWeightUpTo_self]
+      exact le_of_eq <| Finset.sum_ite_eq' Finset.univ w (seqWeight k) |>.trans (if_pos (Finset.mem_univ w))
 
 /-- **The prefix marginal, sub-probability form.** For a nonnegative kernel whose steps
 sum to at most one, the mass of a prefix cylinder is at most the product of the kernel

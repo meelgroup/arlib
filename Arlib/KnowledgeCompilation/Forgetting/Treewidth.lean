@@ -246,14 +246,14 @@ bounds `treewidth(Δⁿᵦ) ≤ treewidth(Δⁿₐ) + 2` (`jointreeWidthLe_delta
 *absolute* bound `treewidth(Δⁿᵦ) ≤ 2` — clause (ii) of `thm:bva` — is proved
 outright (`jointreeWidthLe_deltaB_two`) by building the paper's width-2 star
 jointree ([OD17, §A]), for which the star graph is shown to be a `SimpleGraph.IsTree`
-from scratch (`starGraph_isTree`), Mathlib v4.15.0 having no such instance.
+from scratch (`starGraph_isTree`), Mathlib having no such instance.
 
 **Clause (i), and where it lives.**  Clause (i) of `thm:bva` — that
 `treewidth(Δⁿₐ) ≥ n`, the *unbounded* side — is **proved**, in the companion module
 `Forgetting/MinDegree.lean` (`jointreeWidthLe_deltaA_ge`; the proof in fact
 establishes `2n ≤ w`).  It is the paper's argument ([OD17, §A]) verbatim: the general
 `min-degree ≤ treewidth` bound applied to the primal graph of `Δⁿₐ`, whose every
-vertex has degree `2n`.  The two pieces Mathlib v4.15.0 lacks — a
+vertex has degree `2n`.  The two pieces Mathlib lacks — a
 finite-tree-has-a-leaf lemma and the confined-vertex (leaf-pruning) form of
 `min-degree ≤ treewidth` for jointrees — are built there from scratch: a subtree's
 leaf is obtained by the *farthest-vertex* route (no handshake, no induced-subgraph
@@ -312,7 +312,7 @@ lemma deltaA_clause_inl (n : ℕ) {c : Finset (BVAVar n)} (hc : c ∈ deltaA n)
 
 /-- The two auxiliary variables are distinct, so `{A, B}` has cardinality `2`. -/
 @[simp] lemma card_auxAB (n : ℕ) : ({bvaA n, bvaB n} : Finset (BVAVar n)).card = 2 := by
-  rw [Finset.card_insert_of_not_mem (by simp [bvaA, bvaB]), Finset.card_singleton]
+  rw [Finset.card_insert_of_notMem (by simp [bvaA, bvaB]), Finset.card_singleton]
 
 /-- **`Δⁿᵦ` is a two-application BVA expansion of `Δⁿₐ`** ([OD17, §5.3.1]: "we added
 two auxiliary variables `A, B` … and reduced the number of clauses from `n³` to
@@ -362,7 +362,7 @@ theorem jointreeWidthLe_deltaB (n w : ℕ) (h : JointreeWidthLe (deltaA n) w) :
 /-! ## The star graph, and that it is a tree
 
 The width-2 jointree of `Δⁿᵦ` ([OD17, §A]) is a **star**:
-a central vertex carrying `{A, B}` with one leaf per clause.  Mathlib v4.15.0 has
+a central vertex carrying `{A, B}` with one leaf per clause.  Mathlib has
 no `SimpleGraph.IsTree` instance to reuse, so the star graph and its tree property
 are built here from scratch. -/
 
@@ -415,8 +415,8 @@ lemma star_walk_mem_edges {τ : Type*} {u v : Option τ} (p : (starGraph τ).Wal
 lemma star_isAcyclic {τ : Type*} : (starGraph τ).IsAcyclic := by
   rw [isAcyclic_iff_forall_adj_isBridge]
   intro a b hab
-  rw [isBridge_iff_adj_and_forall_walk_mem_edges]
-  refine ⟨hab, fun p => ?_⟩
+  rw [isBridge_iff_forall_walk_mem_edges]
+  intro p
   rcases (star_adj.mp hab).2 with rfl | rfl
   · have hb : b ≠ none := (star_adj.mp hab).1.symm
     exact star_walk_mem_edges p hb hb.symm
@@ -537,7 +537,7 @@ def jointreeDeltaB (n : ℕ) : Jointree (deltaB n) where
     · -- `x` is a base variable: `i = j`, so the trivial walk works
       have hne : x ≠ bvaA n ∧ x ≠ bvaB n := by
         simp only [clusterDeltaB_none, Finset.mem_insert, Finset.mem_singleton] at hxc
-        push_neg at hxc; exact hxc
+        push Not at hxc; exact hxc
       -- both `i` and `j` are the unique leaf carrying `x`
       have hleaf : ∀ o : Option (Fin 3 × Fin n), x ∈ clusterDeltaB n o →
           ∃ p : Fin 3 × Fin n, o = some p ∧ x = Sum.inl p := by

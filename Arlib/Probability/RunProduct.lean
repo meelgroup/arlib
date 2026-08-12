@@ -33,8 +33,11 @@ open Finset
 
 /-- **The `μ`-run product coin space.**  `μ` independent copies of `C`: coordinate
 `(j, i)` is base-coin `i` of run `j`, with the same marginal as `C`'s coin `i`.
-Instances resolve from `Fintype (Fin μ)`, `C.ιFin`/`C.ιDec`, `C.coinFin`/`C.coinDec`. -/
-def runProduct (C : CoinSpace) (μ : ℕ) : CoinSpace where
+Instances resolve from `Fintype (Fin μ)`, `C.ιFin`/`C.ιDec`, `C.coinFin`/`C.coinDec`.
+
+Marked `@[reducible]`, like `CoinSpace.toFinProb`, so that `(runProduct C μ).ι`
+and `Fin μ × C.ι` are interchangeable at `rw`/instance transparency. -/
+@[reducible] def runProduct (C : CoinSpace) (μ : ℕ) : CoinSpace where
   ι := Fin μ × C.ι
   Coin := fun p => C.Coin p.2
   coinMass := fun p c => C.coinMass p.2 c

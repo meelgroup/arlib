@@ -3,7 +3,7 @@ Copyright (c) 2026 Kuldeep S. Meel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Data.Real.Basic
@@ -67,7 +67,7 @@ theorem yao_minimax {I D : Type*} [Fintype I] [Fintype D]
     (hdet : ∀ d : D, c ≤ ∑ x, Γ x * cost x d) :
     ∃ x : I, c ≤ ∑ d, r d * cost x d := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   -- The `Γ`-average of the randomized costs is at least `c`, by exchanging sums
   -- and averaging the deterministic bounds `hdet` with the weights `r`.
   have key : c ≤ ∑ x, Γ x * (∑ d, r d * cost x d) := by

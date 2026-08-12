@@ -40,7 +40,7 @@ the one-sided bound `MajorityConcentration`, and it is used verbatim here:
 
 1. **Hoeffding's lemma** for a `{0,1}`-valued variable of mean `q`
    (`one_sub_add_mul_exp_le`): `1 - q + q e^s ≤ e^{sq + s²/8}` for all real `s`
-   and `q ∈ [0,1]`.  Mathlib v4.15.0 has no Hoeffding's lemma — `Probability.Moments`
+   and `q ∈ [0,1]`.  Mathlib had no Hoeffding's lemma when this was written — `Probability.Moments`
    is the single-file version, predating `Probability.Moments.SubGaussian` — so it
    is proved here, by the textbook route: the cumulant generating function
    `L(s) = log(1 - q + q e^s) - sq` has `L(0) = 0`, `L'(0) = 0` and
@@ -205,7 +205,7 @@ theorem bernGap_nonneg (hq0 : 0 ≤ q) (hq1 : q ≤ 1) (s : ℝ) : 0 ≤ bernGap
       rw [interior_Ici] at hx
       rw [hderiv x, ← bernSlack_zero q]
       exact monotone_bernSlack hq0 hq1 (le_of_lt hx)
-    have := hmono (Set.left_mem_Ici) (Set.mem_Ici.2 hs) hs
+    have := hmono (Set.mem_Ici.mpr le_rfl) (Set.mem_Ici.2 hs) hs
     rwa [bernGap_zero] at this
   · have hanti : AntitoneOn (bernGap q) (Set.Iic (0 : ℝ)) := by
       refine antitoneOn_of_deriv_nonpos (convex_Iic 0) hdiff.continuous.continuousOn
@@ -213,7 +213,7 @@ theorem bernGap_nonneg (hq0 : 0 ≤ q) (hq1 : q ≤ 1) (s : ℝ) : 0 ≤ bernGap
       rw [interior_Iic] at hx
       rw [hderiv x, ← bernSlack_zero q]
       exact monotone_bernSlack hq0 hq1 (le_of_lt hx)
-    have := hanti (Set.mem_Iic.2 hs) (Set.right_mem_Iic) hs
+    have := hanti (Set.mem_Iic.2 hs) (Set.mem_Iic.mpr le_rfl) hs
     rwa [bernGap_zero] at this
 
 /-- **Hoeffding's lemma for a `{0,1}`-valued variable.**
@@ -221,7 +221,7 @@ theorem bernGap_nonneg (hq0 : 0 ≤ q) (hq1 : q ≤ 1) (s : ℝ) : 0 ≤ bernGap
 For `q ∈ [0,1]` and every real `s`,
 `E[e^{sX}] = 1 - q + q e^s ≤ e^{s q + s²/8}`.
 
-Mathlib v4.15.0 does not have this (its `Probability.Moments` predates
+Mathlib did not have this when this was written (its `Probability.Moments` predated
 `Probability.Moments.SubGaussian`), so it is proved from `bernGap_nonneg`, which
 is the mean value theorem applied twice to the cumulant generating function. -/
 theorem one_sub_add_mul_exp_le (hq0 : 0 ≤ q) (hq1 : q ≤ 1) (s : ℝ) :
@@ -291,8 +291,8 @@ theorem outProb_le_pexp' (ν : PMF (β × ℕ)) (T : Set β) (g : β × ℕ → 
     by_cases hx0 : ν x = 0
     · simp [hx0]
     · exact le_mul_of_one_le_right' (hg x ((PMF.mem_support_iff ν x).2 hx0) hx)
-  · rw [Set.indicator_of_not_mem (show x ∉ {p : β × ℕ | p.1 ∈ T} from hx)]
-    exact zero_le _
+  · rw [Set.indicator_of_notMem (show x ∉ {p : β × ℕ | p.1 ∈ T} from hx)]
+    exact zero_le
 
 /-- **The union bound** for the output law, in `ℝ≥0∞`. -/
 theorem outProb_union_le (ν : PMF (β × ℕ)) (T₁ T₂ : Set β) :
@@ -308,9 +308,9 @@ theorem outProb_union_le (ν : PMF (β × ℕ)) (T₁ T₂ : Set β) :
     · rw [Set.indicator_of_mem (show x ∈ {p : β × ℕ | p.1 ∈ T₁ ∪ T₂} from Or.inr h2),
         Set.indicator_of_mem (show x ∈ {p : β × ℕ | p.1 ∈ T₂} from h2)]
       exact le_add_self
-    · rw [Set.indicator_of_not_mem
+    · rw [Set.indicator_of_notMem
         (show x ∉ {p : β × ℕ | p.1 ∈ T₁ ∪ T₂} from fun h => h.elim h1 h2)]
-      exact zero_le _
+      exact zero_le
 
 /-- **The union bound** for the output law, as reals — the form in which the two
 Hoeffding tails are added. -/
@@ -420,10 +420,12 @@ theorem outProbR_upper_tail {μ : PMF (ℝ × ℕ)} {q t : ℝ} {m : ℕ}
     refine outProb_le_mgf μ {(1:ℝ)} m (Real.exp_nonneg _) (Real.exp_nonneg _) _ ?_
     intro x hx hxT
     have hb := repeatPMF_support_bool hsupp m x hx
-    rw [Set.mem_setOf_eq, sum_eq_card_filter hb, lt_div_iff₀ hmR] at hxT
+    rw [Set.mem_ofPred_eq, sum_eq_card_filter hb, lt_div_iff₀ hmR] at hxT
     rw [← Real.exp_nat_mul, ← Real.exp_add]
     refine Real.one_le_exp ?_
-    nlinarith [ht, hxT]
+    have h4t : (0:ℝ) < 4 * t := by positivity
+    ring_nf at hxT ⊢
+    nlinarith [mul_lt_mul_of_pos_left hxT h4t, hxT, h4t]
   rw [outProb_compl_add_mul μ _ (Real.exp_nonneg _), hq,
     ← ENNReal.ofReal_pow (mgf_bernoulli_pos hq0 hq1 _).le,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _)] at hkey
@@ -457,10 +459,12 @@ theorem outProbR_lower_tail {μ : PMF (ℝ × ℕ)} {q t : ℝ} {m : ℕ}
     refine outProb_le_mgf μ {(1:ℝ)} m (Real.exp_nonneg _) (Real.exp_nonneg _) _ ?_
     intro x hx hxT
     have hb := repeatPMF_support_bool hsupp m x hx
-    rw [Set.mem_setOf_eq, sum_eq_card_filter hb, div_lt_iff₀ hmR] at hxT
+    rw [Set.mem_ofPred_eq, sum_eq_card_filter hb, div_lt_iff₀ hmR] at hxT
     rw [← Real.exp_nat_mul, ← Real.exp_add]
     refine Real.one_le_exp ?_
-    nlinarith [ht, hxT]
+    have h4t : (0:ℝ) < 4 * t := by positivity
+    ring_nf at hxT ⊢
+    nlinarith [mul_lt_mul_of_pos_left hxT h4t, hxT, h4t]
   rw [outProb_compl_add_mul μ _ (Real.exp_nonneg _), hq,
     ← ENNReal.ofReal_pow (mgf_bernoulli_pos hq0 hq1 _).le,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _)] at hkey
@@ -512,8 +516,8 @@ theorem hoeffdingBound : HoeffdingBound where
         intro v hv
         have hlt : t < |(∑ i, v i) / (m : ℝ) - q| := not_le.1 hv
         rcases lt_abs.1 hlt with h | h
-        · exact Or.inl (by simp only [Set.mem_setOf_eq]; linarith)
-        · exact Or.inr (by simp only [Set.mem_setOf_eq]; linarith)
+        · exact Or.inl (by simp only [Set.mem_ofPred_eq]; linarith)
+        · exact Or.inr (by simp only [Set.mem_ofPred_eq]; linarith)
       have hbad : outProbR (repeatPMF μ m)
           {v : Fin m → ℝ | |(∑ i, v i) / (m : ℝ) - q| ≤ t}ᶜ
           ≤ 2 * Real.exp (-2 * (m : ℝ) * t ^ 2) := by

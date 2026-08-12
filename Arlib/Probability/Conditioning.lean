@@ -25,6 +25,7 @@ they additionally need the law API of `Arlib.Probability.Law`.
 
 Everything is proved from first principles with no `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.Probability.CondExp
 import Arlib.Probability.FinProbProd
 
@@ -40,7 +41,7 @@ variable (P : FinProb)
 /-- The finite probability space obtained by conditioning `P` on an event `B`
 of positive probability: outcomes in `B` are reweighted by `1 / Pr B`, outcomes
 outside `B` get mass `0`. -/
-noncomputable def cond (B : Event P) (hB : 0 < P.Pr B) : FinProb where
+@[reducible] noncomputable def cond (B : Event P) (hB : 0 < P.Pr B) : FinProb where
   Ω := P.Ω
   μ :=
     { p := fun ω => if ω ∈ B then P.mass ω / P.Pr B else 0

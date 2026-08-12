@@ -281,7 +281,7 @@ structure HasCondExp (P : ProbSpace) where
   cond : Filt → (P.Ω → ℝ) → (P.Ω → ℝ)
   /-- Fixed-variable rule: `E[XY | F] = X · E[Y | F]` when `X` is fixed by `F`.
   Unconditional (pulling a `cond`-fixed factor out of the marginal is
-  `integral_mul_left`, needing no integrability). -/
+  `integral_const_mul`, needing no integrability). -/
   fixed_rule : ∀ (F : Filt) (X Y : P.Ω → ℝ), Fixed F X →
     cond F (fun ω => X ω * Y ω) = fun ω => X ω * cond F Y ω
   /-- Tower rule: `E[E[X | F₂] | F₁] = E[X | F₁]` when `F₁ ⊆ F₂`.  Guarded by
@@ -300,8 +300,12 @@ end ProbSpace
 
 /-- Every `FinProb` is a `ProbSpace` with `Adm := fun _ => True`: every function
 is admissible, so the guarded axioms reduce to the (unconditional over a finite
-sum) `FinProb` lemmas and every closure fact is trivial. -/
-noncomputable def FinProb.toProbSpace (P : FinProb) : ProbSpace where
+sum) `FinProb` lemmas and every closure fact is trivial.
+
+Marked `@[reducible]`: `P.toProbSpace.Ω` and `P.Ω` — and likewise `.Ex` — are
+equal by `rfl`, and downstream files freely mix the two spellings, so they must
+also agree at `simp`/`rw` transparency. -/
+@[reducible] noncomputable def FinProb.toProbSpace (P : FinProb) : ProbSpace where
   Ω := P.Ω
   Ex := P.Ex
   Adm := fun _ => True

@@ -86,7 +86,7 @@ theorem isKDNF_mapDNF {k : ℕ} {e : W → W'} {ψ : DNF W} (h : IsKDNF k ψ) :
 
 omit [DecidableEq W] in
 @[simp] theorem numTerms_mapDNF (e : W → W') (ψ : DNF W) :
-    (mapDNF e ψ).numTerms = ψ.numTerms := List.length_map _ _
+    (mapDNF e ψ).numTerms = ψ.numTerms := List.length_map _
 
 omit [DecidableEq W] in
 /-- **The renamed DNF computes the original function, precomposed.** -/
@@ -125,7 +125,7 @@ one — cannot bite. -/
 theorem unambiguous_mapDNF {e : W → W'} {ψ : DNF W}
     (h : Unambiguous ψ) : Unambiguous (mapDNF e ψ) := by
   intro γ
-  rw [satTerms_mapDNF, List.length_map]
+  rw [satTerms_mapDNF, List.length_map _]
   exact h _
 
 end DNF

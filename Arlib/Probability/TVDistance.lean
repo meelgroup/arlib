@@ -52,7 +52,7 @@ it.
   and the five metric facts listed above.
 * `summable_abs_sub`, `summable_max_sub`, `summable_ite_of_nonneg` — the three
   comparison-test lemmas that discharge the `Summable` side conditions of
-  `tsum_add`, `tsum_sub` and `tsum_le_tsum`.  Nearly every proof below opens by
+  `Summable.tsum_add`, `Summable.tsum_sub` and `Summable.tsum_le_tsum`.  Nearly every proof below opens by
   invoking one of them; they are public for the same reason.
 * `tvDist_eq_tsum_max` — the distance between genuine distributions is the total
   mass of the **positive part** of `p - q`, since `|a| = 2 max(a,0) - a` and the
@@ -173,9 +173,9 @@ theorem tvDist_triangle {p q r : ι → ℝ}
   have h3 : Summable (fun i => |p i - r i|) := summable_abs_sub hp hr hps.summable hrs.summable
   have hle : ∀ i, |p i - r i| ≤ |p i - q i| + |q i - r i| := fun i => by
     have hrw : p i - r i = (p i - q i) + (q i - r i) := by ring
-    rw [hrw]; exact abs_add _ _
-  have hstep := tsum_le_tsum hle h3 (h1.add h2)
-  rw [tsum_add h1 h2] at hstep
+    rw [hrw]; exact abs_add_le _ _
+  have hstep := Summable.tsum_le_tsum hle h3 (h1.add h2)
+  rw [Summable.tsum_add h1 h2] at hstep
   unfold tvDist
   linarith [hstep]
 
@@ -185,8 +185,8 @@ theorem tvDist_le_one {p q : ι → ℝ} (hp : ∀ i, 0 ≤ p i) (hq : ∀ i, 0 
   have hsum : Summable (fun i => |p i - q i|) := summable_abs_sub hp hq hps.summable hqs.summable
   have hle : ∀ i, |p i - q i| ≤ p i + q i := fun i => by
     rw [abs_sub_le_iff]; constructor <;> nlinarith [hp i, hq i]
-  have hstep := tsum_le_tsum hle hsum (hps.summable.add hqs.summable)
-  rw [tsum_add hps.summable hqs.summable, hps.tsum_eq, hqs.tsum_eq] at hstep
+  have hstep := Summable.tsum_le_tsum hle hsum (hps.summable.add hqs.summable)
+  rw [Summable.tsum_add hps.summable hqs.summable, hps.tsum_eq, hqs.tsum_eq] at hstep
   unfold tvDist
   linarith [hstep]
 
@@ -206,18 +206,18 @@ theorem tvDist_eq_tsum_max {p q : ι → ℝ} (hp : ∀ i, 0 ≤ p i) (hq : ∀ 
     tvDist p q = ∑' i, max (p i - q i) 0 := by
   have habs : ∀ i, |p i - q i| = 2 * max (p i - q i) 0 - (p i - q i) := by
     intro i
-    rcases le_or_lt 0 (p i - q i) with h | h
+    rcases le_or_gt 0 (p i - q i) with h | h
     · rw [abs_of_nonneg h, max_eq_left h]; ring
     · rw [abs_of_neg h, max_eq_right h.le]; ring
   have hd : Summable (fun i => p i - q i) := hps.summable.sub hqs.summable
   have hmax : Summable (fun i => max (p i - q i) 0) :=
     summable_max_sub hp hq hps.summable hqs.summable
   have hsum_d : ∑' i, (p i - q i) = 0 := by
-    rw [tsum_sub hps.summable hqs.summable, hps.tsum_eq, hqs.tsum_eq]; ring
+    rw [Summable.tsum_sub hps.summable hqs.summable, hps.tsum_eq, hqs.tsum_eq]; ring
   have key : ∑' i, |p i - q i| = 2 * (∑' i, max (p i - q i) 0) - ∑' i, (p i - q i) := by
     calc ∑' i, |p i - q i| = ∑' i, (2 * max (p i - q i) 0 - (p i - q i)) := tsum_congr habs
       _ = 2 * (∑' i, max (p i - q i) 0) - ∑' i, (p i - q i) := by
-          rw [tsum_sub (hmax.mul_left 2) hd, tsum_mul_left]
+          rw [Summable.tsum_sub (hmax.mul_left 2) hd, tsum_mul_left]
   unfold tvDist
   rw [key, hsum_d, sub_zero]
   ring
@@ -231,13 +231,13 @@ theorem abs_tsum_sub_le_two_mul_tvDist {p q : ι → ℝ} (hp : ∀ i, 0 ≤ p i
   have habs : Summable (fun i => |p i - q i|) := summable_abs_sub hp hq hps hqs
   have hd : Summable (fun i => p i - q i) := hps.sub hqs
   have h1 : (∑' i, p i) - ∑' i, q i ≤ ∑' i, |p i - q i| := by
-    rw [← tsum_sub hps hqs]
-    exact tsum_le_tsum (fun i => le_abs_self _) hd habs
+    rw [← Summable.tsum_sub hps hqs]
+    exact Summable.tsum_le_tsum (fun i => le_abs_self _) hd habs
   have h2 : (∑' i, q i) - ∑' i, p i ≤ ∑' i, |p i - q i| := by
-    rw [← tsum_sub hqs hps]
+    rw [← Summable.tsum_sub hqs hps]
     have hd' : ∀ i, q i - p i ≤ |p i - q i| := fun i => by
       rw [abs_sub_comm]; exact le_abs_self _
-    exact tsum_le_tsum hd' (hqs.sub hps) habs
+    exact Summable.tsum_le_tsum hd' (hqs.sub hps) habs
   rw [abs_sub_le_iff]
   refine ⟨?_, ?_⟩
   · unfold tvDist; linarith [h1]
@@ -276,8 +276,8 @@ theorem tsum_ite_sub_le_tvDist {p q : ι → ℝ} (hp : ∀ i, 0 ≤ p i) (hq : 
     by_cases h : S i
     · simp only [if_pos h]; exact le_max_left _ _
     · simp only [if_neg h, sub_zero]; exact le_max_right _ _
-  have hstep := tsum_le_tsum hle (hip.sub hiq) hmax
-  rw [tsum_sub hip hiq, ← tvDist_eq_tsum_max hp hq hps hqs] at hstep
+  have hstep := Summable.tsum_le_tsum hle (hip.sub hiq) hmax
+  rw [Summable.tsum_sub hip hiq, ← tvDist_eq_tsum_max hp hq hps hqs] at hstep
   exact hstep
 
 /-- **No event distinguishes two distributions by more than their total
@@ -327,7 +327,7 @@ theorem tvDist_mul_le {p q a b : ι → ℝ}
     have hrw : p i * a i - q i * b i = p i * (a i - b i) + b i * (p i - q i) := by ring
     rw [hrw]
     calc |p i * (a i - b i) + b i * (p i - q i)|
-        ≤ |p i * (a i - b i)| + |b i * (p i - q i)| := abs_add _ _
+        ≤ |p i * (a i - b i)| + |b i * (p i - q i)| := abs_add_le _ _
       _ = p i * |a i - b i| + |b i| * |p i - q i| := by
           rw [abs_mul, abs_of_nonneg (hp i), abs_mul]
       _ ≤ p i * |a i - b i| + |p i - q i| := by
@@ -335,8 +335,8 @@ theorem tvDist_mul_le {p q a b : ι → ℝ}
           nlinarith [abs_nonneg (p i - q i), hb1]
   have hmulsummable : Summable (fun i => |p i * a i - q i * b i|) :=
     Summable.of_nonneg_of_le (fun i => abs_nonneg _) hpt (hpab.add habsub)
-  have hstep := tsum_le_tsum hpt hmulsummable (hpab.add habsub)
-  rw [tsum_add hpab habsub] at hstep
+  have hstep := Summable.tsum_le_tsum hpt hmulsummable (hpab.add habsub)
+  rw [Summable.tsum_add hpab habsub] at hstep
   unfold tvDist
   linarith [hstep]
 
@@ -388,19 +388,19 @@ theorem tvDist_div_tsum_le {f g : ι → ℝ} (hf : ∀ i, 0 ≤ f i) (hg : ∀ 
       intro i
       rw [hpt i]
       calc |(f i - g i) / Z + g i * (1 / Z - 1 / Z')|
-          ≤ |(f i - g i) / Z| + |g i * (1 / Z - 1 / Z')| := abs_add _ _
+          ≤ |(f i - g i) / Z| + |g i * (1 / Z - 1 / Z')| := abs_add_le _ _
         _ = |f i - g i| / Z + g i * |1 / Z - 1 / Z'| := by
             rw [abs_div, abs_of_pos hZ, abs_mul, abs_of_nonneg (hg i)]
     have hRHSsummable : Summable (fun i => |f i - g i| / Z + g i * |1 / Z - 1 / Z'|) :=
       (habs_sub.div_const Z).add (hgs.mul_right _)
     have hLHSsummable : Summable (fun i => |f i / Z - g i / Z'|) :=
       Summable.of_nonneg_of_le (fun i => abs_nonneg _) hle hRHSsummable
-    have hstep := tsum_le_tsum hle hLHSsummable hRHSsummable
-    rw [tsum_add (habs_sub.div_const Z) (hgs.mul_right _), tsum_div_const, tsum_mul_right]
+    have hstep := Summable.tsum_le_tsum hle hLHSsummable hRHSsummable
+    rw [Summable.tsum_add (habs_sub.div_const Z) (hgs.mul_right _), tsum_div_const, tsum_mul_right]
       at hstep
     have step1 : Z' * |1 / Z - 1 / Z'| = |Z' * (1 / Z - 1 / Z')| := by
       rw [abs_mul, abs_of_pos hZ']
-    have step2 : Z' * (1 / Z - 1 / Z') = (Z' - Z) / Z := by field_simp; ring
+    have step2 : Z' * (1 / Z - 1 / Z') = (Z' - Z) / Z := by field_simp
     have hZZ' : Z' * |1 / Z - 1 / Z'| = |Z - Z'| / Z := by
       rw [step1, step2, abs_div, abs_of_pos hZ, abs_sub_comm]
     rw [hZZ'] at hstep
@@ -531,7 +531,7 @@ theorem tsum_ite_add_tsum_ite_compl {p : ι → ℝ} (hp : ∀ i, 0 ≤ p i) (hp
     summable_ite_of_nonneg hp hps.summable A
   have hCs : Summable (fun i => if A i then 0 else p i) :=
     Summable.of_nonneg_of_le hnn hle hps.summable
-  rw [← tsum_add hAs hCs]
+  rw [← Summable.tsum_add hAs hCs]
   rw [show (fun i => (if A i then p i else 0) + (if A i then 0 else p i)) = p by
     funext i; by_cases h : A i <;> simp [h]]
   exact hps.tsum_eq
@@ -574,7 +574,6 @@ theorem tvDist_condEvent_eq {p : ι → ℝ} {A : ι → Prop} [DecidablePred A]
         have hD1 : D = 1 - S := by linarith
         rw [hD1]
         field_simp
-        ring
       have hnonpos : p i - p i / S ≤ 0 := by
         have : p i * S ≤ p i := by nlinarith [hp i, hD0]
         rw [sub_nonpos, le_div_iff₀ hA]; linarith
@@ -582,7 +581,7 @@ theorem tvDist_condEvent_eq {p : ι → ℝ} {A : ι → Prop} [DecidablePred A]
       linarith [hkey]
     · rw [if_neg h, if_neg h, if_neg h, sub_zero, zero_mul, zero_add,
         abs_of_nonneg (hp i)]
-  rw [tvDist_apply, tsum_congr hpt, tsum_add (hAs.mul_right _) hCs,
+  rw [tvDist_apply, tsum_congr hpt, Summable.tsum_add (hAs.mul_right _) hCs,
     tsum_mul_right, ← hSdef, ← hDdef]
   have hcancel : S * (D / S) = D := by field_simp
   rw [hcancel]

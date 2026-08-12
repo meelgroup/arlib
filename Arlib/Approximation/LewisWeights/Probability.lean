@@ -30,7 +30,8 @@ open Finset
 
 /-- The **uniform Rademacher probability space** on sign patterns `ι → Bool`:
 every one of the `2^{|ι|}` patterns has mass `2^{-|ι|}`. -/
-noncomputable def radProb (ι : Type) [Fintype ι] [DecidableEq ι] : Arlib.Probability.FinProb where
+@[reducible] noncomputable def radProb (ι : Type) [Fintype ι] [DecidableEq ι] :
+    Arlib.Probability.FinProb where
   Ω := ι → Bool
   μ :=
     { p := fun _ => ((2 : ℝ) ^ Fintype.card ι)⁻¹

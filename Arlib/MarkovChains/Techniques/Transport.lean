@@ -403,7 +403,7 @@ theorem Transport.reversible_target (h : Transport e μ ν) (hK : Encodes e μ K
     · obtain ⟨x', rfl⟩ := hy'
       rw [← h.mul_eq hK x x', ← h.mul_eq hK x' x]
       exact hμ x x'
-    · push_neg at hy'
+    · push Not at hy'
       rw [hK.row_eq_zero h.inj hx hy', h.eq_zero_of_not_mem_range hy', mul_zero, zero_mul]
   intro y y'
   by_cases hy : ν y = 0
@@ -438,7 +438,7 @@ theorem Transport.stationary_target (h : Transport e μ ν) (hK : Encodes e μ K
   by_cases hy' : ∃ x', e x' = y'
   · obtain ⟨x', rfl⟩ := hy'
     rw [h.sum_mul_eq hK x', hμ x', h.dist_apply x']
-  · push_neg at hy'
+  · push Not at hy'
     rw [h.eq_zero_of_not_mem_range hy']
     have hz : ∀ y : β, (∀ x, e x ≠ y) → ν y * K y y' = 0 := fun y hy => by
       rw [h.eq_zero_of_not_mem_range hy, zero_mul]

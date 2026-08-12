@@ -80,6 +80,5 @@ theorem fourth_moment_relative_tail {ι : Type} [Fintype ι] [DecidableEq ι] {P
   have h := fourth_moment_tail hind hZ s (mul_pos hγ hmean)
   refine h.trans_eq ?_
   field_simp
-  ring
 
 end Arlib.Probability

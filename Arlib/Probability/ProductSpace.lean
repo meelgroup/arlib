@@ -52,8 +52,14 @@ namespace CoinSpace
 variable (C : CoinSpace)
 
 /-- The product probability space: outcomes are joint coin assignments
-`ω : ∀ i, Coin i`, with `mass ω = ∏ i, coinMass i (ω i)`. -/
-noncomputable def toFinProb : FinProb where
+`ω : ∀ i, Coin i`, with `mass ω = ∏ i, coinMass i (ω i)`.
+
+Marked `@[reducible]` so that `toFinProb.Ω` and `∀ i, Coin i` are interchangeable
+at instance/`rw` transparency.  Statements here are phrased with the readable
+`∀ i, Coin i`, while `cell`, `mass` and `condCE` come from `FinProb` and so are
+phrased with `toFinProb.Ω`; without reducibility every rewrite across that seam
+fails on the two spellings of one type. -/
+@[reducible] noncomputable def toFinProb : FinProb where
   Ω := ∀ i, C.Coin i
   μ :=
     { p := fun ω => ∏ i, C.coinMass i (ω i)
@@ -99,8 +105,8 @@ theorem forget_eq_iff (j : C.ι) (ω ω' : ∀ i, C.Coin i) :
     · rw [Function.update_of_ne hij, Function.update_of_ne hij]; exact h i hij
 
 theorem mem_forget_cell (j : C.ι) (ω ω' : ∀ i, C.Coin i) :
-    ω' ∈ cell C.toFinProb (C.forget j) ω ↔ ∀ i, i ≠ j → ω' i = ω i := by
-  rw [mem_cell, forget_eq_iff]
+    ω' ∈ cell C.toFinProb (C.forget j) ω ↔ ∀ i, i ≠ j → ω' i = ω i :=
+  Iff.trans mem_cell (C.forget_eq_iff j ω ω')
 
 /-- Summing over a `forget j` cell is summing over the value of coin `j`
 (the map `c ↦ update ω j c` is a bijection from `Coin j` onto the cell). -/
@@ -110,15 +116,15 @@ theorem sum_forget_cell (j : C.ι) (G : (∀ i, C.Coin i) → ℝ) (ω : ∀ i, 
   apply Finset.sum_bij' (fun ω' _ => ω' j) (fun c _ => Function.update ω j c)
   · intro ω' _; exact mem_univ _
   · intro c _
-    rw [mem_forget_cell]; intro i hij; rw [Function.update_of_ne hij]
+    exact (C.mem_forget_cell j ω _).mpr fun i hij => Function.update_of_ne hij _ _
   · intro ω' hω'
-    rw [mem_forget_cell] at hω'
+    have hω' := (C.mem_forget_cell j ω ω').mp hω'
     funext i; by_cases hij : i = j
     · subst hij; rw [Function.update_self]
     · rw [Function.update_of_ne hij]; exact (hω' i hij).symm
   · intro c _; rw [Function.update_self]
   · intro ω' hω'
-    rw [mem_forget_cell] at hω'
+    have hω' := (C.mem_forget_cell j ω ω').mp hω'
     congr 1; funext i; by_cases hij : i = j
     · subst hij; rw [Function.update_self]
     · rw [Function.update_of_ne hij]; exact hω' i hij

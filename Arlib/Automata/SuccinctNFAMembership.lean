@@ -377,7 +377,7 @@ theorem reachFromCost_le_levelCount (e : N.Encoding) (O : LabelOracle Γ L) {lvl
       constructor
       · rintro ⟨ht, hle⟩; exact ⟨⟨ht, by omega⟩, hle⟩
       · rintro ⟨⟨ht, -⟩, hle⟩; exact ⟨ht, hle⟩
-    have hsplit := Finset.filter_card_add_filter_neg_card_eq_card
+    have hsplit := Finset.card_filter_add_card_filter_not
       (s := e.transitions.filter fun t => lvl t.1 ≤ m) (p := fun t => lvl t.1 ≤ m - 1)
     have hcard : (e.outTrans X).card + (e.transitions.filter fun t => lvl t.1 ≤ m - 1).card
         ≤ (e.transitions.filter fun t => lvl t.1 ≤ m).card := by
@@ -523,7 +523,7 @@ theorem reaches_of_keptRel_reflTransGen {lvl : S → ℕ} (h : N.IsUnrolled lvl)
     have htake : w.take (lvl N.init - lvl c) = w.take (lvl N.init - lvl b) ++ [a] := by
       rw [hidx, List.take_succ, hget]
       rfl
-    rw [htake, List.drop_append_eq_append_drop, hlen]
+    rw [htake, List.drop_append, hlen]
     have hz : lvl N.init - lvl u - (lvl N.init - lvl b) = 0 := by omega
     rw [hz, List.drop_zero]
     exact reaches_snoc_iff.2 ⟨b, A, ih, hstep, hmem⟩

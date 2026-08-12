@@ -29,8 +29,8 @@ space.
 -/
 import Arlib.Probability.ProbSpace
 import Arlib.Probability.ContCoinProto
-import Mathlib.MeasureTheory.Integral.IntervalIntegral
-import Mathlib.MeasureTheory.Integral.SetIntegral
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.MeasureTheory.Integral.Prod
@@ -87,11 +87,11 @@ noncomputable def Ex (X : C.Ω → ℝ) : ℝ := ∫ ω, X ω ∂C.measure
 
 /-- **`Ex_const`** (unconditional): total mass one. -/
 theorem Ex_const (c : ℝ) : C.Ex (fun _ => c) = c := by
-  unfold Ex; rw [integral_const, measure_univ]; simp
+  unfold Ex; rw [integral_const, MeasureTheory.measureReal_def, measure_univ]; simp
 
-/-- **`Ex_smul`** (unconditional): `integral_mul_left` needs no integrability. -/
+/-- **`Ex_smul`** (unconditional): `integral_const_mul` needs no integrability. -/
 theorem Ex_smul (c : ℝ) (X : C.Ω → ℝ) : C.Ex (fun ω => c * X ω) = c * C.Ex X := by
-  unfold Ex; exact integral_mul_left c X
+  unfold Ex; exact integral_const_mul c X
 
 /-- **`Ex_nonneg`** (unconditional): `integral_nonneg`. -/
 theorem Ex_nonneg {X : C.Ω → ℝ} (h : ∀ ω, 0 ≤ X ω) : 0 ≤ C.Ex X :=
@@ -118,7 +118,7 @@ theorem BddMeas_const (c : ℝ) : C.BddMeas (fun _ => c) :=
 theorem BddMeas_add {X Y : C.Ω → ℝ} (hX : C.BddMeas X) (hY : C.BddMeas Y) :
     C.BddMeas (fun ω => X ω + Y ω) := by
   obtain ⟨hmX, CX, hbX⟩ := hX; obtain ⟨hmY, CY, hbY⟩ := hY
-  exact ⟨hmX.add hmY, CX + CY, fun ω => (abs_add _ _).trans (add_le_add (hbX ω) (hbY ω))⟩
+  exact ⟨hmX.add hmY, CX + CY, fun ω => (abs_add_le _ _).trans (add_le_add (hbX ω) (hbY ω))⟩
 
 theorem BddMeas_smul (c : ℝ) {X : C.Ω → ℝ} (hX : C.BddMeas X) :
     C.BddMeas (fun ω => c * X ω) := by
@@ -164,7 +164,7 @@ theorem Ex_mono_of_integrable {X Y : C.Ω → ℝ}
 theorem Ex_sum_of_integrable {ι : Type} (s : Finset ι) (X : ι → C.Ω → ℝ)
     (hX : ∀ i ∈ s, Integrable (X i) C.measure) :
     C.Ex (fun ω => ∑ i ∈ s, X i ω) = ∑ i ∈ s, C.Ex (X i) := by
-  unfold Ex; exact integral_finset_sum s hX
+  unfold Ex; exact integral_finsetSum s hX
 
 /-! ## The pointwise coordinate marginal -/
 
@@ -235,7 +235,7 @@ marginal of a constant is the constant. -/
 theorem condCE_const (j : C.ι) (g : ℝ) (ω : C.Ω) :
     C.condCE_forget j (fun _ => g) ω = g := by
   unfold condCE_forget
-  rw [integral_const, measure_univ]; simp
+  rw [integral_const, MeasureTheory.measureReal_def, measure_univ]; simp
 
 /-- If `X` does not read coin `j` (invariant under overwriting it), its marginal
 is itself — the continuous analogue of `condCE_const_of_pos`/`condCE_of_CFixed`
@@ -246,7 +246,7 @@ theorem condCE_forget_indep (j : C.ι) (X : C.Ω → ℝ)
   unfold condCE_forget
   have h : (fun c => X (Function.update ω j c)) = fun _ => X ω := by
     funext c; exact hX ω c
-  rw [h, integral_const, measure_univ]; simp
+  rw [h, integral_const, MeasureTheory.measureReal_def, measure_univ]; simp
 
 /-- Overwriting coin `j` does not change `forget j`. -/
 theorem forget_update (j : C.ι) (ω : C.Ω) (c : C.Coin j) :
@@ -268,7 +268,7 @@ theorem condCE_of_CFixed (j : C.ι) (X : C.Ω → ℝ)
 under the discharged integrability of bounded-measurable functions. -/
 
 /-- The `ProbSpace` structure carried by a `MixedCoinSpace`. -/
-noncomputable def toProbSpace : ProbSpace where
+@[reducible] noncomputable def toProbSpace : ProbSpace where
   Ω := C.Ω
   Ex := C.Ex
   Adm := C.BddMeas
@@ -497,7 +497,7 @@ theorem CFixed_merge (T : Finset C.ι) (X : C.Ω → ℝ)
   exact C.forgetSet_merge_eq_outside T t ω hi
 
 /-- **Fixed-variable rule** (unconditional).  If `X` is fixed by `forgetSet T`,
-pulling it out of the `T`-marginal is `integral_mul_left`. -/
+pulling it out of the `T`-marginal is `integral_const_mul`. -/
 theorem condCE_forgetSet_fixed_rule (T : Finset C.ι) (X Y : C.Ω → ℝ)
     (hX : C.CFixed (C.forgetSet T) X) :
     C.condCE_forgetSet T (fun ω => X ω * Y ω)
@@ -505,7 +505,7 @@ theorem condCE_forgetSet_fixed_rule (T : Finset C.ι) (X Y : C.Ω → ℝ)
   funext ω
   show ∫ t, X _ * Y _ ∂(Measure.pi fun i : {i // i ∈ T} => C.μ i)
       = X ω * ∫ t, Y _ ∂(Measure.pi fun i : {i // i ∈ T} => C.μ i)
-  rw [← integral_mul_left]
+  rw [← integral_const_mul]
   refine integral_congr_ae (Filter.Eventually.of_forall (fun t => ?_))
   dsimp only
   rw [C.CFixed_merge T X hX t ω]
@@ -574,7 +574,7 @@ theorem condCE_of_forgetSet_CFixed (T : Finset C.ι) (X : C.Ω → ℝ)
   funext ω
   unfold condCE_forgetSet
   rw [integral_congr_ae (Filter.Eventually.of_forall
-        (fun t => C.CFixed_merge T X hX t ω)), integral_const, measure_univ]
+        (fun t => C.CFixed_merge T X hX t ω)), integral_const, MeasureTheory.measureReal_def, measure_univ]
   simp
 
 /-- **Single-coin bridge.**  The pointwise coordinate marginal `condCE_forget j`

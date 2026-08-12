@@ -261,7 +261,7 @@ private theorem pure_case {h : ℕ} {ν : PMF Ω} {q s : ℝ≥0∞} {acc : List
     PMF.toOuterMeasure_pure_apply, PMF.toOuterMeasure_pure_apply]
   have hiff : (acc ∈ ({l : List Ω | h ≤ l.length} ∩ A))
       ↔ (([] : List Ω) ∈ ((acc ++ ·) ⁻¹' A)) := by
-    simp only [Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_preimage, List.append_nil]
+    simp only [Set.mem_inter_iff, Set.mem_ofPred_eq, Set.mem_preimage, List.append_nil]
     exact ⟨fun hx => hx.2, fun hx => ⟨hacc, hx⟩⟩
   simp only [hiff]
 
@@ -335,11 +335,23 @@ theorem condLaw_collectLaw {d : PMF (Option Ω)} {ν : PMF Ω} {s : ℝ≥0∞}
 
 /-! ## The tail: `binTail` is a Hoeffding event -/
 
+/-- The two-point law on `Bool` with `Pr[true] = s`, for an **extended** real
+`s ≤ 1`.  Mathlib's `PMF.bernoulli` takes its parameter in `ℝ≥0`, whereas every
+probability here lives in `ℝ≥0∞`; restating the coin there keeps the computations
+below free of `toNNReal` round-trips. -/
+noncomputable def bernCoin (s : ℝ≥0∞) (hs : s ≤ 1) : PMF Bool :=
+  ⟨fun b => bif b then s else 1 - s, by
+    simpa [Fintype.sum_bool, add_tsub_cancel_of_le hs] using
+      hasSum_fintype (fun b : Bool => bif b then s else 1 - s)⟩
+
+@[simp] theorem bernCoin_apply (s : ℝ≥0∞) (hs : s ≤ 1) (b : Bool) :
+    bernCoin s hs b = bif b then s else 1 - s := rfl
+
 /-- One Bernoulli trial with success probability `s`, presented as a `{0,1}`-valued
 `PMF (ℝ × ℕ)` so that `Arlib.Approximation.repeatPMF` and the Hoeffding bounds of
 `Arlib.Approximation.Hoeffding` apply to it verbatim. -/
 noncomputable def bernTrial (s : ℝ≥0∞) (hs : s ≤ 1) : PMF (ℝ × ℕ) :=
-  PMF.map (fun b => (if b then (1 : ℝ) else 0, 0)) (PMF.bernoulli s hs)
+  PMF.map (fun b => (if b then (1 : ℝ) else 0, 0)) (bernCoin s hs)
 
 theorem bernTrial_support {s : ℝ≥0∞} (hs : s ≤ 1) :
     ∀ p ∈ (bernTrial s hs).support, p.1 = 0 ∨ p.1 = 1 := by
@@ -354,7 +366,7 @@ theorem outProb_bernTrial_one {s : ℝ≥0∞} (hs : s ≤ 1) :
       {q : ℝ × ℕ | q.1 ∈ ({1} : Set ℝ)} = {true} := by
     ext b; cases b <;> simp
   rw [outProb, bernTrial, PMF.toOuterMeasure_map_apply, hpre,
-    PMF.toOuterMeasure_apply_singleton, PMF.bernoulli_apply]
+    PMF.toOuterMeasure_apply_singleton, bernCoin_apply]
   rfl
 
 theorem outProbR_bernTrial_one {s : ℝ≥0∞} (hs : s ≤ 1) :
@@ -365,7 +377,7 @@ theorem outProbR_bernTrial_one {s : ℝ≥0∞} (hs : s ≤ 1) :
 Pascal's recursion needs. -/
 theorem bernTrial_bind {β : Type*} {s : ℝ≥0∞} (hs : s ≤ 1) (F : ℝ × ℕ → PMF β) :
     (bernTrial s hs).bind F
-      = (PMF.bernoulli s hs).bind (fun b => F ((if b then (1 : ℝ) else 0), 0)) := by
+      = (bernCoin s hs).bind (fun b => F ((if b then (1 : ℝ) else 0), 0)) := by
   rw [bernTrial, PMF.bind_map]
   rfl
 
@@ -389,12 +401,11 @@ theorem outProb_repeatPMF_bernTrial_succ {s : ℝ≥0∞} (hs : s ≤ 1) (c : �
         Set.indicator_of_mem (show r ∈ {q : (Fin c → ℝ) × ℕ | q.1 ∈ {v | Fin.cons a v ∈ T}}
           from hr)]
     · rw [outProb_pure_of_not_mem (show (Fin.cons a r.1, k + r.2).1 ∉ T from hr), mul_zero,
-        Set.indicator_of_not_mem (show r ∉ {q : (Fin c → ℝ) × ℕ | q.1 ∈ {v | Fin.cons a v ∈ T}}
+        Set.indicator_of_notMem (show r ∉ {q : (Fin c → ℝ) × ℕ | q.1 ∈ {v | Fin.cons a v ∈ T}}
           from hr)]
-  rw [repeatPMF, bernTrial_bind hs, outProb_bind, tsum_bool, PMF.bernoulli_apply,
-    PMF.bernoulli_apply]
-  simp only [Bool.cond_false, Bool.cond_true, if_true, if_false, Bool.false_eq_true,
-    ite_false]
+  rw [repeatPMF, bernTrial_bind hs, outProb_bind, tsum_bool, bernCoin_apply,
+    bernCoin_apply]
+  simp only [Bool.cond_false, Bool.cond_true, if_true, if_false, Bool.false_eq_true]
   rw [hcons 0 0, hcons 1 0]
 
 /-- **`binTail` is the upper tail of a sum of i.i.d. Bernoulli variables.**
@@ -417,7 +428,7 @@ theorem binTail_eq_outProb_repeatPMF {s : ℝ≥0∞} (hs : s ≤ 1) :
     | succ e =>
       rw [binTail_zero_left]
       refine (outProb_pure_of_not_mem ?_).symm
-      simp only [Set.mem_setOf_eq, Finset.univ_eq_empty, Finset.sum_empty, not_le]
+      simp only [Set.mem_ofPred_eq, Finset.univ_eq_empty, Finset.sum_empty, not_le]
       positivity
   | succ c ih =>
     intro e
@@ -425,7 +436,7 @@ theorem binTail_eq_outProb_repeatPMF {s : ℝ≥0∞} (hs : s ≤ 1) :
     have hzero : {v : Fin c → ℝ | Fin.cons 0 v ∈ {w : Fin (c + 1) → ℝ | (e : ℝ) ≤ ∑ i, w i}}
         = {v : Fin c → ℝ | (e : ℝ) ≤ ∑ i, v i} := by
       ext v
-      simp only [Set.mem_setOf_eq, Fin.sum_cons, zero_add]
+      simp only [Set.mem_ofPred_eq, Fin.sum_cons, zero_add]
     cases e with
     | zero =>
       rw [binTail_zero_right, hzero]
@@ -435,7 +446,7 @@ theorem binTail_eq_outProb_repeatPMF {s : ℝ≥0∞} (hs : s ≤ 1) :
       have hsub : {v : Fin c → ℝ | ((0 : ℕ) : ℝ) ≤ ∑ i, v i}
           ⊆ {v : Fin c → ℝ | Fin.cons 1 v ∈ {w : Fin (c + 1) → ℝ | ((0 : ℕ) : ℝ) ≤ ∑ i, w i}} := by
         intro v hv
-        simp only [Set.mem_setOf_eq, Fin.sum_cons] at hv ⊢
+        simp only [Set.mem_ofPred_eq, Fin.sum_cons] at hv ⊢
         linarith
       have h2 : outProb (repeatPMF (bernTrial s hs) c)
           {v : Fin c → ℝ | Fin.cons 1 v ∈ {w : Fin (c + 1) → ℝ | ((0 : ℕ) : ℝ) ≤ ∑ i, w i}}
@@ -447,7 +458,7 @@ theorem binTail_eq_outProb_repeatPMF {s : ℝ≥0∞} (hs : s ≤ 1) :
             Fin.cons 1 v ∈ {w : Fin (c + 1) → ℝ | ((e + 1 : ℕ) : ℝ) ≤ ∑ i, w i}}
           = {v : Fin c → ℝ | (e : ℝ) ≤ ∑ i, v i} := by
         ext v
-        simp only [Set.mem_setOf_eq, Fin.sum_cons, Nat.cast_add, Nat.cast_one]
+        simp only [Set.mem_ofPred_eq, Fin.sum_cons, Nat.cast_add, Nat.cast_one]
         constructor <;> intro hv <;> linarith
       rw [binTail_succ, ih (e + 1), ih e, hzero, hone]
 
@@ -468,7 +479,7 @@ theorem one_sub_exp_le_binTail {s : ℝ≥0∞} (hs : s ≤ 1) {c e : ℕ} {t : 
   have hsub : {v : Fin c → ℝ | (e : ℝ) ≤ ∑ i, v i}ᶜ
       ⊆ {v : Fin c → ℝ | (∑ i, v i) / (c : ℝ) < s.toReal - t} := by
     intro v hv
-    simp only [Set.mem_compl_iff, Set.mem_setOf_eq, not_le] at hv
+    simp only [Set.mem_compl_iff, Set.mem_ofPred_eq, not_le] at hv
     refine lt_of_lt_of_le ?_ hle
     gcongr
   have htail := outProbR_lower_tail (μ := bernTrial s hs) (q := s.toReal) (t := t) (m := c)

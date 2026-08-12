@@ -200,7 +200,7 @@ theorem uniformPi_apply {n k : ℕ} (hn : n ≤ Fintype.card E) (hk : k ≤ n) (
       Nat.cast_ne_zero.mpr (Nat.choose_pos (by omega)).ne'
     have hmul : ((Fintype.card E).choose n : ℝ) * ((n.choose k : ℕ) : ℝ)
         = ((Fintype.card E).choose k : ℝ) * (((Fintype.card E - k).choose (n - k) : ℕ) : ℝ) := by
-      exact_mod_cast Nat.choose_mul hn hk
+      exact_mod_cast Nat.choose_mul hk
     rw [div_div, hmul, mul_comm ((Fintype.card E).choose k : ℝ) _, ← div_div, div_self hA]
   · rw [if_neg h, if_neg h]
 
@@ -220,7 +220,7 @@ level above a `k`-face `τ`,
   `mu w η / ((n - k) · mu w τ) = 1 / (N - k)`,
 
 *whatever* `η` is: the weighted up-step is uniform.  The arithmetic is
-`Nat.succ_mul_choose_eq` in the shape
+`Nat.add_one_mul_choose_eq` in the shape
 `(N - k) · (N - k - 1).choose (n - k - 1) = (N - k).choose (n - k) · (n - k)`,
 i.e. `mu w η · (N − k) = (n − k) · mu w τ`.
 
@@ -243,7 +243,7 @@ theorem mu_uniformWeight_ratio {n k : ℕ} (hn : n ≤ Fintype.card E) (hk : k <
     have hj' : n - (k + 1) = j := by omega
     have key : ((m : ℝ) + 1) * ((m.choose j : ℕ) : ℝ)
         = (((m + 1).choose (j + 1) : ℕ) : ℝ) * ((j : ℝ) + 1) := by
-      exact_mod_cast Nat.succ_mul_choose_eq m j
+      exact_mod_cast Nat.add_one_mul_choose_eq m j
     rw [hm, hj, hm', hj']
     push_cast
     field_simp
@@ -377,7 +377,7 @@ theorem uniformDownUp_insert_erase {n k : ℕ} (hn : n ≤ Fintype.card E) (hk :
   have hcard : (τ.erase x).card = k := by rw [Finset.card_erase_of_mem hx, hτ]; omega
   have hne : e ∉ τ.erase x := fun h => he (Finset.mem_of_mem_erase h)
   have hη : (insert e (τ.erase x)).card = k + 1 := by
-    rw [Finset.card_insert_of_not_mem hne, hcard]
+    rw [Finset.card_insert_of_notMem hne, hcard]
   have hint : τ ∩ insert e (τ.erase x) = τ.erase x := by
     ext a
     simp only [Finset.mem_inter, Finset.mem_insert, Finset.mem_erase]
@@ -423,7 +423,7 @@ theorem uniformLinkDist_apply {n : ℕ} {τ : Finset E} (hn : n ≤ Fintype.card
   by_cases he : e ∈ τ
   · rw [if_pos he, if_pos he]
   · rw [if_neg he, if_neg he]
-    exact mu_uniformWeight_ratio hn hk rfl (Finset.card_insert_of_not_mem he)
+    exact mu_uniformWeight_ratio hn hk rfl (Finset.card_insert_of_notMem he)
 
 /-- The local walk `Q_τ` of the uniform complex.  A wrapper for
 `LocalWalk.localWalk`. -/
@@ -444,14 +444,14 @@ theorem uniformLocalWalk_apply {n : ℕ} {τ : Finset E} (hn : n ≤ Fintype.car
     (hk : τ.card + 1 < n) {e : E} (he : e ∉ τ) (e' : E) :
     uniformLocalWalk E n τ hk e e' =
       if e' ∉ insert e τ then 1 / ((Fintype.card E - (τ.card + 1) : ℕ) : ℝ) else 0 := by
-  have hcard : (insert e τ).card = τ.card + 1 := Finset.card_insert_of_not_mem he
+  have hcard : (insert e τ).card = τ.card + 1 := Finset.card_insert_of_notMem he
   have hpos : 0 < mu (uniformWeight E n) (insert e τ) :=
     mu_uniformWeight_pos hn (by omega : (insert e τ).card ≤ n)
   rw [uniformLocalWalk, localWalk_apply, if_pos ⟨he, hpos⟩]
   by_cases he' : e' ∉ insert e τ
   · rw [if_pos he', if_pos he']
     exact mu_uniformWeight_ratio hn hk hcard
-      (by rw [Finset.card_insert_of_not_mem he', hcard])
+      (by rw [Finset.card_insert_of_notMem he', hcard])
   · rw [if_neg he', if_neg he']
 
 /-! ## Auditing the general theory
@@ -566,7 +566,7 @@ variable {E : Type*} [Fintype E] [DecidableEq E]
 uniformly random `j`-subset contains `a`.
 
 The count is `sum_ite_superset_card` at the singleton `{a}`, and the conversion
-`(N - 1).choose (j - 1) / N.choose j = j / N` is `Nat.succ_mul_choose_eq`. -/
+`(N - 1).choose (j - 1) / N.choose j = j / N` is `Nat.add_one_mul_choose_eq`. -/
 theorem Ex_uniformPi_memIndicator {n j : ℕ} (hn : n ≤ Fintype.card E) (hj : j ≤ n) (a : E) :
     Ex (uniformPi E n j hn hj) (memIndicator a) = (j : ℝ) / (Fintype.card E : ℝ) := by
   have hN : 0 < Fintype.card E := Fintype.card_pos_iff.mpr ⟨a⟩
@@ -577,7 +577,7 @@ theorem Ex_uniformPi_memIndicator {n j : ℕ} (hn : n ≤ Fintype.card E) (hj : 
     rw [uniformPi_apply hn hj τ]
     by_cases h : τ.card = 0
     · have hτe : τ = ∅ := Finset.card_eq_zero.mp h
-      rw [memIndicator_apply, hτe, if_neg (Finset.not_mem_empty a), mul_zero]
+      rw [memIndicator_apply, hτe, if_neg (Finset.notMem_empty a), mul_zero]
     · rw [if_neg h, zero_mul]
   · have hstep : ∀ τ : Finset E, uniformPi E n j hn hj τ * memIndicator a τ
         = if ({a} : Finset E) ⊆ τ ∧ τ.card = j then
@@ -594,7 +594,7 @@ theorem Ex_uniformPi_memIndicator {n j : ℕ} (hn : n ≤ Fintype.card E) (hj : 
     have hNne : (Fintype.card E : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
     have key : ((Fintype.card E - 1 + 1 : ℕ) : ℝ) * (((Fintype.card E - 1).choose (j - 1) : ℕ) : ℝ)
         = (((Fintype.card E - 1 + 1).choose (j - 1 + 1) : ℕ) : ℝ) * ((j - 1 + 1 : ℕ) : ℝ) := by
-      exact_mod_cast Nat.succ_mul_choose_eq (Fintype.card E - 1) (j - 1)
+      exact_mod_cast Nat.add_one_mul_choose_eq (Fintype.card E - 1) (j - 1)
     have e1 : Fintype.card E - 1 + 1 = Fintype.card E := by omega
     have e2 : j - 1 + 1 = j := by omega
     rw [e1, e2] at key

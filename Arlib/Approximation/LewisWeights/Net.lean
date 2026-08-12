@@ -50,7 +50,7 @@ theorem abs_le_of_net {ι : Type*} [Fintype ι] {f : (ι → ℝ) → ℝ} {L ε
   obtain ⟨s, hsS, hs⟩ := hnet x hx
   -- triangle inequality on `f x = (f x - f s) + f s`
   have key : |f x| ≤ |f x - f s| + |f s| := by
-    have := abs_add (f x - f s) (f s)
+    have := abs_add_le (f x - f s) (f s)
     simpa using this
   -- the Lipschitz increment, controlled by the net radius
   have hlip : |f x - f s| ≤ L * ε :=
@@ -143,7 +143,7 @@ theorem exists_net_unit_ball {ι : Type*} [Fintype ι] {ε : ℝ} (hε : 0 < ε)
       have := Int.lt_floor_add_one (t / ε)
       have := mul_lt_mul_of_pos_right this hε
       rwa [div_mul_cancel₀ t (ne_of_gt hε)] at this
-    rcases le_or_lt (-N) ⌊t / ε⌋ with hcase | hcase
+    rcases le_or_gt (-N) ⌊t / ε⌋ with hcase | hcase
     · -- inside range: `max` inert, distance `< ε`
       rw [max_eq_right hcase]
       rw [abs_le]

@@ -174,7 +174,7 @@ theorem exists_moment_index {s d : ℝ} (hd : 0 ≤ d) (hs : 6 * (1 + d) ≤ s) 
     ∃ t : ℕ, 0 < t ∧ s / 3 + d ≤ (t : ℝ) ∧ 2 * (t : ℝ) ≤ s := by
   have hx0 : (0 : ℝ) < s / 3 + d := by linarith
   refine ⟨⌈s / 3 + d⌉₊, Nat.ceil_pos.mpr hx0, Nat.le_ceil _, ?_⟩
-  have h := Nat.ceil_lt_add_one (α := ℝ) hx0.le
+  have h := Nat.ceil_lt_add_one (R := ℝ) hx0.le
   linarith
 
 /-! ## The optimization

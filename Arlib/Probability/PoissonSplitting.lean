@@ -102,7 +102,7 @@ import Arlib.Probability.PoissonThinning
 import Mathlib.Data.Nat.Choose.Multinomial
 import Mathlib.Data.Nat.Choose.Sum
 import Mathlib.Data.Fintype.Pi
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 
 namespace Arlib.Probability
 
@@ -231,7 +231,7 @@ theorem hasSum_poissonPMF_mul_multinomialPMF [DecidableEq X] (S : Finset X) (q :
       exact_mod_cast congrArg (fun m : ℕ => (m : ℝ)) this
     rw [hprod, hexp, hpow, multinomialPMF_of_eq hN.symm, poissonPMF]
     field_simp
-    linear_combination (Real.exp (-mu) * mu ^ N * (∏ x ∈ S, q x ^ k x)) * hspec
+    linear_combination (mu ^ N * (∏ x ∈ S, q x ^ k x)) * hspec
   simpa only [hval] using
     hasSum_single (f := fun n : ℕ => poissonPMF mu n * multinomialPMF S q n k) N hzero
 

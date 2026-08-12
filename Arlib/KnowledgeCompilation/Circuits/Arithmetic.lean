@@ -479,7 +479,7 @@ namespace AGate
 
 /-- The relabelling `φ` on a single node (paper §5).  A constant becomes the
 Boolean `c ≠ 0` — which is the paper's "`0` unchanged, everything else `1`". -/
-noncomputable def toGate : AGate V n → Gate V n
+@[reducible] noncomputable def toGate : AGate V n → Gate V n
   | .const c => .const (if c = 0 then false else true)
   | .lit x p => .lit x p
   | .add j k => .disj j k
@@ -494,7 +494,7 @@ end AGate
 namespace AC
 
 /-- **The relabelling `φ`** (paper §5): the NNF on the same graph as `C`. -/
-noncomputable def toNNF (C : AC V) : NNF V where
+@[reducible] noncomputable def toNNF (C : AC V) : NNF V where
   size := C.size
   gate := fun i => (C.gate i).toGate
   child_lt := fun i j hj => C.child_lt i j (by rwa [AGate.children_toGate] at hj)
@@ -510,29 +510,27 @@ variable (C : AC V)
 
 lemma toNNF_gate_const {i : Fin C.size} {c : ℝ} (h : C.gate i = .const c) :
     C.toNNF.gate i = .const (if c = 0 then false else true) := by
-  rw [toNNF_gate, h]; rfl
+  rw [toNNF_gate, h]
 
 lemma toNNF_gate_lit {i : Fin C.size} {x : V} {p : Bool} (h : C.gate i = .lit x p) :
-    C.toNNF.gate i = .lit x p := by rw [toNNF_gate, h]; rfl
+    C.toNNF.gate i = .lit x p := by rw [toNNF_gate, h]
 
 lemma toNNF_gate_add {i j k : Fin C.size} (h : C.gate i = .add j k) :
-    C.toNNF.gate i = .disj j k := by rw [toNNF_gate, h]; rfl
+    C.toNNF.gate i = .disj j k := by rw [toNNF_gate, h]
 
 lemma toNNF_gate_mul {i j k : Fin C.size} (h : C.gate i = .mul j k) :
-    C.toNNF.gate i = .conj j k := by rw [toNNF_gate, h]; rfl
+    C.toNNF.gate i = .conj j k := by rw [toNNF_gate, h]
 
 /-- Reachability is a property of the graph, and `φ` leaves the graph alone. -/
 @[simp] theorem toNNF_reaches {i j : Fin C.size} :
     C.toNNF.Reaches i j ↔ C.Reaches i j := by
   constructor
-  · intro h
-    induction h with
-    | refl i => exact .refl i
-    | step hc _ ih => exact .step (by rwa [toNNF_gate, AGate.children_toGate] at hc) ih
-  · intro h
-    induction h with
-    | refl i => exact NNF.Reaches.refl (C := C.toNNF) i
-    | step hc _ ih => exact .step (by rwa [toNNF_gate, AGate.children_toGate]) ih
+  · exact fun h => NNF.Reaches.rec (motive := fun a b _ => C.Reaches a b)
+      (fun i => .refl i)
+      (fun hc _ ih => .step (by rwa [toNNF_gate, AGate.children_toGate] at hc) ih) h
+  · exact fun h => AC.Reaches.rec (motive := fun a b _ => C.toNNF.Reaches a b)
+      (fun i => NNF.Reaches.refl (C := C.toNNF) i)
+      (fun hc _ ih => .step (by rwa [toNNF_gate, AGate.children_toGate]) ih) h
 
 /-- `φ` preserves the variables at every node: it never changes a literal, and
 the only constants it moves are moved to constants. -/
@@ -788,7 +786,7 @@ namespace Gate
 
 /-- Reading a Boolean gate as an arithmetic one: `∨ ↦ +`, `∧ ↦ ×`, and the
 constants `0`, `1` as the reals `0`, `1`. -/
-def toAGate : Gate V n → AGate V n
+@[reducible] def toAGate : Gate V n → AGate V n
   | .const b => .const (if b then 1 else 0)
   | .lit x p => .lit x p
   | .conj j k => .mul j k
@@ -808,7 +806,7 @@ end Gate
 namespace NNF
 
 /-- **Reading a Boolean circuit as an arithmetic one** (paper §5). -/
-def toAC (C : NNF V) : AC V where
+@[reducible] def toAC (C : NNF V) : AC V where
   size := C.size
   gate := fun i => (C.gate i).toAGate
   child_lt := fun i j hj => C.child_lt i j (by rwa [Gate.children_toAGate] at hj)
@@ -849,23 +847,21 @@ lemma toAC_gate_add_iff {i j k : Fin C.size} :
 @[simp] theorem toAC_reaches {i j : Fin C.size} :
     C.toAC.Reaches i j ↔ C.Reaches i j := by
   constructor
-  · intro h
-    induction h with
-    | refl i => exact .refl i
-    | step hc _ ih => exact .step (by rwa [toAC_gate, Gate.children_toAGate] at hc) ih
-  · intro h
-    induction h with
-    | refl i => exact AC.Reaches.refl (C := C.toAC) i
-    | step hc _ ih => exact .step (by rwa [toAC_gate, Gate.children_toAGate]) ih
+  · exact fun h => AC.Reaches.rec (motive := fun a b _ => C.Reaches a b)
+      (fun i => .refl i)
+      (fun hc _ ih => .step (by rwa [toAC_gate, Gate.children_toAGate] at hc) ih) h
+  · exact fun h => NNF.Reaches.rec (motive := fun a b _ => C.toAC.Reaches a b)
+      (fun i => AC.Reaches.refl (C := C.toAC) i)
+      (fun hc _ ih => .step (by rwa [toAC_gate, Gate.children_toAGate]) ih) h
 
 @[simp] theorem toAC_varsAt [DecidableEq V] (i : Fin C.size) :
     C.toAC.varsAt i = C.varsAt i := by
   match hg : C.gate i with
   | .const b =>
-    rw [C.toAC.varsAt_const (i := i) (r := if b then 1 else 0) (by rw [toAC_gate, hg]; rfl),
+    rw [C.toAC.varsAt_const (i := i) (r := if b then 1 else 0) (by rw [toAC_gate, hg]),
       C.varsAt_const hg]
   | .lit x p =>
-    rw [C.toAC.varsAt_lit (i := i) (x := x) (p := p) (by rw [toAC_gate, hg]; rfl),
+    rw [C.toAC.varsAt_lit (i := i) (x := x) (p := p) (by rw [toAC_gate, hg]),
       C.varsAt_lit hg]
   | .conj j k =>
     rw [C.toAC.varsAt_mul (toAC_gate_mul_iff C |>.mpr hg), C.varsAt_conj hg,
@@ -907,19 +903,19 @@ theorem toAC_valAt {i : Fin C.size} (h : C.DeterministicFrom i) (α : V → Bool
     C.toAC.valAt α i = if C.valAt α i then 1 else 0 := by
   match hg : C.gate i with
   | .const b =>
-    have : C.toAC.gate i = .const (if b then 1 else 0) := by rw [toAC_gate, hg]; rfl
+    have : C.toAC.gate i = .const (if b then 1 else 0) := by rw [toAC_gate, hg]
     rw [C.toAC.valAt_const this, C.valAt_const hg]
   | .lit x p =>
-    have : C.toAC.gate i = .lit x p := by rw [toAC_gate, hg]; rfl
+    have : C.toAC.gate i = .lit x p := by rw [toAC_gate, hg]
     rw [C.toAC.valAt_lit this, C.valAt_lit hg]
   | .conj j k =>
-    have hgc : C.toAC.gate i = .mul j k := by rw [toAC_gate, hg]; rfl
+    have hgc : C.toAC.gate i = .mul j k := by rw [toAC_gate, hg]
     have hj : C.DeterministicFrom j := fun _ _ _ hr => h ((Reaches.of_conj_left hg).trans hr)
     have hk : C.DeterministicFrom k := fun _ _ _ hr => h ((Reaches.of_conj_right hg).trans hr)
     rw [C.toAC.valAt_mul hgc, C.valAt_conj hg, toAC_valAt hj α, toAC_valAt hk α]
     cases C.valAt α j <;> cases C.valAt α k <;> norm_num
   | .disj j k =>
-    have hgd : C.toAC.gate i = .add j k := by rw [toAC_gate, hg]; rfl
+    have hgd : C.toAC.gate i = .add j k := by rw [toAC_gate, hg]
     have hj : C.DeterministicFrom j := fun _ _ _ hr => h ((Reaches.of_disj_left hg).trans hr)
     have hk : C.DeterministicFrom k := fun _ _ _ hr => h ((Reaches.of_disj_right hg).trans hr)
     have hdis := h (.refl i) hg α

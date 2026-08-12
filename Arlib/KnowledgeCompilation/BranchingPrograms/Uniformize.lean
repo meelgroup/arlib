@@ -181,7 +181,7 @@ theorem notMem_PVar_of_edge (hro : Z.ReadOnce) {a b : Fin size} {x : Lit V}
 /-- `PVar` of a node with nothing below it is empty. -/
 theorem PVar_eq_empty {a : Fin size} (ha : ∀ b : Fin size, b ≤ a → b = a) : PVar Z a = ∅ := by
   ext x
-  simp only [Finset.not_mem_empty, iff_false]
+  simp only [Finset.notMem_empty, iff_false]
   intro hx
   obtain ⟨b, ls, hp, hxl⟩ := mem_PVar.mp hx
   rw [path_eq_nil hp (ha b (path_le hp)).ge] at hxl
@@ -326,7 +326,7 @@ theorem prefixVars_of_clean_of_regular (hcl : Clean Z)
     · subst hroot
       rw [path_eq_nil hls le_rfl, varSet_nil]
       symm
-      rw [Finset.eq_empty_iff_forall_not_mem]
+      rw [Finset.eq_empty_iff_forall_notMem]
       intro x hx
       obtain ⟨ns, hns, hxn⟩ := mem_IVar.mp hx
       rw [path_eq_nil hns le_rfl] at hxn
@@ -769,7 +769,7 @@ noncomputable def uRank (W : Fin m → Finset V)
       fun t : Fin m × Fin m × Option (Lit V) × Fin (Fintype.card V + 1) =>
         uOrig V a = uChn t.1 t.2.1 t.2.2.1 t.2.2.2) = ∅ := by
     ext t
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.not_mem_empty, iff_false]
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.notMem_empty, iff_false]
     exact uOrig_ne_uChn a t.1 t.2.1 t.2.2.1 t.2.2.2
   simp [uRank, hempty]
 
@@ -923,7 +923,7 @@ theorem uProject {Z : NROBP V m} {W : Fin m → Finset V} :
       refine ⟨x :: ms, by rw [uSrc_uOrig]; exact Path.step he' hms, ?_⟩
       intro p hp
       rcases List.mem_cons.mp hp with rfl | hp'
-      · exact List.mem_cons_self _ _
+      · exact List.mem_cons_self
       · exact List.mem_cons_of_mem _ (hsub p hp')
     · rw [uSrc_uChn] at hms ⊢
       exact ⟨ms, hms, fun p hp => List.mem_cons_of_mem _ (hsub p hp)⟩
@@ -998,7 +998,7 @@ theorem uPathLift {Z : NROBP V m} {W : Fin m → Finset V} {α : V → Bool} :
       (Path.step (Or.inl ⟨a, b, some x, he, rfl, rfl, rfl⟩) hls₁).append hls₂, ?_⟩
     refine agree_append (fun p hp => ?_) hag₂
     rcases List.mem_cons.mp hp with rfl | hp'
-    · exact hag p (List.mem_cons_self _ _)
+    · exact hag p (List.mem_cons_self)
     · exact hag₁ p hp'
 
 /-! ### The transformation, packaged -/

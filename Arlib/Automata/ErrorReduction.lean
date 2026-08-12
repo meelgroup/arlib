@@ -252,10 +252,10 @@ theorem one_le_anRank_of_entry {M : X → Y → ℝ} {ε : ℝ} {x₀ : X} {y₀
     (hne : ∃ r, HasApproxNNRankLE M ε r) (hentry : ε < |M x₀ y₀|) :
     1 ≤ anRank ε M := by
   rw [Nat.one_le_iff_ne_zero, anRank, Ne, Nat.sInf_eq_zero]
-  push_neg
+  push Not
   refine ⟨?_, ?_⟩
   · intro h0
-    rw [Set.mem_setOf_eq] at h0
+    rw [Set.mem_ofPred_eq] at h0
     obtain ⟨N, happ, u, v, -, -, hN⟩ := h0
     have hNz : N x₀ y₀ = 0 := by rw [hN]; simp
     have hle := happ x₀ y₀

@@ -30,7 +30,7 @@ feeds the adversarial-rectangle DNNF lower bound of §6.
 * **Lemmas 16, 17, 18, 19** rest on the graph surgery of vertex splitting (an
   edge-variable renaming bijection across two different edge types, [dCM21, `lemma:graph_splitting_equals_subconstraint`]), a
   GF(2)-rank/model-count fact ([dCM21, `lemma:graph_splitting_to_connected_equals_half_models`], [dCM21, `lemma:graph_splitting_a_lot_to_connected_equals_far_less_models`]), and a spanning-tree + handshaking
-  argument in `3`-connected graphs ([dCM21, `lemma:choose_vertices_from_3-connected_graph`]).  None is provable in Mathlib v4.15
+  argument in `3`-connected graphs ([dCM21, `lemma:choose_vertices_from_3-connected_graph`]).  None is provable in Mathlib
   without machinery the area does not build (the incidence-matrix rank, a finite
   spanning tree with a leaf).  Following `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 each is carried as a
   named `structure` with **explicit counts** and threaded, and each is inhabited
@@ -95,7 +95,7 @@ theorem rectangle_induces_subConstraint
       ∑ e ∈ incEdges G v, (if e ∈ E₁ then f e else g e)
         = (∑ e ∈ incEdges G v ∩ E₁, f e) + ∑ e ∈ incEdges G v \ E₁, g e := by
     intro f g
-    rw [← Finset.sum_inter_add_sum_diff (incEdges G v) E₁
+    rw [← Finset.sum_inter_add_sum_sdiff (incEdges G v) E₁
           (fun e => if e ∈ E₁ then f e else g e)]
     congr 1
     · exact Finset.sum_congr rfl fun e he => by rw [if_pos (Finset.mem_inter.mp he).2]
@@ -122,7 +122,7 @@ theorem rectangle_induces_subConstraint
       simpa only [ite_self] using h0eq
     show (∑ e ∈ incEdges G v ∩ E₁, α e) = ∑ e ∈ incEdges G v ∩ E₁, α₀ e
     exact add_right_cancel (h1eq.trans h0split.symm)
-  · push_neg at hR
+  · push Not at hR
     exact ⟨0, fun α hα => absurd hα (hR α)⟩
 
 /-! ## Vertex splitting ([dCM21, §5.2])
@@ -164,14 +164,14 @@ def SplitAdj (G : SimpleGraph V) (v : V) (N₂ : Finset V) :
 ([dCM21, §5.2]), on the vertex type `V ⊕ Unit`. -/
 def splitGraph (G : SimpleGraph V) (v : V) (N₂ : Finset V) : SimpleGraph (V ⊕ Unit) where
   Adj := SplitAdj G v N₂
-  symm := by
+  symm := ⟨by
     rintro (a | ⟨⟩) (b | ⟨⟩) h <;> simp only [SplitAdj] at h ⊢
     · exact ⟨h.1.symm, h.2.2, h.2.1⟩
     · exact h
-    · exact h
-  loopless := by
+    · exact h⟩
+  loopless := ⟨by
     rintro (a | ⟨⟩) h <;> simp only [SplitAdj] at h
-    exact G.loopless a h.1
+    exact G.irrefl h.1⟩
 
 instance splitGraph_decidableRel (G : SimpleGraph V) [DecidableRel G.Adj] (v : V)
     (N₂ : Finset V) : DecidableRel (splitGraph G v N₂).Adj := by
@@ -191,7 +191,7 @@ def splitCharge (v : V) (c : V → ZMod 2) (c₁ c₂ : ZMod 2) : (V ⊕ Unit) �
 
 /-! ### Local graph vocabulary
 
-Mathlib v4.15 has no `Finset`-level independent-set API (area `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §8.3),
+Mathlib has no `Finset`-level independent-set API (area `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §8.3),
 so both notions are defined locally. -/
 
 /-- **An independent set**: no two of its vertices are adjacent
@@ -207,7 +207,7 @@ def IsThreeConnected (G : SimpleGraph V) : Prop :=
 /-! ## Graph-side lemmas — as inhabited imports
 
 Lemmas 16–19 rest on graph surgery, a GF(2)-rank/model-count fact, and a
-spanning-tree argument that Mathlib v4.15 does not support cheaply.  Following
+spanning-tree argument that Mathlib does not support cheaply.  Following
 `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §1.3 they are carried as named `structure`s in the area's `Imported`
 namespace with **explicit counts**, and (where a witness is cheaper than the
 imported theorem) inhabited below. -/
@@ -288,7 +288,7 @@ caller instantiates it with the iterated split graph.
 The obstruction is the paper's spanning-tree + handshaking argument ([dCM21, §5.3])
 over the contraction `G₃` of the split components: it needs a finite spanning tree
 with `r − 1` edges, which rests on the "a finite tree has a leaf" induction absent
-from Mathlib v4.15 (area `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §9.3).  Inhabited at `k = 0` (`S = ∅`). -/
+from Mathlib (area `docs/dev/KnowledgeCompilation-Tseitin-ROADMAP.md` §9.3).  Inhabited at `k = 0` (`S = ∅`). -/
 structure ThreeConnectedSplitChoice (k : ℕ) (verts : Fin k → V)
     (KeepsConnected : Finset (Fin k) → Prop) : Prop where
   /-- A large connected-preserving subset exists. -/
@@ -310,7 +310,7 @@ def indepSplitModelCount_zero :
   count _ _ _ _ _ := by
     simp only [IsEmpty.forall_iff, and_true]
     haveI hemp : IsEmpty {e // e ∈ (⊥ : SimpleGraph (Fin 1)).edgeSet} :=
-      ⟨fun e => Set.not_mem_empty e.1 (SimpleGraph.edgeSet_bot ▸ e.2)⟩
+      ⟨fun e => Set.notMem_empty e.1 (SimpleGraph.edgeSet_bot ▸ e.2)⟩
     haveI : Subsingleton (Assignment (⊥ : SimpleGraph (Fin 1))) :=
       ⟨fun f g => funext fun e => isEmptyElim e⟩
     have hcard : Nat.card {α : Assignment (⊥ : SimpleGraph (Fin 1)) //
@@ -319,7 +319,7 @@ def indepSplitModelCount_zero :
       exact ⟨⟨fun a b => Subtype.ext (Subsingleton.elim a.1 b.1)⟩,
         ⟨⟨fun _ => 0, fun v => by simp [chi]⟩⟩⟩
     rw [hcard]
-    simp [SimpleGraph.edgeFinset_bot, Fintype.card_fin]
+    simp [SimpleGraph.edgeFinset, Set.toFinset_card]
 
 /-- **`Imported.ThreeConnectedSplitChoice` is inhabited** (at `k = 0`): the empty
 subset has size `0 ≥ 0/3` and splits nothing. -/

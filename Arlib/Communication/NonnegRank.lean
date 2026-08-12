@@ -279,7 +279,7 @@ lemma sum_eval_extendNonnegFamily (M : Fin r → NonnegRankOne P) (hr : r ≤ r'
     intro i
     simp [hG, i.isLt]
   have hsub : ∑ n ∈ Finset.range r, G n = ∑ n ∈ Finset.range r', G n := by
-    refine Finset.sum_subset (Finset.range_subset.mpr hr) fun n _ hn => ?_
+    refine Finset.sum_subset (Finset.range_subset_range.mpr hr) fun n _ hn => ?_
     simp only [Finset.mem_range] at hn
     simp [hG, hn]
   calc ∑ i : Fin r', (extendNonnegFamily M r' i).eval α
@@ -433,7 +433,7 @@ lemma fixedNonnegRank_le_of_hasNonnegRank (h : HasNonnegRankOfSize P g r) :
 Unconditional, for the reason given in `Communication.Measures`: if no
 decomposition exists the measure is `0` and the hypothesis is unsatisfiable. -/
 lemma not_hasNonnegRank_of_lt_fixedNonnegRank (h : r < fixedNonnegRank P g) :
-    ¬ HasNonnegRankOfSize P g r := Nat.not_mem_of_lt_sInf h
+    ¬ HasNonnegRankOfSize P g r := Nat.notMem_of_lt_sInf h
 
 /-- The measure is attained, when anything is. -/
 lemma hasNonnegRank_fixedNonnegRank (h : NonnegRankable P g) :

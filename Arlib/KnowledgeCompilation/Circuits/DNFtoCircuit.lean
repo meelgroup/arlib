@@ -968,7 +968,7 @@ lemma unambiguous_cons_not_sat {tm : Finset (Lit V)} {ψ : DNF V}
     exact List.filter_cons_of_pos (by simpa using h₁)
   have hlen := h α
   rw [hfil, List.length_cons] at hlen
-  have hnil : DNF.satTerms ψ α = [] := List.length_eq_zero.mp (by omega)
+  have hnil : DNF.satTerms ψ α = [] := List.length_eq_zero_iff.mp (by omega)
   have : t' ∈ DNF.satTerms ψ α := DNF.mem_satTerms.mpr ⟨ht', hs'⟩
   rw [hnil] at this
   simp at this

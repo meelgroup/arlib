@@ -159,7 +159,7 @@ theorem isBinary_appList :
   | nil => intro b hb _; simpa using hb
   | cons c cs ih =>
     intro b hb hcs
-    exact ih (app b c) (isBinary_app hb (hcs c (List.mem_cons_self c cs)))
+    exact ih (app b c) (isBinary_app hb (hcs c (List.mem_cons_self)))
       (fun d hd => hcs d (List.mem_cons_of_mem c hd))
 
 /-- **The encoding lands in `Trees_b[Σ ∪ {@}]`.**  Every node of `toBinary t` is
@@ -365,7 +365,7 @@ theorem forall₂_accepts_toBinary {ts : List (LTree Γ)}
     | nil => cases h
     | cons u us =>
       rw [List.forall₂_cons] at h
-      exact .cons (ih t (List.mem_cons_self t ts) u h.1)
+      exact .cons (ih t (List.mem_cons_self) u h.1)
         (iht (fun w hw => ih w (List.mem_cons_of_mem t hw)) us h.2)
 
 /-- **Soundness.**  Every run of `A` is an accepting run of `binarize A` on the

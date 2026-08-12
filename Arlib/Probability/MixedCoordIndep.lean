@@ -173,7 +173,7 @@ theorem indic_interEvent {B : ℕ} (E : Fin B → C.Ω → Prop) (S : Finset (Fi
   · have hleft : indic (C.toProbSpace.interEvent E S) ω = 0 := by
       simp only [indic_apply]; exact if_neg h
     rw [hleft]
-    push_neg at h
+    push Not at h
     obtain ⟨b, hb, hnb⟩ := h
     symm
     refine Finset.prod_eq_zero hb ?_
@@ -200,7 +200,7 @@ theorem indepEvents_of_disjoint {B : ℕ}
       have hcongr : C.toProbSpace.Pr (C.toProbSpace.interEvent E ∅)
           = C.toProbSpace.Pr (fun _ : C.Ω => True) :=
         C.toProbSpace.Pr_congr (fun ω =>
-          ⟨fun _ => trivial, fun _ i hi => absurd hi (Finset.not_mem_empty i)⟩)
+          ⟨fun _ => trivial, fun _ i hi => absurd hi (Finset.notMem_empty i)⟩)
       have hind : indic (fun _ : C.Ω => True) = (fun _ => (1 : ℝ)) := by
         funext ω; simp only [indic_apply]; rw [if_pos trivial]
       rw [hcongr]

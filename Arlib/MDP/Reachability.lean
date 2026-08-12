@@ -171,7 +171,7 @@ theorem Vstar_eq (s : S) (hs : M.isTerm s = false) :
     refine Finset.sup'_le _ _ fun a ha => ?_
     have hlim : Tendsto (fun k => ∑ s', M.P s a s' * M.reachVal k s') atTop
         (𝓝 (∑ s', M.P s a s' * M.Vstar s')) :=
-      tendsto_finset_sum _ fun s' _ => (M.tendsto_reachVal s').const_mul (M.P s a s')
+      tendsto_finsetSum _ fun s' _ => (M.tendsto_reachVal s').const_mul (M.P s a s')
     refine le_of_tendsto hlim ?_
     filter_upwards with k
     calc ∑ s', M.P s a s' * M.reachVal k s' ≤ M.reachVal (k + 1) s := by

@@ -80,8 +80,8 @@ theorem k_ge_of_chain {t Δ Vp Vpp kstar : ℕ}
     2 * t / (9 * Δ) ≤ kstar := by
   have hchain : 2 * t ≤ 9 * Δ * kstar := by
     calc 2 * t ≤ 3 * Vp := hbw
-      _ ≤ 3 * (Δ * Vpp) := mul_le_mul_left' hindep 3
-      _ ≤ 3 * (Δ * (3 * kstar)) := mul_le_mul_left' (mul_le_mul_left' hstar Δ) 3
+      _ ≤ 3 * (Δ * Vpp) := mul_le_mul_right hindep 3
+      _ ≤ 3 * (Δ * (3 * kstar)) := mul_le_mul_right (mul_le_mul_right hstar Δ) 3
       _ = 9 * Δ * kstar := by ring
   exact Nat.div_le_of_le_mul hchain
 

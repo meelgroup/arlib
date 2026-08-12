@@ -3,6 +3,7 @@ Copyright (c) 2026 Kuldeep S. Meel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
+import Mathlib.Tactic.IntervalCases
 import Arlib.Probability.StirlingMoment
 import Arlib.Probability.MomentToTail
 
@@ -132,7 +133,7 @@ open Finset
 theorem sum_Ico_two_pow_div_factorial_le {x : ℝ} (hx : 0 ≤ x) (n : ℕ) :
     ∑ j ∈ Finset.Ico 2 (n + 1), x ^ j / (j.factorial : ℝ) ≤ Real.exp x - 1 - x := by
   have hnn : 0 ≤ Real.exp x - 1 - x := by linarith [Real.add_one_le_exp x]
-  rcases le_or_lt (n + 1) 2 with h | h
+  rcases le_or_gt (n + 1) 2 with h | h
   · rw [Finset.Ico_eq_empty (by omega)]
     simpa using hnn
   · have hsplit : ∑ j ∈ Finset.Ico 0 2, x ^ j / (j.factorial : ℝ)
@@ -321,7 +322,6 @@ theorem abs_Ex_centre_sum_pow_le_exp (hind : KWiseIndep P K Z) (hZ : IsIndicator
       have hxnj : (0:ℝ) < x ^ (n - j) := pow_pos hx (n - j)
       rw [hxsplit, ← hfac]
       field_simp
-      ring
     -- Sum up.
     have hsum : ∑ j ∈ Finset.Ico 2 (n + 1),
           |(n.choose j : ℝ) * (P.Ex (fun ω => centre Z a ω ^ j)
@@ -479,7 +479,7 @@ theorem Ex_sum_sub_mean_pow_le_bellareRompel (hind : KWiseIndep P K Z)
       ≤ |P.Ex (fun ω => ((∑ i ∈ s, Z i ω)
         - P.Ex (fun ω' => ∑ i ∈ s, Z i ω')) ^ (2 * t))| := le_abs_self _
   refine hnn.trans ?_
-  rcases le_or_lt (4 * (t:ℝ)) (3 * P.Ex (fun ω' => ∑ i ∈ s, Z i ω')) with hcase | hcase
+  rcases le_or_gt (4 * (t:ℝ)) (3 * P.Ex (fun ω' => ∑ i ∈ s, Z i ω')) with hcase | hcase
   · -- Regime `4t ≤ 3μ`: the optimal `x = √(4t/(3μ))` is at most `1`.
     have hmupos : (0:ℝ) < P.Ex (fun ω' => ∑ i ∈ s, Z i ω') := by linarith
     have hq0 : (0:ℝ) < 4 * (t:ℝ) / (3 * P.Ex (fun ω' => ∑ i ∈ s, Z i ω')) := by positivity
@@ -502,7 +502,6 @@ theorem Ex_sum_sub_mean_pow_le_bellareRompel (hind : KWiseIndep P K Z)
       refine (mul_le_mul_of_nonneg_left hphi hmu0).trans (le_of_eq ?_)
       rw [hqdef]
       field_simp
-      ring
     have hexple : Real.exp (P.Ex (fun ω' => ∑ i ∈ s, Z i ω')
           * (Real.exp (Real.sqrt q) - 1 - Real.sqrt q))
         ≤ Real.exp 1 ^ t := by
@@ -527,7 +526,6 @@ theorem Ex_sum_sub_mean_pow_le_bellareRompel (hind : KWiseIndep P K Z)
       congr 1
       rw [hqdef]
       field_simp
-      ring
     rw [heq]
     refine hmono _ (by positivity) (mul_le_mul_of_nonneg_left ?_ hexp1.le)
     linarith [sq_nonneg ((t : ℝ))]
@@ -684,7 +682,7 @@ theorem exp_tail_relative (hind : KWiseIndep P K Z) (hZ : IsIndicatorFamily Z)
       ≤ Real.exp (-(γ ^ 2 * P.Ex (fun ω' => ∑ i ∈ S, Z i ω')) / 35) := by
   have hmu0 : (0:ℝ) < P.Ex (fun ω' => ∑ i ∈ S, Z i ω') := by
     by_contra h
-    push_neg at h
+    push Not at h
     nlinarith [sq_nonneg γ]
   refine exp_tail_of_budget hind hZ S (mul_pos hγ0 hmu0) hbig (le_of_eq (by ring)) ?_ hK
   have hγ2 : γ ^ 2 ≤ 1 := by nlinarith
@@ -714,7 +712,7 @@ theorem exp_tail_relative_ge_one (hind : KWiseIndep P K Z) (hZ : IsIndicatorFami
   have hγ0 : (0:ℝ) < γ := lt_of_lt_of_le zero_lt_one hγ
   have hmu0 : (0:ℝ) < P.Ex (fun ω' => ∑ i ∈ S, Z i ω') := by
     by_contra h
-    push_neg at h
+    push Not at h
     nlinarith
   refine exp_tail_of_budget hind hZ S (mul_pos hγ0 hmu0) hbig ?_ (le_of_eq (by ring)) hK
   nlinarith [hmu0, hγ]

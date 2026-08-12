@@ -121,7 +121,7 @@ def G : Fin 15 → Gate Var 15
 
 /-- **The circuit of Figure 1** ([VS24, §2]), fifteen nodes with
 source `14`. -/
-def C : NNF Var where
+@[reducible] def C : NNF Var where
   size := 15
   gate := G
   child_lt := by decide

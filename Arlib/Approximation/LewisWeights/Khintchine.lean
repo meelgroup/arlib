@@ -162,7 +162,6 @@ theorem avg_pow_le (x : ι → ℝ) {k : ℕ} (hk : 1 ≤ k) :
       rw [pow_mul, ← div_pow, ← mul_pow]
       congr 1
       field_simp
-      ring
     calc avg (fun s => (∑ i, Sgn (s i) * x i) ^ (2 * k))
         ≤ (((2 * k).factorial : ℝ) / t ^ (2 * k)) * Real.exp (k : ℝ) := step1
       _ ≤ ((2 * (k : ℝ)) ^ (2 * k)) / t ^ (2 * k) * Real.exp (k : ℝ) := by

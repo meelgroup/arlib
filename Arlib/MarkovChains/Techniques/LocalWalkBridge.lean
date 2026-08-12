@@ -147,7 +147,7 @@ theorem upDown_one_singleton_ne (v : Finset E → ℝ) (m : ℕ)
     rw [Finset.mem_singleton]
     exact hne
   have hcardρ : (insert e' ({e} : Finset E)).card = 1 + 1 := by
-    rw [Finset.card_insert_of_not_mem hne', Finset.card_singleton]
+    rw [Finset.card_insert_of_notMem hne', Finset.card_singleton]
   have hesub : ({e} : Finset E) ⊆ insert e' {e} := Finset.subset_insert e' {e}
   have he'sub : ({e'} : Finset E) ⊆ insert e' {e} :=
     Finset.singleton_subset_iff.mpr (Finset.mem_insert_self e' {e})
@@ -342,6 +342,7 @@ theorem upDown_linkShiftNorm_eq_lazy_localWalk (w : Finset E → ℝ) (n : ℕ) 
         have hDne : ((n - (τ.card + 1) : ℕ) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
         rw [mu_linkShiftNorm_pair w he he', hQ]
         field_simp
+        ring
   · have hoff : ¬ (e ∉ τ ∧ 0 < mu w (insert e τ)) := fun hc =>
       hg ((mu_linkShiftNorm_singleton_pos_iff w hpos e).mpr hc)
     rw [upDown_one_singleton_of_not_pos (linkShiftNorm w τ) (n - τ.card)

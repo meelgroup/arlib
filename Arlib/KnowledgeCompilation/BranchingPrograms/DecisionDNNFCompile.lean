@@ -576,7 +576,7 @@ theorem dtCore_valAt (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGat
     have hg : L[(dtCore f [] l).2]'hroot = RawGate.const (f (fun _ => false)) :=
       getElem_last_of_prefix hpre hroot
     rw [(hL.toNNF rt).valAt_const (hL.gate_eq_const rt hroot hg)]
-    exact (hf.apply α (fun _ => false) (fun x hx => absurd hx (List.not_mem_nil x))).symm
+    exact (hf.apply α (fun _ => false) (fun x hx => absurd hx (List.not_mem_nil))).symm
   | cons x xs ih =>
     have hf0 : DependsOnList (cofactor f x false) xs := dependsOn_cofactor hf false
     have hf1 : DependsOnList (cofactor f x true) xs := dependsOn_cofactor hf true
@@ -777,7 +777,7 @@ theorem dtCore_isDecisionNode (f : (V → Bool) → Bool) (xs : List V) (l : Lis
     subst hie
     have hg' : L[l.length]'hiL = RawGate.const (f (fun _ => false)) :=
       getElem_last_of_prefix (by rw [dtCore_nil] at hpre; exact hpre) hiL
-    rw [hg'] at hg; exact RawGate.noConfusion hg
+    rw [hg'] at hg; exact absurd hg (by simp)
   | cons x xs ih =>
     have hpreLo := dtCore_prefix_lo f x xs l L hpre
     have hpreHi := dtCore_prefix_hi f x xs l L hpre
@@ -797,7 +797,7 @@ theorem dtCore_isDecisionNode (f : (V → Bool) → Bool) (xs : List V) (l : Lis
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]) <+: L := by
       have := hpre; rw [dtCore_cons] at this; exact this
     have hfulllen : (dtCore f (x :: xs) l).1.length = m + 5 := by
-      rw [dtCore_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm]
+      rw [dtCore_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm, ← hB]
     have hm5 : m + 5 ≤ L.length := by rw [← hfulllen]; exact hpre.length_le
     have hchain : B ++ [RawGate.lit x true, RawGate.lit x false, RawGate.conj m hi2,
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]
@@ -852,13 +852,13 @@ theorem dtCore_isDecisionNode (f : (V → Bool) → Bool) (xs : List V) (l : Lis
           have hia : m ≤ i := Nat.not_lt.mp hhi; omega
         rcases hcase with rfl | rfl | rfl | rfl | rfl
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g0] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g1] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g2] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g3] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · have hb_m : m < L.length := by omega
           have hb_m1 : m + 1 < L.length := by omega
           have hb_m2 : m + 2 < L.length := by omega
@@ -890,7 +890,7 @@ theorem dtCore_decomposableNode (f : (V → Bool) → Bool) (xs : List V) (l : L
     subst hie
     have hg' : L[l.length]'hiL = RawGate.const (f (fun _ => false)) :=
       getElem_last_of_prefix (by rw [dtCore_nil] at hpre; exact hpre) hiL
-    rw [hg'] at hg; exact RawGate.noConfusion hg
+    rw [hg'] at hg; exact absurd hg (by simp)
   | cons x xs ih =>
     obtain ⟨hxns, hndxs⟩ := List.nodup_cons.mp hnd
     have hpreLo := dtCore_prefix_lo f x xs l L hpre
@@ -911,7 +911,7 @@ theorem dtCore_decomposableNode (f : (V → Bool) → Bool) (xs : List V) (l : L
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]) <+: L := by
       have := hpre; rw [dtCore_cons] at this; exact this
     have hfulllen : (dtCore f (x :: xs) l).1.length = m + 5 := by
-      rw [dtCore_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm]
+      rw [dtCore_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm, ← hB]
     have hm5 : m + 5 ≤ L.length := by rw [← hfulllen]; exact hpre.length_le
     have hchain : B ++ [RawGate.lit x true, RawGate.lit x false, RawGate.conj m hi2,
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]
@@ -973,9 +973,9 @@ theorem dtCore_decomposableNode (f : (V → Bool) → Bool) (xs : List V) (l : L
         have hb_m1 : m + 1 < L.length := by omega
         rcases hcase with rfl | rfl | rfl | rfl | rfl
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g0] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g1] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · -- conj m hi2 : disjoint {x} and vars below hi2
           rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g2] at hg
           obtain ⟨rfl, rfl⟩ := RawGate.conj.inj hg
@@ -987,7 +987,7 @@ theorem dtCore_decomposableNode (f : (V → Bool) → Bool) (xs : List V) (l : L
           rw [(hL.toNNF rt).varsAt_lit (hL.gate_eq_lit rt ha g1)]
           exact Finset.disjoint_singleton_left.mpr fun hmem => hxnot (vlo hmem)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g4] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
 
 /-! ## The leaf-address variant `dtCoreL`
 
@@ -1189,7 +1189,7 @@ theorem dtCoreL_valAt (leaf : (V → Bool) → ℕ) (xs : List V) (l : List (Raw
   induction xs generalizing leaf l with
   | nil =>
     have heq : leaf (fun _ => false) = leaf α :=
-      hdep _ _ (fun y hy => absurd hy (List.not_mem_nil y))
+      hdep _ _ (fun y hy => absurd hy (List.not_mem_nil))
     congr 1
     exact Fin.ext heq
   | cons x xs ih =>
@@ -1337,7 +1337,7 @@ theorem dtCoreL_isDecisionNode (leaf : (V → Bool) → ℕ) (xs : List V) (l : 
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]) <+: L := by
       have := hpre; rw [dtCoreL_cons] at this; exact this
     have hfulllen : (dtCoreL leaf (x :: xs) l).1.length = m + 5 := by
-      rw [dtCoreL_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm]
+      rw [dtCoreL_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm, ← hB]
     have hm5 : m + 5 ≤ L.length := by rw [← hfulllen]; exact hpre.length_le
     have hchain : B ++ [RawGate.lit x true, RawGate.lit x false, RawGate.conj m hi2,
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]
@@ -1396,13 +1396,13 @@ theorem dtCoreL_isDecisionNode (leaf : (V → Bool) → ℕ) (xs : List V) (l : 
         have hb_m3 : m + 3 < L.length := by omega
         rcases hcase with rfl | rfl | rfl | rfl | rfl
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g0] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g1] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g2] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g3] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · refine ⟨x, ⟨m + 2, hb_m2⟩, ⟨m + 3, hb_m3⟩,
             hL.gate_eq_disj rt hiL g4 hb_m2 hb_m3, ?_, ?_⟩
           · exact ⟨⟨m, hb_m⟩, ⟨hi2, hhi2L⟩,
@@ -1565,7 +1565,7 @@ theorem dtCoreL_decomposableNode (leaf : (V → Bool) → ℕ) (xs : List V) (l 
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]) <+: L := by
       have := hpre; rw [dtCoreL_cons] at this; exact this
     have hfulllen : (dtCoreL leaf (x :: xs) l).1.length = m + 5 := by
-      rw [dtCoreL_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm]
+      rw [dtCoreL_cons]; simp only [List.length_append, List.length_cons, List.length_nil, hm, ← hB]
     have hm5 : m + 5 ≤ L.length := by rw [← hfulllen]; exact hpre.length_le
     have hchain : B ++ [RawGate.lit x true, RawGate.lit x false, RawGate.conj m hi2,
         RawGate.conj (m + 1) lo2, RawGate.disj (m + 2) (m + 3)]
@@ -1613,11 +1613,11 @@ theorem dtCoreL_decomposableNode (leaf : (V → Bool) → ℕ) (xs : List V) (l 
       dtCoreL_notMem_varsAt (fun a => leaf (Function.update a x true)) xs
         (dtCoreL (fun a => leaf (Function.update a x false)) xs l).1 hL rt hpreHi hlbHi hhi2L x
         (by simpa using hxns)
-        (fun τ h => hyleaf x (List.mem_cons_self x xs) (Function.update τ x true) h)
+        (fun τ h => hyleaf x (List.mem_cons_self) (Function.update τ x true) h)
     have hxvarlo : x ∉ (hL.toNNF rt).varsAt ⟨lo2, hlo2L⟩ :=
       dtCoreL_notMem_varsAt (fun a => leaf (Function.update a x false)) xs l hL rt hpreLo hlbLo
         hlo2L x (by simpa using hxns)
-        (fun τ h => hyleaf x (List.mem_cons_self x xs) (Function.update τ x false) h)
+        (fun τ h => hyleaf x (List.mem_cons_self) (Function.update τ x false) h)
     intro i hiL hil hi a b ha hb hg
     rw [hfulllen] at hi
     by_cases hlo : i < (dtCoreL (fun a => leaf (Function.update a x false)) xs l).1.length
@@ -1635,9 +1635,9 @@ theorem dtCoreL_decomposableNode (leaf : (V → Bool) → ℕ) (xs : List V) (l 
         have hb_m1 : m + 1 < L.length := by omega
         rcases hcase with rfl | rfl | rfl | rfl | rfl
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g0] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g1] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g2] at hg
           obtain ⟨rfl, rfl⟩ := RawGate.conj.inj hg
           rw [(hL.toNNF rt).varsAt_lit (hL.gate_eq_lit rt ha g0)]
@@ -1647,7 +1647,7 @@ theorem dtCoreL_decomposableNode (leaf : (V → Bool) → ℕ) (xs : List V) (l 
           rw [(hL.toNNF rt).varsAt_lit (hL.gate_eq_lit rt ha g1)]
           exact Finset.disjoint_singleton_left.mpr hxvarlo
         · rw [(getElem_eq_of_eq L hiL (by omega) rfl).trans g4] at hg
-          exact RawGate.noConfusion hg
+          exact absurd hg (by simp)
 
 /-! ## The decomposable `∧`-chain over children
 
@@ -1850,7 +1850,7 @@ theorem andChainCore_decomposableNode {L : List (RawGate V)} (hL : RawValid L) (
       subst hie
       have hg' : L[l.length]'hiL = RawGate.const true :=
         getElem_last_of_prefix (by rw [andChainCore_nil] at hpre; exact hpre) hiL
-      rw [hg'] at hg; exact RawGate.noConfusion hg
+      rw [hg'] at hg; exact absurd hg (by simp)
   | [a], l, _, _, _, _, _, i, hiL, hil, hi, _, _, _, _, _ => by
       have hi' : i < l.length := by simpa only [andChainCore_single] using hi
       omega
@@ -2425,7 +2425,7 @@ theorem childCascades_foldr (D : RootedTD G) (table : Table D) (i : Fin D.n) (σ
   | c :: cs, prog, hcs, hpre, hll, hlb => by
       have hpre' : (childCascades D table i σ cs (childCascade D table i σ c prog).1).1 <+: L := by
         have := hpre; rw [childCascades_cons] at this; exact this
-      have hlbc : ∀ β, childLeaf D table i c σ β < prog.length := hlb c (List.mem_cons_self c cs)
+      have hlbc : ∀ β, childLeaf D table i c σ β < prog.length := hlb c (List.mem_cons_self)
       have hP1 : (childCascade D table i σ c prog).1 <+: L :=
         (childCascades_prefix D table i σ cs (childCascade D table i σ c prog).1).trans hpre'
       have hrootc : (childCascade D table i σ c prog).2 < L.length :=
@@ -2435,7 +2435,7 @@ theorem childCascades_foldr (D : RootedTD G) (table : Table D) (i : Fin D.n) (σ
           = decide (fDP D α c
               ((σ ∩ D.bag c) ∪ (D.bag c \ D.bag i).filter (fun v => α v = true))) := by
         rw [childCascade_valAt D table i c σ prog hL rt α hP1 hlbc hrootc hleafcL]
-        exact hchild c (hcs c (List.mem_cons_self c cs)) _ (childLeaf_mem_powerset D i c σ α) hleafcL
+        exact hchild c (hcs c (List.mem_cons_self)) _ (childLeaf_mem_powerset D i c σ α) hleafcL
       rw [childCascades_cons, List.foldr_cons, dif_pos hrootc, hval,
         childCascades_foldr D table i σ hL rt α hchild cs (childCascade D table i σ c prog).1
           (fun c' hc' => hcs c' (List.mem_cons_of_mem c hc')) hpre' hP1.length_le
@@ -2578,7 +2578,7 @@ theorem emitNodeAux_table_i_preserves (D : RootedTD G) (i : Fin D.n) :
   | [], st, σ', _ => by rw [emitNodeAux_nil]
   | σ :: σs, st, σ', hσ' => by
       have hne : σ' ∉ σs := fun h => hσ' (List.mem_cons_of_mem σ h)
-      have hσσ' : σ' ≠ σ := fun h => hσ' (h ▸ List.mem_cons_self σ σs)
+      have hσσ' : σ' ≠ σ := fun h => hσ' (h ▸ List.mem_cons_self)
       rw [emitNodeAux_cons, emitNodeAux_table_i_preserves D i σs _ σ' hne]
       show (Function.update st.2 i (Function.update (st.2 i) σ (emitNodeSigma D st.2 i σ st.1).2))
         i σ' = st.2 i σ'
@@ -2590,7 +2590,7 @@ theorem emitNodeAux_records (D : RootedTD G) (i : Fin D.n) :
     ∀ (σs : List (Finset V)) (st : List (RawGate V) × Table D), σs.Nodup →
       (∀ c ∈ childrenList D i, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length) →
       ∀ σ ∈ σs, (emitNodeAux D i σs st).2 i σ < (emitNodeAux D i σs st).1.length
-  | [], _, _, _, σ, hσ => absurd hσ (List.not_mem_nil σ)
+  | [], _, _, _, σ, hσ => absurd hσ (List.not_mem_nil)
   | σ' :: σs, st, hnd, hchild, σ, hσ => by
       rw [emitNodeAux_cons]
       have hlb0 : ∀ c ∈ childrenList D i, ∀ α, childLeaf D st.2 i c σ' α < st.1.length :=
@@ -2640,7 +2640,7 @@ theorem emitNodeAux_valAt (D : RootedTD G) (i : Fin D.n) {L : List (RawGate V)}
       (emitNodeAux D i σs st).1 <+: L → st.1.length ≤ L.length →
       ∀ σ ∈ σs, ∀ (h : (emitNodeAux D i σs st).2 i σ < L.length),
         (hL.toNNF rt).valAt α ⟨(emitNodeAux D i σs st).2 i σ, h⟩ = decide (fDP D α i σ)
-  | [], _, _, _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil σ)
+  | [], _, _, _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil)
   | σ' :: σs, st, hnd, hchild, hvalL, hpreL, hll, σ, hσ, h => by
       have hci : ∀ c ∈ childrenList D i, c ≠ i := fun c hc => (childrenList_lt D i c hc).ne'
       have hchild' : ∀ c ∈ childrenList D i, ∀ τ ∈ (D.bag c).powerset,
@@ -2755,8 +2755,8 @@ theorem compileAux_inv (D : RootedTD G) :
   | x :: rest, processed, st, hp, hproc, hord, hnd => by
       rw [compileAux_cons]
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun h => hd h (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun h => hd h (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have h := hord [] x rest rfl c hc; simpa using h
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -2806,8 +2806,8 @@ theorem compileAux_valAt (D : RootedTD G) {Lf : List (RawGate V)} (hLf : RawVali
       exact hval j hj σ hσ h
   | x :: rest, processed, st, hp, hproc, hval, hord, hnd, hll, hpreLf => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun h => hd h (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun h => hd h (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have h := hord [] x rest rfl c hc; simpa using h
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -3028,7 +3028,7 @@ theorem rootCascades_foldr (D : RootedTD G)
   | r :: rs, prog, hpre, hll, hlb => by
       have hpre' : (rootCascades D rs (rootCascade D r prog).1).1 <+: L := by
         have := hpre; rw [rootCascades_cons] at this; exact this
-      have hlbc : ∀ β, rootLeaf D r β < prog.length := hlb r (List.mem_cons_self r rs)
+      have hlbc : ∀ β, rootLeaf D r β < prog.length := hlb r (List.mem_cons_self)
       have hP1 : (rootCascade D r prog).1 <+: L :=
         (rootCascades_prefix D rs (rootCascade D r prog).1).trans hpre'
       have hrootc : (rootCascade D r prog).2 < L.length :=
@@ -3212,7 +3212,7 @@ theorem emitNodeSigma_length_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w)
   have hcc2 := childCascades_roots_length D table i σ (childrenList D i) prog
   have hchild_n := childrenList_length_le D i
   have hmul : (childrenList D i).length * (5 * 2 ^ (w + 1)) ≤ D.n * (5 * 2 ^ (w + 1)) :=
-    mul_le_mul_right' hchild_n _
+    mul_le_mul_left hchild_n _
   omega
 
 /-- The `σ`-fold for node `i` adds `≤ (#σ)·(n·5·2^{w+1} + n + 3)` nodes. -/
@@ -3244,7 +3244,7 @@ theorem emitNode_length_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) (i : Fi
     rw [Finset.length_toList, Finset.card_powerset]
     exact Nat.pow_le_pow_right (by norm_num) (hw i)
   have hmul : (D.bag i).powerset.toList.length * (D.n * (5 * 2 ^ (w + 1)) + D.n + 3)
-      ≤ 2 ^ (w + 1) * (D.n * (5 * 2 ^ (w + 1)) + D.n + 3) := mul_le_mul_right' hlen _
+      ≤ 2 ^ (w + 1) * (D.n * (5 * 2 ^ (w + 1)) + D.n + 3) := mul_le_mul_left hlen _
   omega
 
 /-- The node fold adds `≤ (#nodes)·2^{w+1}·(n·5·2^{w+1} + n + 3)` nodes. -/
@@ -3299,7 +3299,7 @@ theorem Cfull_length_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) :
   have hroots2 := rootCascades_roots_length D (rootsList D) (compileTD D).1
   have hrn := rootsList_length_le D
   have hmul : (rootsList D).length * (5 * 2 ^ (w + 1)) ≤ D.n * (5 * 2 ^ (w + 1)) :=
-    mul_le_mul_right' hrn _
+    mul_le_mul_left hrn _
   omega
 
 /-- **Explicit size bound for the compiled decision-DNNF** ([OD14] §3.5, Theorem 1;
@@ -3336,7 +3336,7 @@ theorem andChainCore_not_disj : ∀ (addrs : List ℕ) (l : List (RawGate V))
       have hie : i = l.length := by omega
       subst hie
       rw [getElem_last_of_prefix hpre0 hi]
-      exact fun h => RawGate.noConfusion h
+      exact fun h => absurd h (by simp)
   | [c], l, i, hi, hil, a, b => by simp only [andChainCore_single] at hi; omega
   | c :: d :: rest, l, i, hi, hil, a, b => by
       set L0 := (andChainCore (c :: d :: rest) l).1 with hL0
@@ -3351,7 +3351,7 @@ theorem andChainCore_not_disj : ∀ (addrs : List ℕ) (l : List (RawGate V))
         subst hie
         have hpre0 : sub.1 ++ [RawGate.conj c sub.2] <+: L0 := by rw [hL0eq]
         rw [getElem_last_of_prefix hpre0 hi]
-        exact fun h => RawGate.noConfusion h
+        exact fun h => absurd h (by simp)
 
 /-- One child cascade preserves `DisjGood`: its new `∨`-gates are decision nodes. -/
 theorem childCascade_disjGood (D : RootedTD G) (table : Table D) (i : Fin D.n) (σ : Finset V)
@@ -3439,7 +3439,7 @@ theorem emitNodeSigma_disjGood (D : RootedTD G) (table : Table D) (i : Fin D.n) 
     · have hje : j = cc.1.length := by omega
       subst hje
       rw [getElem_last_of_prefix hl'pre hj] at hg
-      exact RawGate.noConfusion hg
+      exact absurd hg (by simp)
     · have hbound : (cc.1 ++ [RawGate.const (locallyValidBool D i σ)]).length ≤ j := by
         simp only [List.length_append, List.length_singleton]; omega
       exact andChainCore_not_disj (cc.1.length :: cc.2)
@@ -3501,8 +3501,8 @@ theorem compileAux_disjGood (D : RootedTD G) {L : List (RawGate V)} (hL : RawVal
   | [], processed, st, _, _, _, _, _, h => by rw [compileAux_nil]; exact h
   | x :: rest, processed, st, hp, hproc, hord, hnd, hpreL, h => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun hh => hd hh (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun hh => hd hh (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have hh := hord [] x rest rfl c hc; simpa using hh
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -3795,7 +3795,7 @@ theorem emitNodeAux_varsAtBound (D : RootedTD G) (i : Fin D.n) {L : List (RawGat
       (emitNodeAux D i σs st).1 <+: L → st.1.length ≤ L.length →
       ∀ σ ∈ σs, ∀ (h : (emitNodeAux D i σs st).2 i σ < L.length),
         (hL.toNNF rt).varsAt ⟨(emitNodeAux D i σs st).2 i σ, h⟩ ⊆ belowVars D i
-  | [], _, _, _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil σ)
+  | [], _, _, _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil)
   | σ' :: σs, st, hnd, hchild, hvarL, hpreL, hll, σ, hσ, h => by
       have hci : ∀ c ∈ childrenList D i, c ≠ i := fun c hc => (childrenList_lt D i c hc).ne'
       have hchild' : ∀ c ∈ childrenList D i, ∀ τ ∈ (D.bag c).powerset,
@@ -3875,8 +3875,8 @@ theorem compileAux_varsAtBound (D : RootedTD G) {Lf : List (RawGate V)} (hLf : R
       exact hvar j hj σ hσ h
   | x :: rest, processed, st, hp, hproc, hvar, hord, hnd, hll, hpreLf => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun h => hd h (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun h => hd h (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have h := hord [] x rest rfl c hc; simpa using h
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -4120,14 +4120,14 @@ theorem emitNodeSigma_conjGood (D : RootedTD G) (table : Table D) (i : Fin D.n) 
           (hL.toNNF rt).varsAt_const
             (hL.gate_eq_const rt hcclen (getElem_last_of_prefix hl'pre hcclen))
         rw [dif_pos hcclen, hconst]
-        exact Finset.disjoint_left.mpr (fun a ha => absurd ha (Finset.not_mem_empty a))
+        exact Finset.disjoint_left.mpr (fun a ha => absurd ha (Finset.notMem_empty a))
       · exact childCascades_vs_pairwise D table i σ hL rt hleafvar (childrenList D i) prog
           (fun c hc => hc) (List.Nodup.filter _ (List.nodup_finRange D.n)) hlb hccpre
     rcases lt_or_ge j (cc.1.length + 1) with hjl' | hjl'
     · have hje : j = cc.1.length := by omega
       subst hje
       rw [getElem_last_of_prefix hl'pre hjL] at hg
-      exact RawGate.noConfusion hg
+      exact absurd hg (by simp)
     · have hbound : (cc.1 ++ [RawGate.const (locallyValidBool D i σ)]).length ≤ j := by
         simp only [List.length_append, List.length_singleton]; omega
       exact andChainCore_decomposableNode hL rt
@@ -4135,7 +4135,7 @@ theorem emitNodeSigma_conjGood (D : RootedTD G) (table : Table D) (i : Fin D.n) 
         (cc.1.length :: cc.2) (cc.1 ++ [RawGate.const (locallyValidBool D i σ)])
         (emitNodeSigma_addr_lt D table i σ prog (fun c hc α => hlb c hc α))
         hl'pre.length_le hpre
-        (fun a hh _ => by dsimp only; rw [dif_pos hh]) hpair
+        (fun a hh _ => by rw [dif_pos hh]) hpair
         j hjL hbound hj p q hp hq hg
 
 /-- The `σ`-fold preserves `ConjGood` (threads the child address bound and varsAt bound). -/
@@ -4211,8 +4211,8 @@ theorem compileAux_conjGood (D : RootedTD G) {L : List (RawGate V)} (hL : RawVal
   | [], processed, st, _, _, _, _, _, _, h => by rw [compileAux_nil]; exact h
   | x :: rest, processed, st, hp, hproc, hvar, hord, hnd, hpreL, h => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun hh => hd hh (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun hh => hd hh (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have hh := hord [] x rest rfl c hc; simpa using hh
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -4423,7 +4423,7 @@ theorem Cfull_conjGood (D : RootedTD G) [Fintype V] (rt : Fin (Cfull D).length) 
         else (∅ : Finset V))
       rc.2 rc.1 (rootCascades_roots_lt D (rootsList D) (compileTD D).1
         (fun r _ β => rootLeaf_lt D r β)) hrcpre.length_le List.prefix_rfl
-      (fun a hh _ => by dsimp only; rw [dif_pos hh]) hpair j hjL hge hj p q hp hq hg
+      (fun a hh _ => by rw [dif_pos hh]) hpair j hjL hge hj p q hp hq hg
 
 /-- **Step 4b — `Decomposable`**: every `∧`-node of the compiled circuit has children with
 disjoint variable sets. -/
@@ -4617,7 +4617,7 @@ theorem emitChildRhos_records (D : RootedTD G) (i c : Fin D.n) (dp : Table D) :
     ∀ (rs : List (Finset V)) (st : List (RawGate V) × Table D), rs.Nodup →
       (∀ τ ∈ (D.bag c).powerset, dp c τ < st.1.length) →
       ∀ ρ ∈ rs, (emitChildRhos D i c dp rs st).2 c ρ < (emitChildRhos D i c dp rs st).1.length
-  | [], st, _, _, ρ, hρ => absurd hρ (List.not_mem_nil ρ)
+  | [], st, _, _, ρ, hρ => absurd hρ (List.not_mem_nil)
   | ρ' :: rs, st, hnd, hdp, ρ, hρ => by
       rw [emitChildRhos_cons]
       rcases List.mem_cons.mp hρ with rfl | htail
@@ -4645,7 +4645,7 @@ theorem emitAllCascades_preserves (D : RootedTD G) (i : Fin D.n) (dp : Table D) 
       rw [emitAllCascades_cons,
         emitAllCascades_preserves D i dp cs _ c' (fun h => hc' (List.mem_cons_of_mem c h))]
       exact emitChildRhos_preserves D i c dp _ st c'
-        (fun h => hc' (by rw [h]; exact List.mem_cons_self c cs))
+        (fun h => hc' (by rw [h]; exact List.mem_cons_self))
 
 /-- Phase-A validity over all children. -/
 theorem emitAllCascades_valid (D : RootedTD G) (i : Fin D.n) (dp : Table D) :
@@ -4667,7 +4667,7 @@ theorem emitAllCascades_records (D : RootedTD G) (i : Fin D.n) (dp : Table D) :
       (∀ c ∈ cs, ∀ τ ∈ (D.bag c).powerset, dp c τ < st.1.length) →
       ∀ c ∈ cs, ∀ ρ ∈ (sep D i c).powerset.toList,
         (emitAllCascades D i dp cs st).2 c ρ < (emitAllCascades D i dp cs st).1.length
-  | [], st, _, _, c, hc, _, _ => absurd hc (List.not_mem_nil c)
+  | [], st, _, _, c, hc, _, _ => absurd hc (List.not_mem_nil)
   | c' :: cs, st, hnd, hdp, c, hc, ρ, hρ => by
       rw [emitAllCascades_cons]
       rcases List.mem_cons.mp hc with rfl | htail
@@ -4757,7 +4757,7 @@ theorem emitChainsSharp_records (D : RootedTD G) (i : Fin D.n) (casc : Table D) 
     ∀ (σs : List (Finset V)) (st : List (RawGate V) × Table D), σs.Nodup →
       (∀ c ∈ childrenList D i, ∀ σ ∈ σs, casc c (σ ∩ sep D i c) < st.1.length) →
       ∀ σ ∈ σs, (emitChainsSharp D i casc σs st).2 i σ < (emitChainsSharp D i casc σs st).1.length
-  | [], _, _, _, σ, hσ => absurd hσ (List.not_mem_nil σ)
+  | [], _, _, _, σ, hσ => absurd hσ (List.not_mem_nil)
   | σ' :: σs, st, hnd, hcasc, σ, hσ => by
       rw [emitChainsSharp_cons]
       have hcasc' : ∀ c ∈ childrenList D i, ∀ σ'' ∈ σs,
@@ -4882,8 +4882,8 @@ theorem compileAuxSharp_inv (D : RootedTD G) :
   | x :: rest, processed, st, hp, hproc, hord, hnd => by
       rw [compileAuxSharp_cons]
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun h => hd h (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun h => hd h (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have h := hord [] x rest rfl c hc; simpa using h
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -4923,7 +4923,7 @@ theorem emitChildRhos_valAt (D : RootedTD G) (i c : Fin D.n) (dp : Table D)
         (hleaf : childLeaf D dp i c ρ α < L.length),
         (hL.toNNF rt).valAt α ⟨(emitChildRhos D i c dp rs st).2 c ρ, hroot⟩
           = (hL.toNNF rt).valAt α ⟨childLeaf D dp i c ρ α, hleaf⟩
-  | [], st, _, _, _, ρ, hρ, _, _ => absurd hρ (List.not_mem_nil ρ)
+  | [], st, _, _, _, ρ, hρ, _, _ => absurd hρ (List.not_mem_nil)
   | ρ' :: rs, st, hdp, hpre, hnd, ρ, hρ, hroot, hleaf => by
       rw [emitChildRhos_cons] at hpre
       have hnewpre : (childCascade D dp i ρ' c st.1).1 <+: L :=
@@ -4965,7 +4965,7 @@ theorem emitAllCascades_valAt (D : RootedTD G) (i : Fin D.n) (dp : Table D)
           (hleaf : childLeaf D dp i c ρ α < L.length),
         (hL.toNNF rt).valAt α ⟨(emitAllCascades D i dp cs st).2 c ρ, hroot⟩
           = (hL.toNNF rt).valAt α ⟨childLeaf D dp i c ρ α, hleaf⟩
-  | [], st, _, _, _, c, hc, _, _, _, _ => absurd hc (List.not_mem_nil c)
+  | [], st, _, _, _, c, hc, _, _, _, _ => absurd hc (List.not_mem_nil)
   | c' :: cs, st, hdp, hpre, hnd, c, hc, ρ, hρ, hroot, hleaf => by
       rw [emitAllCascades_cons] at hpre
       have hpre1 : (emitChildRhos D i c' dp (sep D i c').powerset.toList st).1 <+: L :=
@@ -5057,7 +5057,7 @@ theorem emitChainsSharp_valAt (D : RootedTD G) (i : Fin D.n) (casc : Table D)
       (emitChainsSharp D i casc σs st).1 <+: L → st.1.length ≤ L.length →
       ∀ σ ∈ σs, ∀ (h : (emitChainsSharp D i casc σs st).2 i σ < L.length),
         (hL.toNNF rt).valAt α ⟨(emitChainsSharp D i casc σs st).2 i σ, h⟩ = decide (fDP D α i σ)
-  | [], _, _, _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil σ)
+  | [], _, _, _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil)
   | σ' :: σs, st, hnd, hlt, hval, hpreL, hll, σ, hσ, h => by
       have hblockpre : (emitNodeSigmaSharp D casc i σ' st.1).1 <+: L :=
         (emitChainsSharp_prefix D i casc σs
@@ -5169,8 +5169,8 @@ theorem compileAuxSharp_valAt (D : RootedTD G) {Lf : List (RawGate V)} (hLf : Ra
       exact hval j hj σ hσ h
   | x :: rest, processed, st, hp, hproc, hval, hord, hnd, hll, hpreLf => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun h => hd h (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun h => hd h (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have h := hord [] x rest rfl c hc; simpa using h
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -5340,7 +5340,7 @@ theorem rootCascadesSharp_foldr (D : RootedTD G)
   | r :: rs, prog, hpre, hll, hlb => by
       have hpre' : (rootCascadesSharp D rs (rootCascadeSharp D r prog).1).1 <+: L := by
         have := hpre; rw [rootCascadesSharp_cons] at this; exact this
-      have hlbc : ∀ β, rootLeafSharp D r β < prog.length := hlb r (List.mem_cons_self r rs)
+      have hlbc : ∀ β, rootLeafSharp D r β < prog.length := hlb r (List.mem_cons_self)
       have hP1 : (rootCascadeSharp D r prog).1 <+: L :=
         (rootCascadesSharp_prefix D rs (rootCascadeSharp D r prog).1).trans hpre'
       have hrootc : (rootCascadeSharp D r prog).2 < L.length :=
@@ -5484,7 +5484,7 @@ theorem emitNodeSigmaSharp_disjGood (D : RootedTD G) (casc : Table D) (i : Fin D
     · have hje : j = prog.length := by omega
       subst hje
       rw [getElem_last_of_prefix hl'pre hj] at hg
-      exact RawGate.noConfusion hg
+      exact absurd hg (by simp)
     · have hbound : (prog ++ [RawGate.const (locallyValidBool D i σ)]).length ≤ j := by
         simp only [List.length_append, List.length_singleton]; omega
       exact andChainCore_not_disj (prog.length :: chainAddrsSharp D casc i σ)
@@ -5531,8 +5531,8 @@ theorem compileAuxSharp_disjGood (D : RootedTD G) {L : List (RawGate V)} (hL : R
   | [], processed, st, _, _, _, _, _, h => by rw [compileAuxSharp_nil]; exact h
   | x :: rest, processed, st, hp, hproc, hord, hnd, hpreL, h => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun hh => hd hh (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun hh => hd hh (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have hh := hord [] x rest rfl c hc; simpa using hh
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -5638,7 +5638,7 @@ theorem emitChildRhos_varsAtBound (D : RootedTD G) (i c : Fin D.n) (dp : Table D
       (emitChildRhos D i c dp rs st).1 <+: L → rs.Nodup →
       ∀ ρ ∈ rs, ∀ (hroot : (emitChildRhos D i c dp rs st).2 c ρ < L.length),
         (hL.toNNF rt).varsAt ⟨(emitChildRhos D i c dp rs st).2 c ρ, hroot⟩ ⊆ belowVars D i
-  | [], st, _, _, _, ρ, hρ, _ => absurd hρ (List.not_mem_nil ρ)
+  | [], st, _, _, _, ρ, hρ, _ => absurd hρ (List.not_mem_nil)
   | ρ' :: rs, st, hdp, hpre, hnd, ρ, hρ, hroot => by
       rw [emitChildRhos_cons] at hpre
       have hnewpre : (childCascade D dp i ρ' c st.1).1 <+: L :=
@@ -5681,7 +5681,7 @@ theorem emitAllCascades_varsAtBound (D : RootedTD G) (i : Fin D.n) (dp : Table D
       ∀ c ∈ cs, ∀ ρ ∈ (sep D i c).powerset.toList,
         ∀ (hroot : (emitAllCascades D i dp cs st).2 c ρ < L.length),
         (hL.toNNF rt).varsAt ⟨(emitAllCascades D i dp cs st).2 c ρ, hroot⟩ ⊆ belowVars D i
-  | [], st, _, _, _, _, c, hc, _, _, _ => absurd hc (List.not_mem_nil c)
+  | [], st, _, _, _, _, c, hc, _, _, _ => absurd hc (List.not_mem_nil)
   | c' :: cs, st, hcs, hdp, hpre, hnd, c, hc, ρ, hρ, hroot => by
       rw [emitAllCascades_cons] at hpre
       have hpre1 : (emitChildRhos D i c' dp (sep D i c').powerset.toList st).1 <+: L :=
@@ -5744,7 +5744,7 @@ theorem emitChainsSharp_varsAtBound (D : RootedTD G) (i : Fin D.n) (casc : Table
       (emitChainsSharp D i casc σs st).1 <+: L →
       ∀ σ ∈ σs, ∀ (h : (emitChainsSharp D i casc σs st).2 i σ < L.length),
         (hL.toNNF rt).varsAt ⟨(emitChainsSharp D i casc σs st).2 i σ, h⟩ ⊆ belowVars D i
-  | [], _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil σ)
+  | [], _, _, _, _, σ, hσ, _ => absurd hσ (List.not_mem_nil)
   | σ' :: σs, st, hnd, hlt, hpreL, σ, hσ, h => by
       have hblockpre : (emitNodeSigmaSharp D casc i σ' st.1).1 <+: L :=
         (emitChainsSharp_prefix D i casc σs
@@ -5823,8 +5823,8 @@ theorem compileAuxSharp_varsAtBound (D : RootedTD G) {Lf : List (RawGate V)} (hL
       exact hvar j hj σ hσ h
   | x :: rest, processed, st, hp, hproc, hvar, hord, hnd, hll, hpreLf => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun h => hd h (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun h => hd h (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have h := hord [] x rest rfl c hc; simpa using h
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -5893,7 +5893,7 @@ theorem emitChildRhos_varsAt_fine (D : RootedTD G) (i c : Fin D.n) (dp : Table D
       ∀ ρ ∈ rs, ∀ (hroot : (emitChildRhos D i c dp rs st).2 c ρ < L.length),
         (hL.toNNF rt).varsAt ⟨(emitChildRhos D i c dp rs st).2 c ρ, hroot⟩
           ⊆ (D.bag c \ D.bag i) ∪ belowVars D c
-  | [], st, _, _, _, ρ, hρ, _ => absurd hρ (List.not_mem_nil ρ)
+  | [], st, _, _, _, ρ, hρ, _ => absurd hρ (List.not_mem_nil)
   | ρ' :: rs, st, hdp, hpre, hnd, ρ, hρ, hroot => by
       rw [emitChildRhos_cons] at hpre
       have hnewpre : (childCascade D dp i ρ' c st.1).1 <+: L :=
@@ -5937,7 +5937,7 @@ theorem emitAllCascades_varsAt_fine (D : RootedTD G) (i : Fin D.n) (dp : Table D
         ∀ (hroot : (emitAllCascades D i dp cs st).2 c ρ < L.length),
         (hL.toNNF rt).varsAt ⟨(emitAllCascades D i dp cs st).2 c ρ, hroot⟩
           ⊆ (D.bag c \ D.bag i) ∪ belowVars D c
-  | [], st, _, _, _, _, c, hc, _, _, _ => absurd hc (List.not_mem_nil c)
+  | [], st, _, _, _, _, c, hc, _, _, _ => absurd hc (List.not_mem_nil)
   | c' :: cs, st, hcs, hdp, hpre, hnd, c, hc, ρ, hρ, hroot => by
       rw [emitAllCascades_cons] at hpre
       have hpre1 : (emitChildRhos D i c' dp (sep D i c').powerset.toList st).1 <+: L :=
@@ -6073,14 +6073,14 @@ theorem emitNodeSigmaSharp_conjGood (D : RootedTD G) (casc : Table D) (i : Fin D
           (hL.toNNF rt).varsAt_const
             (hL.gate_eq_const rt hproglen (getElem_last_of_prefix hpc hproglen))
         rw [dif_pos hproglen, hconst]
-        exact Finset.disjoint_left.mpr (fun a ha => absurd ha (Finset.not_mem_empty a))
+        exact Finset.disjoint_left.mpr (fun a ha => absurd ha (Finset.notMem_empty a))
       · exact chainAddrsSharp_pairwise D casc i σ hL rt hfine hltL (childrenList D i)
           (fun c hc => hc) (childrenList_nodup D i)
     rcases lt_or_ge j (prog.length + 1) with hjl' | hjl'
     · have hje : j = prog.length := by omega
       subst hje
       rw [getElem_last_of_prefix hpc hjL] at hg
-      exact RawGate.noConfusion hg
+      exact absurd hg (by simp)
     · have hbound : (prog ++ [RawGate.const (locallyValidBool D i σ)]).length ≤ j := by
         simp only [List.length_append, List.length_singleton]; omega
       exact andChainCore_decomposableNode hL rt
@@ -6088,7 +6088,7 @@ theorem emitNodeSigmaSharp_conjGood (D : RootedTD G) (casc : Table D) (i : Fin D
         (prog.length :: chainAddrsSharp D casc i σ)
         (prog ++ [RawGate.const (locallyValidBool D i σ)])
         (emitNodeSigmaSharp_addr_lt D casc i σ prog hlt) hpc.length_le hpre
-        (fun a hh _ => by dsimp only; rw [dif_pos hh]) hpair j hjL hbound hj p q hp hq hg
+        (fun a hh _ => by rw [dif_pos hh]) hpair j hjL hbound hj p q hp hq hg
 
 theorem emitChainsSharp_conjGood (D : RootedTD G) (i : Fin D.n) (casc : Table D)
     {L : List (RawGate V)} (hL : RawValid L) (rt : Fin L.length)
@@ -6156,8 +6156,8 @@ theorem compileAuxSharp_conjGood (D : RootedTD G) {L : List (RawGate V)} (hL : R
   | [], processed, st, _, _, _, _, _, _, h => by rw [compileAuxSharp_nil]; exact h
   | x :: rest, processed, st, hp, hproc, hvar, hord, hnd, hpreL, h => by
       have hxnp : x ∉ processed := by
-        have hd := (List.nodup_append.mp hnd).2.2
-        exact fun hh => hd hh (List.mem_cons_self x rest)
+        have hd := (List.nodup_append'.mp hnd).2.2
+        exact fun hh => hd hh (List.mem_cons_self)
       have hchx : ∀ c ∈ childrenList D x, c ∈ processed := fun c hc => by
         have hh := hord [] x rest rfl c hc; simpa using hh
       have hchild : ∀ c ∈ childrenList D x, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length :=
@@ -6359,7 +6359,7 @@ theorem CfullSharp_conjGood (D : RootedTD G) [Fintype V] (rt : Fin (CfullSharp D
         else (∅ : Finset V))
       rc.2 rc.1 (rootCascadesSharp_roots_lt D (rootsList D) (compileTDSharp D).1
         (fun r _ β => rootLeafSharp_lt D r β)) hrcpre.length_le List.prefix_rfl
-      (fun a hh _ => by dsimp only; rw [dif_pos hh]) hpair j hjL hge hj p q hp hq hg
+      (fun a hh _ => by rw [dif_pos hh]) hpair j hjL hge hj p q hp hq hg
 
 /-- **Sharp `Decomposable`.** -/
 theorem compileNNFSharp_isDecomposable (D : RootedTD G) [Fintype V] :
@@ -6577,7 +6577,7 @@ theorem CfullSharp_length_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w) :
   have hroots2 := rootCascadesSharp_roots_length D (rootsList D) (compileTDSharp D).1
   have hrn := rootsList_length_le D
   have hmul : (rootsList D).length * (5 * 2 ^ (w + 1)) ≤ D.n * (5 * 2 ^ (w + 1)) :=
-    mul_le_mul_right' hrn _
+    mul_le_mul_left hrn _
   omega
 
 theorem compileNNFSharp_size (D : RootedTD G) : (compileNNFSharp D).size = (CfullSharp D).length :=

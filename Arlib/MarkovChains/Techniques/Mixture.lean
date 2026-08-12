@@ -271,7 +271,6 @@ theorem dirichlet_avg (μ : FinDist Ω) (K : ι → FinChain Ω) (f : Ω → ℝ
   rw [ip_act_avg, Finset.sum_sub_distrib]
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   field_simp
-  ring
 
 /-- **An average of positive semidefinite chains is positive semidefinite.**
 

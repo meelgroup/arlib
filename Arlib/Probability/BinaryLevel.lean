@@ -128,12 +128,12 @@ theorem le_levNat_iff {K : ℕ} (c : Fin K → Bool) {j : ℕ} (hj : j ≤ K) :
   constructor
   · intro h l hl
     have h2 := h (l : ℕ) hl
-    push_neg at h2
+    push Not at h2
     have h3 := h2.2
     rw [levExt_apply] at h3
     simpa using h3
   · intro h m hm
-    push_neg
+    push Not
     have hmK : m < K := lt_of_lt_of_le hm hj
     refine ⟨Nat.ne_of_lt hmK, ?_⟩
     have hval : levExt c m = c ⟨m, hmK⟩ := by
@@ -297,7 +297,6 @@ theorem Pr_level_eq_Pr_coin (K : ℕ) (A : Finset (ι → Fin (K + 1))) :
   congr 1
   ext ω
   simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-  rfl
 
 /-- The predicate form of `Pr_level_eq_Pr_coin`. -/
 theorem Pr_level_eq_Pr_coin_pred (K : ℕ) (P : (ι → Fin (K + 1)) → Prop)

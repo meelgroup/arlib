@@ -113,7 +113,8 @@ theorem sub_one_le_beta_mul {s : S} (h : M.isTerm s = false) :
   have hle : hw.T s ≤ hw.Tmax := hw.T_le_Tmax h
   have hinv : hw.T s / hw.Tmax ≤ 1 := (div_le_one hw.Tmax_pos).2 hle
   have : hw.beta * hw.T s = hw.T s - hw.T s / hw.Tmax := by
-    field_simp [beta]; ring
+    field_simp [beta]
+    rfl
   rw [this]
   linarith
 

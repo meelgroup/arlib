@@ -239,7 +239,6 @@ private theorem sum_negMulLog_le_card {α : Type} (s : Finset α) (f : α → �
           mul_le_mul_of_nonneg_left hkey (le_of_lt h0)
         have hval : f a * (S / ((s.card : ℝ) * f a) - 1) = S / (s.card : ℝ) - f a := by
           field_simp
-          ring
         rw [hrw]
         linarith
     have hsum := Finset.sum_le_sum hterm
@@ -251,6 +250,7 @@ private theorem sum_negMulLog_le_card {α : Type} (s : Finset α) (f : α → �
     have hR : ∑ _a ∈ s, (S / (s.card : ℝ) - f _a) = 0 := by
       rw [Finset.sum_sub_distrib, Finset.sum_const, hS, nsmul_eq_mul]
       field_simp
+      ring
     rw [hL, hR] at hsum
     have hneg : Real.negMulLog S = -(S * Real.log S) :=
       congrFun Real.negMulLog_eq_neg S

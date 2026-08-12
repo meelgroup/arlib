@@ -81,7 +81,7 @@ theorem cdf_succ (p : S → ℝ) (n : ℕ) : cdf p (n + 1) = cdf p n + pen p n :
   Finset.sum_range_succ _ _
 
 theorem cdf_mono {p : S → ℝ} (hp : ∀ s, 0 ≤ p s) : Monotone (cdf p) := fun _ _ h =>
-  Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset.2 h) fun k _ _ => pen_nonneg hp k
+  Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset_range.2 h) fun k _ _ => pen_nonneg hp k
 
 theorem cdf_nonneg {p : S → ℝ} (hp : ∀ s, 0 ≤ p s) (n : ℕ) : 0 ≤ cdf p n := by
   simpa using cdf_mono hp (Nat.zero_le n)
@@ -120,14 +120,14 @@ theorem idxOf_eq_iff {p : S → ℝ} (hp : ∀ s, 0 ≤ p s) (u : Circ)
     · rw [h0, cdf_zero]; exact toIoc_pos u
     · obtain ⟨m, hm⟩ : ∃ m, idxOf p u = m + 1 := ⟨idxOf p u - 1, by omega⟩
       have hlt : m < idxOf p u := by omega
-      have hnot := Nat.not_mem_of_lt_sInf hlt
-      simp only [Set.mem_setOf_eq, not_le] at hnot
+      have hnot := Nat.notMem_of_lt_sInf hlt
+      simp only [Set.mem_ofPred_eq, not_le] at hnot
       rw [hm]
       exact hnot
   · rintro ⟨h1, h2⟩
     refine le_antisymm (Nat.sInf_le h2) ?_
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have hle : cdf p (idxOf p u + 1) ≤ cdf p j := cdf_mono hp (by omega)
     linarith [le_trans hmem hle]
 
@@ -145,7 +145,7 @@ theorem drawOf_eq_iff [Nonempty S] {p : S → ℝ} (hp : ∀ s, 0 ≤ p s) (hp1 
   have hlt : idxOf p u < Fintype.card S := by
     have hle : idxOf p u ≤ Fintype.card S - 1 := Nat.sInf_le (by
       have : Fintype.card S - 1 + 1 = Fintype.card S := by omega
-      rw [Set.mem_setOf_eq, this, cdf_card, hp1]
+      rw [Set.mem_ofPred_eq, this, cdf_card, hp1]
       exact toIoc_le_one u)
     omega
   rw [drawOf, dif_pos hlt]

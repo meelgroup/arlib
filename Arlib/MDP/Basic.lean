@@ -33,7 +33,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Data.Finset.Fold
 import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Order.Filter.AtTopBot
+import Mathlib.Order.Filter.AtTopBot.Basic
 import Mathlib.Topology.Algebra.Order.LiminfLimsup
 import Mathlib.Topology.MetricSpace.Basic
 
@@ -146,7 +146,7 @@ action, then `vmax Q ≤ vmax Q' + c`. -/
 theorem vmax_le_vmax_add {Q Q' : S → A → ℝ} {s : S} {c : ℝ}
     (h : ∀ a ∈ M.enabled s, Q s a ≤ Q' s a + c) :
     M.vmax Q s ≤ M.vmax Q' s + c :=
-  M.vmax_le fun a ha => le_trans (h a ha) (add_le_add_right (M.le_vmax ha) c)
+  M.vmax_le fun a ha => le_trans (h a ha) (add_le_add_left (M.le_vmax ha) c)
 
 /-- **`|max f − max g| ≤ max |f − g|`** — the elementary fact the contraction
 argument of the contraction property rests on, stated as: a uniform bound `c` on the

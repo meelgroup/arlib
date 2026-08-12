@@ -148,7 +148,6 @@ theorem mul_log_le_mul_log_add_sq_div {m x : ℝ} (hm : 0 < m) (hx : 0 ≤ x) :
     rw [Real.log_div hpos.ne' hm.ne'] at h2
     have e : x * (x / m - 1) = m⁻¹ * (x * x) - x := by
       field_simp
-      ring
     rw [e] at h2
     have e2 : x * (Real.log x - Real.log m) = x * Real.log x - Real.log m * x := by ring
     rw [e2] at h2
@@ -540,7 +539,7 @@ theorem naiveModLogSobolev_le_zero {μ : FinDist Ω} {P : FinChain Ω} {ρ : ℝ
     refine le_of_mul_le_mul_left ?_ hc
     linarith
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   rcases hE.eq_or_lt with h0 | hpos
   · have h1 := key 1 one_pos
     rw [← h0] at h1
@@ -548,7 +547,7 @@ theorem naiveModLogSobolev_le_zero {μ : FinDist Ω} {P : FinChain Ω} {ρ : ℝ
   · have hK0 : dirichlet μ P f f ≠ 0 := hpos.ne'
     have h1 := key (ρ * Ent μ f / (2 * dirichlet μ P f f)) (by positivity)
     have heq : ρ * Ent μ f / (2 * dirichlet μ P f f) * dirichlet μ P f f
-        = ρ * Ent μ f / 2 := by field_simp; ring
+        = ρ * Ent μ f / 2 := by field_simp
     rw [heq] at h1
     linarith
 

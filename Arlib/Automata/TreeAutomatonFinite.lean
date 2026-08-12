@@ -103,7 +103,7 @@ private theorem exists_map_val {s : Set α} :
   | [], _ => ⟨[], rfl⟩
   | x :: xs, h => by
       obtain ⟨l', hl'⟩ := exists_map_val xs fun y hy => h y (List.mem_cons_of_mem x hy)
-      exact ⟨⟨x, h x (List.mem_cons_self x xs)⟩ :: l', by simp [hl']⟩
+      exact ⟨⟨x, h x (List.mem_cons_self)⟩ :: l', by simp [hl']⟩
 
 /-- **Finitely many short lists over a finite set.**  Mathlib's
 `List.finite_length_le` is stated for a `Finite` *type*; what is needed here is
@@ -116,7 +116,7 @@ private theorem finite_lists_over {s : Set α} (hs : s.Finite) :
   | zero =>
     refine Set.Finite.subset (Set.finite_singleton ([] : List α)) ?_
     rintro l ⟨hlen, -⟩
-    exact List.length_eq_zero.1 (Nat.le_zero.1 hlen)
+    exact List.length_eq_zero_iff.1 (Nat.le_zero.1 hlen)
   | succ k ih =>
     refine Set.Finite.subset
       (Set.Finite.insert ([] : List α)
@@ -125,7 +125,7 @@ private theorem finite_lists_over {s : Set α} (hs : s.Finite) :
     cases l with
     | nil => exact Set.mem_insert _ _
     | cons x xs =>
-      refine Set.mem_insert_of_mem _ (Set.mem_biUnion (hmem x (List.mem_cons_self x xs)) ?_)
+      refine Set.mem_insert_of_mem _ (Set.mem_biUnion (hmem x (List.mem_cons_self)) ?_)
       exact ⟨xs, ⟨by simpa using hlen, fun y hy => hmem y (List.mem_cons_of_mem x hy)⟩, rfl⟩
 
 /-- Every entry of the right list of a `Forall₂` is related to some entry of the
@@ -139,7 +139,7 @@ private theorem exists_mem_of_forall₂_right {R : α → β → Prop} :
   | @cons a b l₁ l₂ hab _ ih =>
     intro c hc
     rcases List.mem_cons.1 hc with rfl | hc
-    · exact ⟨a, List.mem_cons_self a l₁, hab⟩
+    · exact ⟨a, List.mem_cons_self, hab⟩
     · obtain ⟨a', ha', hR⟩ := ih c hc
       exact ⟨a', List.mem_cons_of_mem a ha', hR⟩
 
@@ -344,7 +344,7 @@ theorem IsFinite.singleInit (h : A.IsFinite k) :
   alphabet := Set.Finite.subset h.alphabet usedLabels_singleInit_subset
   degree := by
     rintro q a qs hq ⟨ss, rfl, hmatch⟩
-    rw [List.length_map]
+    rw [List.length_map _]
     rcases reachable_singleInit hq with rfl | ⟨s, rfl, hs⟩
     · obtain ⟨s, hinit, hstep⟩ := hmatch
       exact h.degree s a ss (.init hinit) hstep
@@ -450,7 +450,7 @@ theorem forall₂_accepts_restrict {ts : List (LTree Γ)}
     cases ss with
     | nil => simp
     | cons s ss =>
-      have h₁ := ih t (List.mem_cons_self t ts) s
+      have h₁ := ih t (List.mem_cons_self) s
       have h₂ := iht (fun u hu => ih u (List.mem_cons_of_mem t hu)) ss
       simp only [List.map_cons, List.forall₂_cons]
       exact and_congr h₁ h₂
@@ -469,7 +469,7 @@ theorem accepts_restrict_iff (A : TreeAutomaton S Γ) :
     · rintro ⟨ss, hstep, hchild⟩
       exact ⟨ss.map Subtype.val, hstep, (forall₂_accepts_restrict ih ss).1 hchild⟩
     · rintro ⟨rs, hstep, hchild⟩
-      have hmem : ∀ r ∈ rs, r ∈ A.reachableStates := fun r hr => .step q.2 hstep hr
+      have hmem : ∀ r ∈ rs, r ∈ A.reachableStates := fun r hr => Reachable.step q.2 hstep hr
       obtain ⟨ss, hss⟩ := exists_map_val rs hmem
       subst hss
       exact ⟨ss, hstep, (forall₂_accepts_restrict ih ss).2 hchild⟩

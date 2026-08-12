@@ -35,6 +35,7 @@ this module carries it out.
 
 Everything here is proved from first principles with no `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.MarkovChains.Techniques.Dirichlet
 
 namespace Arlib.MarkovChains

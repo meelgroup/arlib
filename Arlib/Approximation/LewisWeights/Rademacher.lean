@@ -29,6 +29,7 @@ power series and optimises the free scale `t = √(2k / ∑xᵢ²)`.
 
 No `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.Prelude
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
 import Mathlib.Analysis.SpecialFunctions.Log.Basic

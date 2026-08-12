@@ -105,7 +105,7 @@ the two sides is visibly `(m−1)·(|F| − |S|) + (|F| − 1)·(4|S| − |F|)`.
 -/
 import Arlib.KnowledgeCompilation.LowerBounds.AffinePerms
 import Arlib.Communication.Rectangle
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Finset.Prod
 
@@ -137,15 +137,18 @@ theorem card_filter_apply_eq (x c : F) :
       = ((Finset.univ : Finset F).erase 0).card := by
     refine Finset.card_nbij' (fun p => p.1) (fun a => (a, c - a * x)) ?_ ?_ ?_ ?_
     · rintro ⟨a, b⟩ hp
-      simp only [Finset.mem_filter, mem_maps] at hp
-      exact Finset.mem_erase.mpr ⟨hp.1, Finset.mem_univ _⟩
+      have hp' := Finset.mem_filter.mp (show (a, b) ∈ (maps F).filter fun p => toFun p x = c from hp)
+      exact Finset.mem_erase.mpr ⟨mem_maps.mp hp'.1, Finset.mem_univ _⟩
     · intro a ha
-      have ha0 : a ≠ 0 := (Finset.mem_erase.mp ha).1
-      simp only [Finset.mem_filter, mem_maps, toFun_apply]
-      exact ⟨ha0, by ring⟩
+      have ha' : a ∈ (Finset.univ : Finset F).erase 0 := ha
+      have ha0 : a ≠ 0 := (Finset.mem_erase.mp ha').1
+      show (a, c - a * x) ∈ (maps F).filter fun p => toFun p x = c
+      refine Finset.mem_filter.mpr ⟨mem_maps.mpr ha0, ?_⟩
+      rw [toFun_apply]; ring
     · rintro ⟨a, b⟩ hp
-      simp only [Finset.mem_filter, mem_maps, toFun_apply] at hp
-      have hb : c - a * x = b := by rw [← hp.2]; ring
+      have hp' := Finset.mem_filter.mp (show (a, b) ∈ (maps F).filter fun p => toFun p x = c from hp)
+      have h2 : a * x + b = c := by have := hp'.2; rwa [toFun_apply] at this
+      have hb : c - a * x = b := by rw [← h2]; ring
       simp [hb]
     · intro a _; rfl
   rw [h, Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ]
@@ -543,7 +546,7 @@ theorem exists_maps_hits {ι : Type*} [Fintype ι] {m : ℕ} (y : ι → Fin m �
   -- so the bad set is strictly smaller than `𝒫`
   have hlt : Bad.card < (maps F).card := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have h1 : (maps F).card * m ≤ Bad.card * m := Nat.mul_le_mul_right _ hcon
     have h2 : 6 * Fintype.card ι * (maps F).card < m * (maps F).card :=
       Nat.mul_lt_mul_of_lt_of_le hm (le_refl _) hPpos
@@ -552,7 +555,7 @@ theorem exists_maps_hits {ι : Type*} [Fintype ι] {m : ℕ} (y : ι → Fin m �
   -- hence some member of `𝒫` is good
   have hex : ∃ p ∈ maps F, p ∉ Bad := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     exact absurd (Finset.card_le_card hcon) (not_le.mpr hlt)
   obtain ⟨p, hp, hpBad⟩ := hex
   refine ⟨p, hp, fun i => ?_⟩
@@ -560,13 +563,13 @@ theorem exists_maps_hits {ι : Type*} [Fintype ι] {m : ℕ} (y : ι → Fin m �
     intro hmem
     exact hpBad (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ i, hmem⟩)
   rw [Finset.mem_union] at hnot
-  push_neg at hnot
+  push Not at hnot
   constructor
   · by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     exact hnot.1 (Finset.mem_filter.mpr ⟨hp, hcon⟩)
   · by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     exact hnot.2 (Finset.mem_filter.mpr ⟨hp, hcon⟩)
 
 /-- **Claim `perm` for a balanced partition**, which is the form the paper

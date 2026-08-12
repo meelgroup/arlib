@@ -166,7 +166,6 @@ theorem uniformMass_le_of_subset {α : Type*} [DecidableEq α] {C D : Finset α}
       exact_mod_cast Finset.card_pos.mpr ⟨x, hx⟩
     have hkey : ((D.card : ℝ) / (C.card : ℝ)) * ((D.card : ℝ))⁻¹ = ((C.card : ℝ))⁻¹ := by
       field_simp
-      ring
     rw [if_pos hx, if_pos hxD, hkey]
   · rw [if_neg hx]
     refine mul_nonneg (by positivity) ?_

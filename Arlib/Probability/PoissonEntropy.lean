@@ -176,7 +176,7 @@ theorem tsum_poissonPMF_mul_log_one_add_le {lam : ℝ} (hlam : 0 ≤ lam) :
     have hC := (hasSum_poissonPMF lam).mul_left (lam / (1 + lam))
     have h := (hA.add hB).sub hC
     have hval : Real.log (1 + lam) * 1 + 1 / (1 + lam) * lam - lam / (1 + lam) * 1
-        = Real.log (1 + lam) := by field_simp
+        = Real.log (1 + lam) := by field_simp; ring
     rw [hval] at h
     refine h.congr_fun (fun k => ?_)
     field_simp
@@ -190,11 +190,12 @@ theorem tsum_poissonPMF_mul_log_one_add_le {lam : ℝ} (hlam : 0 ≤ lam) :
     rw [Real.log_div (by positivity) hne] at hlog
     have hrw : (1 + (k : ℝ)) / (1 + lam) - 1 = ((k : ℝ) - lam) / (1 + lam) := by
       field_simp
+      ring
     rw [hrw] at hlog
     linarith
   calc ∑' k, poissonPMF lam k * Real.log (1 + (k : ℝ))
       ≤ ∑' k, poissonPMF lam k * (Real.log (1 + lam) + ((k : ℝ) - lam) / (1 + lam)) :=
-        tsum_le_tsum hle (summable_poissonPMF_mul_log_one_add hlam) hmaj.summable
+        Summable.tsum_le_tsum hle (summable_poissonPMF_mul_log_one_add hlam) hmaj.summable
     _ = Real.log (1 + lam) := hmaj.tsum_eq
 
 /-! ## The recurrence identity `E_poi[k log k] = λ · E_poi[log(1+k)]` -/
@@ -256,7 +257,7 @@ theorem tsum_poissonPMF_mul_log_factorial_le {lam : ℝ} (hlam : 0 ≤ lam) :
     linarith
   have hbound : ∑' k : ℕ, poissonPMF lam k * Real.log (k ! : ℝ) ≤ lam * L - lam + 1 / 2 * L + 1 := by
     rw [← hg.tsum_eq]
-    exact tsum_le_tsum
+    exact Summable.tsum_le_tsum
       (fun k => mul_le_mul_of_nonneg_left (hN k) (poissonPMF_nonneg hlam k))
       (summable_poissonPMF_mul_log_factorial hlam) hg.summable
   have hJ : L ≤ Real.log (1 + lam) := tsum_poissonPMF_mul_log_one_add_le hlam
@@ -309,7 +310,7 @@ theorem poisson_entropy_le_log_one_add {lam : ℝ} (hlam : 0 < lam) :
     have hx : (0 : ℝ) < (1 + lam) / lam := div_pos (by linarith) hlam
     have hlog := Real.log_le_sub_one_of_pos hx
     have hmul := mul_le_mul_of_nonneg_left hlog hlam.le
-    have h2 : lam * ((1 + lam) / lam - 1) = 1 := by field_simp
+    have h2 : lam * ((1 + lam) / lam - 1) = 1 := by field_simp; ring
     have hsplit : Real.log ((1 + lam) / lam) = Real.log (1 + lam) - Real.log lam :=
       Real.log_div (by positivity) (ne_of_gt hlam)
     rw [h2, hsplit] at hmul

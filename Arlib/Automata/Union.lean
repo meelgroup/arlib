@@ -119,7 +119,7 @@ theorem card_ge_of_union_on_split
            (WordCoding.ufa φ).Accepts (x.val ++ y.val))) :
     partBound ≤ Fintype.card Q := by
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   -- `C` computes the two-party form of `ψ ∨ φ`
   have hA : ∀ x y : WordsOfLen Bool (WordCoding.half κ b),
       C.Accepts (x.val ++ y.val)
@@ -280,7 +280,7 @@ omit [DecidableEq κ] in
 vacuously.  Needed so that the set of partition sizes is nonempty and `fixedPar`
 is not its junk value. -/
 private theorem dependsOn_univ (f : (Gadget.Var κ b → Bool) → Bool) :
-    DependsOn f (Finset.univ : Finset (Gadget.Var κ b)) := by
+    Communication.DependsOn f (Finset.univ : Finset (Gadget.Var κ b)) := by
   intro α β h
   rw [funext fun x => h x (Finset.mem_univ x)]
 

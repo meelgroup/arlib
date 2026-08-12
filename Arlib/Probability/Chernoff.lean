@@ -86,10 +86,7 @@ private theorem hasDerivAt_upperAux {x : ℝ} (hx : 0 ≤ x) :
   have hdiv : HasDerivAt (fun y : ℝ => 4 / (2 + y))
       ((0 * (2 + x) - 4 * 1) / (2 + x) ^ 2) x :=
     (hasDerivAt_const x (4 : ℝ)).div hlin2 h2
-  have hsum := (hlog.sub_const (2 : ℝ)).add hdiv
-  convert hsum using 1
-  field_simp
-  ring
+  exact ((hlog.sub_const (2 : ℝ)).add hdiv).congr_deriv (by field_simp; ring)
 
 /-- The derivative of `x ↦ (1 - x) log (1 - x) + x - x²/2`, which is `-log (1 - x) - x`. -/
 private theorem hasDerivAt_lowerAux {x : ℝ} (hx : x < 1) :
@@ -100,11 +97,8 @@ private theorem hasDerivAt_lowerAux {x : ℝ} (hx : x < 1) :
   have hlin : HasDerivAt (fun y : ℝ => 1 - y) (-1) x := by
     simpa using (hasDerivAt_id' (x := x)).const_sub (1 : ℝ)
   have hlog : HasDerivAt (fun y : ℝ => Real.log (1 - y)) (-1 / (1 - x)) x := hlin.log hne
-  have hsum := ((hlin.mul hlog).add (hasDerivAt_id' (x := x))).sub
-    ((hasDerivAt_pow 2 x).div_const 2)
-  convert hsum using 1
-  field_simp
-  ring
+  exact (((hlin.mul hlog).add (hasDerivAt_id' (x := x))).sub
+    ((hasDerivAt_pow 2 x).div_const 2)).congr_deriv (by field_simp; ring)
 
 /-- `2t / (2 + t) ≤ log (1 + t)` for `t ≥ 0`. -/
 private theorem log_lower_aux {t : ℝ} (ht : 0 ≤ t) :
@@ -369,7 +363,7 @@ theorem chernoff_lower (s : Finset ι) (A : ι → Finset X) {t : ℝ} (ht : 0 <
           ((indicCount s A ω : ℝ)) ≤ (1 - t) * indicMean μ s A) = ∅ := by
         rw [Finset.filter_eq_empty_iff]
         intro ω _
-        push_neg
+        push Not
         exact lt_of_lt_of_le (mul_neg_of_neg_of_pos (by linarith) hmpos) (Nat.cast_nonneg _)
       rw [hempty, FinProb.Pr_empty]
       exact (Real.exp_pos _).le

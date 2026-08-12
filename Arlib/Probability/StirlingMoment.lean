@@ -338,7 +338,7 @@ theorem abs_Ex_centre_sum_pow_le (hind : KWiseIndep P K Z) (hZ : IsIndicatorFami
       P.Ex (fun ω => ∏ k, centre Z (p k) ω) = 0 := by
     intro p hp hpn
     rw [mem_noSingletonTuples] at hpn
-    push_neg at hpn
+    push Not at hpn
     obtain ⟨i, hi, hlt⟩ := hpn (Fintype.mem_piFinset.mp hp)
     have h1 : 1 ≤ tupleMult p i := one_le_tupleMult hi
     exact hind.ex_prod_centre_tuple_eq_zero hZ hn p hi (by omega)

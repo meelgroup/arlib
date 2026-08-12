@@ -394,7 +394,7 @@ theorem sum_freeSiteWeight {Λ : Finset V} (hΛ : Λ.card < Fintype.card V) :
     ∑ v, freeSiteWeight Λ v = 1 := by
   have hN : numFree Λ ≠ 0 := (numFree_pos hΛ).ne'
   have hcard : (((univ : Finset V) \ Λ).card : ℝ) = numFree Λ := by
-    rw [Finset.card_sdiff (Finset.subset_univ Λ), Finset.card_univ]
+    rw [Finset.card_sdiff_of_subset (Finset.subset_univ Λ), Finset.card_univ]
     rfl
   have h1 : ∀ v : V,
       freeSiteWeight Λ v = if v ∈ (univ : Finset V) \ Λ then 1 / numFree Λ else 0 := by
@@ -462,7 +462,7 @@ theorem dirichlet_freeGlauber_empty (w : (V → S) → ℝ) (hw : ∀ σ, 0 ≤ 
       = dirichlet (gibbs w hw hZ) (glauber w hw) f f := by
   rw [dirichlet_freeGlauber, dirichlet_glauber, Finset.mul_sum]
   refine Finset.sum_congr rfl fun v _ => ?_
-  rw [freeSiteWeight_apply, if_neg (Finset.not_mem_empty v), numFree_empty]
+  rw [freeSiteWeight_apply, if_neg (Finset.notMem_empty v), numFree_empty]
 
 /-- **The all-sites chain dominates `(n−|Λ|)/n` times the free-site chain.**
 
@@ -598,7 +598,6 @@ theorem spectralIndependence_of_relaxationTime_freeGlauber (w : (V → S) → �
   have harith : numFree Λ / (Fintype.card V : ℝ) * (1 / (C * numFree Λ))
       = 1 / (C * (Fintype.card V : ℝ)) := by
     field_simp
-    ring
   rw [harith] at h
   exact spectralIndependence_of_relaxationTime_glauber _ _ hZ hC h
 

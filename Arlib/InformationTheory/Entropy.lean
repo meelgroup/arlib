@@ -72,7 +72,6 @@ private theorem negMulLog_sub_mul_log_le {N : ℝ} (hN : 0 < N) {x : ℝ} (hx : 
       mul_le_mul_of_nonneg_left hkey hx
     have hval : x * (1 / (N * x) - 1) = 1 / N - x := by
       field_simp
-      ring
     linarith
 
 /-- **Maximum-entropy bound.** A distribution on `α` has entropy at most
@@ -99,6 +98,7 @@ theorem Hdist_le_log_card {α : Type} [Fintype α] {p : α → ℝ} (hp : IsProb
     rw [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ, hp.sum_eq_one,
       nsmul_eq_mul]
     field_simp
+    ring
   linarith
 
 /-- **Maximum-entropy bound** for a random variable. -/

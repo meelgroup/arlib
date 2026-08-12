@@ -175,7 +175,7 @@ theorem outProb_map (μ : PMF (β × ℕ)) (F : β × ℕ → γ × ℕ) (φ : �
   rw [outProb, PMF.toOuterMeasure_map_apply]
   congr 1
   ext p
-  simp only [Set.mem_preimage, Set.mem_setOf_eq, hF p]
+  simp only [Set.mem_preimage, Set.mem_ofPred_eq, hF p]
 
 /-- Real-valued form of `outProb_map`. -/
 theorem outProbR_map (μ : PMF (β × ℕ)) (F : β × ℕ → γ × ℕ) (φ : β → γ)

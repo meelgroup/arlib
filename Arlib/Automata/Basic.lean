@@ -159,7 +159,7 @@ theorem isRun_append {q : Q} {w₁ w₂ : List σ} {rs : List Q} :
       constructor
       · intro h; exact absurd h (A.not_isRun_cons_nil)
       · rintro ⟨rs₁, rs₂, hnil, h₁, h₂⟩
-        obtain ⟨rfl, rfl⟩ := List.append_eq_nil.mp hnil.symm
+        obtain ⟨rfl, rfl⟩ := List.append_eq_nil_iff.mp hnil.symm
         exact absurd h₁ (A.not_isRun_cons_nil)
     | cons r rs =>
       simp only [List.cons_append, isRun_cons_cons]

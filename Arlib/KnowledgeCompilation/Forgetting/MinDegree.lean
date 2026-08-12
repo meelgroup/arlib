@@ -34,7 +34,7 @@ for an `X`, etc.), so the confining cluster has `≥ 2n + 1` elements, whence
 `w ≥ 2n ≥ n` (`jointreeWidthLe_deltaA_ge`).
 -/
 import Arlib.KnowledgeCompilation.Forgetting.Treewidth
-import Mathlib.Combinatorics.SimpleGraph.Path
+import Mathlib.Combinatorics.SimpleGraph.Paths
 import Mathlib.Data.Finset.Max
 
 namespace Arlib.KnowledgeCompilation
@@ -146,7 +146,8 @@ theorem exists_leaf_of_subtree [DecidableEq ι] (hac : G.IsAcyclic)
   have hfℓ : f ℓ = Pℓ.length := hval ℓ hℓ
   -- `ℓ ≠ a₀`, because some other node of `A` is at positive distance
   have hLpos : 1 ≤ Pℓ.length := by
-    obtain ⟨b, hb, hbne⟩ := Finset.exists_ne_of_one_lt_card (by omega : 1 < A.card) a₀
+    obtain ⟨b, hb, hbne⟩ :=
+      (Finset.one_lt_card_iff_nontrivial.mp (by omega : 1 < A.card)).exists_ne a₀
     have hPb : ((hconn a₀ ha0 b hb).choose.bypass).length ≠ 0 := by
       intro h0
       apply hbne
@@ -185,12 +186,12 @@ theorem exists_leaf_of_subtree [DecidableEq ι] (hac : G.IsAcyclic)
     -- `dropUntil y` from `Pℓ` is a path `y → ℓ`; so is the single edge; hence equal
     have hyℓ : y ≠ ℓ := (G.ne_of_adj hadj).symm
     have hdrop : (Pℓ.dropUntil y hymem).IsPath := hPℓpath.dropUntil hymem
-    have hedge : (Walk.cons (G.symm hadj) Walk.nil).IsPath := by
+    have hedge : (Walk.cons hadj.symm Walk.nil).IsPath := by
       rw [Walk.cons_isPath_iff]
       refine ⟨Walk.IsPath.nil, ?_⟩
       simp only [Walk.support_nil, List.mem_singleton]
       exact hyℓ
-    have heq : Pℓ.dropUntil y hymem = Walk.cons (G.symm hadj) Walk.nil :=
+    have heq : Pℓ.dropUntil y hymem = Walk.cons hadj.symm Walk.nil :=
       eq_of_isPath hac hdrop hedge
     have hdlen : (Pℓ.dropUntil y hymem).length = 1 := by
       rw [heq]; simp
@@ -271,7 +272,7 @@ theorem central_aux [Fintype ι] [DecidableEq ι] (hac : G.IsAcyclic) {Δ : CNF 
           exact hW z (Walk.support_bypass_subset _ hz)
         have hPnil : ¬ W2.bypass.Nil := Walk.not_nil_of_ne (Ne.symm hcne)
         have hLlt : 1 ≤ W2.bypass.length := Walk.not_nil_iff_lt_length.mp hPnil
-        have hadj : G.Adj ℓ (W2.bypass.getVert 1) := Walk.adj_getVert_one hPnil
+        have hadj : G.Adj ℓ (W2.bypass.getVert 1) := Walk.adj_snd hPnil
         have hmem1 : W2.bypass.getVert 1 ∈ W2.bypass.support :=
           Walk.mem_support_iff_exists_getVert.mpr ⟨1, rfl, hLlt⟩
         have hq2p : W2.bypass.getVert 1 = p := hleaf _ (hPsub _ hmem1) hadj
@@ -284,7 +285,7 @@ theorem central_aux [Fintype ι] [DecidableEq ι] (hac : G.IsAcyclic) {Δ : CNF 
       subst this
       exact hcsub huγ
     · -- Case A: every clause variable of `cluster ℓ` already lies in `cluster p`; prune `ℓ`
-      push_neg at hcase
+      push Not at hcase
       have hAcond : ∀ v ∈ cluster ℓ, v ∈ cnfVars Δ → v ∈ cluster p := by
         intro v hvℓ hvcnf
         by_contra hvp
@@ -401,7 +402,7 @@ lemma card_confined_bound {n : ℕ} {S : Finset (BVAVar n)} {v : BVAVar n}
   have hcardg : (Finset.univ.image g).card = n := by
     rw [Finset.card_image_of_injective _ hg, Finset.card_univ, Fintype.card_fin]
   have hcardI : (insert v ((Finset.univ.image f) ∪ (Finset.univ.image g))).card = 2 * n + 1 := by
-    rw [Finset.card_insert_of_not_mem hvnot, Finset.card_union_of_disjoint hdisj, hcardf, hcardg]
+    rw [Finset.card_insert_of_notMem hvnot, Finset.card_union_of_disjoint hdisj, hcardf, hcardg]
     ring
   calc 2 * n + 1 = (insert v ((Finset.univ.image f) ∪ (Finset.univ.image g))).card := hcardI.symm
     _ ≤ S.card := Finset.card_le_card hsub

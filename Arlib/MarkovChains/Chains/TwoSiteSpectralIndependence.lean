@@ -133,8 +133,9 @@ def twoSiteEquiv : Bool × Bool ≃ (Bool → Bool) where
 theorem twoSite_sum_config (f : (Bool → Bool) → ℝ) :
     ∑ σ, f σ = f (twoSiteCfg false false) + f (twoSiteCfg false true)
       + f (twoSiteCfg true false) + f (twoSiteCfg true true) := by
-  rw [← Equiv.sum_comp twoSiteEquiv f]
-  simp [Fintype.sum_prod_type, Fintype.sum_bool, twoSiteEquiv]
+  rw [← Equiv.sum_comp twoSiteEquiv f, Fintype.sum_prod_type]
+  simp only [Fintype.sum_bool,
+    show ∀ p : Bool × Bool, twoSiteEquiv p = twoSiteCfg p.1 p.2 from fun _ => rfl]
   ring
 
 /-! ## The four probabilities -/
@@ -513,12 +514,10 @@ theorem twoSite_corr_gibbs :
   have hnum : A / Z w * (D / Z w) - B / Z w * (C / Z w)
       = (A * D - B * C) / (Z w) ^ 2 := by
     field_simp
-    left; ring
   have hden : (C / Z w + D / Z w) * (A / Z w + B / Z w)
         * ((B / Z w + D / Z w) * (A / Z w + C / Z w))
       = ((C + D) * (A + B) * ((B + D) * (A + C))) / ((Z w) ^ 2) ^ 2 := by
     field_simp
-    left; ring
   rw [hnum, hden, Real.sqrt_div' _ (sq_nonneg ((Z w) ^ 2)), Real.sqrt_sq (sq_nonneg (Z w))]
   exact hcancel _ _ _ hZ2
 
@@ -575,7 +574,6 @@ theorem twoSite_cross_le (b₀ b₁ : ℝ) :
         * (2 * Real.sqrt (twoSiteVar μ false * twoSiteVar μ true) * |b₀ * b₁|)
         = 2 * |twoSiteCov μ| * |b₀ * b₁| := by
       field_simp
-      ring
     rw [hsimp] at hmul
     rw [hcorr]
     linarith
@@ -804,11 +802,10 @@ all-`true` configuration and `1 − r` on the all-`false` one. -/
 def twoSiteConst (r : ℝ) (h0 : 0 ≤ r) (h1 : r ≤ 1) : FinDist (Bool → Bool) where
   p σ := if σ false = σ true then cond (σ false) r (1 - r) else 0
   p_nonneg σ := by
-    dsimp only
     split
     · cases h : σ false
-      · simp only [h, cond_false]; linarith
-      · simp only [h, cond_true]; exact h0
+      · simp only [cond_false]; linarith
+      · simp only [cond_true]; exact h0
     · exact le_rfl
   p_sum := by
     rw [twoSite_sum_config]
@@ -955,7 +952,7 @@ theorem twoSite_Var_pinDist (f : Bool × Bool → ℝ) :
         + (twoSiteMean (gibbs w hw hZ) f false
             - twoSiteMean (gibbs w hw hZ) f true) ^ 2 / 4 := by
   have hfr : ∀ p : Bool × Bool, freeRestrict (∅ : Finset Bool) f p = f p :=
-    fun p => freeRestrict_of_not_mem (Finset.not_mem_empty p.1) f
+    fun p => freeRestrict_of_not_mem (Finset.notMem_empty p.1) f
   have hN : numFree (∅ : Finset Bool) = (2 : ℝ) := by
     rw [numFree_empty, Fintype.card_bool]; norm_num
   have hA : ∑ p : Bool × Bool, marg (gibbs w hw hZ) p * f p
@@ -984,7 +981,7 @@ theorem twoSite_pinDist_mul_pinLocalWalk (x y : Bool × Bool) :
   rw [pinDist_mul_pinLocalWalk, joint_gibbs, h1, h2]
   by_cases hne : x.1 = y.1
   · rw [if_neg fun h => h.2.2 hne, if_neg (not_not_intro hne)]
-  · rw [if_pos ⟨Finset.not_mem_empty _, Finset.not_mem_empty _, hne⟩, if_pos hne, div_div]
+  · rw [if_pos ⟨Finset.notMem_empty _, Finset.notMem_empty _, hne⟩, if_pos hne, div_div]
     congr 1
     ring
 

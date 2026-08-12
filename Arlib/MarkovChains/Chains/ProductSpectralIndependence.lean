@@ -175,7 +175,7 @@ theorem pinWeight_prodWeight (φ : V → S → ℝ) (Λ : Finset V) (ζ : V → 
     · rw [if_neg hv]
   · rw [if_neg h]
     simp only [AgreesOn] at h
-    push_neg at h
+    push Not at h
     obtain ⟨v, hv, hne⟩ := h
     refine (Finset.prod_eq_zero (mem_univ v) ?_).symm
     rw [prodPin_apply, if_pos hv, if_neg hne]
@@ -333,7 +333,6 @@ theorem marg_gibbs_prodWeight (hφ : ∀ v s, 0 ≤ φ v s) (hc : ∀ v, 0 < ∑
   rw [marg_gibbs_eq_Z_pinWeight, Z_pinWeight_prodWeight_singleton, Z_prodWeight,
     ← Finset.mul_prod_erase univ (fun x => ∑ t, φ x t) (mem_univ v), prodMarginal_apply]
   field_simp
-  ring
 
 /-- **The Gibbs measure of a product weight has pairwise independent
 coordinates.**
@@ -356,7 +355,6 @@ theorem pairwiseIndep_gibbs_prodWeight (hφ : ∀ v s, 0 ≤ φ v s) (hc : ∀ v
     joint_gibbs_eq_Z_pinWeight _ _ hvu, div_mul_div_comm,
     ← Z_pinWeight_prodWeight_pair_mul φ hvu s t]
   field_simp
-  ring
 
 /-- The joint law of the spins at two distinct sites is the product of the two
 site marginals, in the notation of `Chains.ProductMeasure`. -/

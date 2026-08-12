@@ -231,7 +231,7 @@ theorem decodeOpt_preimage_some (e : ↥s₁ ≃ ↥s₂) {x : Ω₁} (hx : x �
   cases o with
   | none => simp [decodeOpt]
   | some y =>
-    simp only [Set.mem_preimage, Set.mem_singleton_iff, decodeOpt, Option.some_bind,
+    simp only [Set.mem_preimage, Set.mem_singleton_iff, decodeOpt, Option.bind_some,
       Option.some.injEq]
     by_cases hy : y ∈ s₂
     · rw [dif_pos hy]

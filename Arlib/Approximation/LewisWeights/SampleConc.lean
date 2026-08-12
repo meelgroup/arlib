@@ -91,7 +91,7 @@ theorem sampledWPS_conc [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w i)
     have hwcc : w c ≠ 0 := (hw c).ne'
     have hcoef : 1 / ((m : ℝ) * (w c / W)) = W / ((m : ℝ) * w c) := by
       field_simp
-    rw [hdot, hcoef, div_mul_eq_mul_div, div_mul_eq_mul_div, div_le_div_iff hden2 hmR]
+    rw [hdot, hcoef, div_mul_eq_mul_div, div_mul_eq_mul_div, div_le_div_iff₀ hden2 hmR]
     nlinarith [mul_nonneg (mul_nonneg hWpos.le hmR.le) (sub_nonneg.mpr hsens),
       hWpos.le, hmR.le, (hw c).le, abs_nonneg (a c ⬝ᵥ y)]
   -- apply the abstract relative Chernoff bound
@@ -104,6 +104,5 @@ theorem sampledWPS_conc [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w i)
     rw [hb, ← hWcard]
     have hgne : g ≠ 0 := hy.ne'
     field_simp
-    ring
   rw [hexp] at hcher
   exact hcher

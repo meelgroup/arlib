@@ -179,7 +179,7 @@ theorem card_ge_of_complement_on_split
       C.Accepts (x.val ++ y.val) ↔ ¬ (ufa Bd L).Accepts (x.val ++ y.val)) :
     liftBound cnfBound ≤ Fintype.card Q := by
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   -- `C` computes the negation of the two-party form of `F`
   have hA : ∀ x y : WordsOfLen Bool (WordCoding.half κ b),
       C.Accepts (x.val ++ y.val)

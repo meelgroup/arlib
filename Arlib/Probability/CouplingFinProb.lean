@@ -119,7 +119,6 @@ theorem condLaw_apply (P : FinProb) (X : P.Ω → κ) (F : Event P) (hF : 0 < P.
     condLaw P X F hF w
       = P.Pr ((univ.filter fun ω => X ω = w) ∩ F) / P.Pr F := by
   rw [condLaw, law_apply, cond_Pr]
-  rfl
 
 /-! ## Total variation distance between two random variables -/
 
@@ -259,7 +258,7 @@ variable {κ : Type} [Fintype κ] [DecidableEq κ]
 of a coupling.  Its coordinate projections are random variables with the
 coupling's two marginals as laws (`law_couplingSpace_fst`,
 `law_couplingSpace_snd`). -/
-noncomputable def couplingSpace {μ ν : FinDist κ} (c : Coupling μ ν) : FinProb where
+@[reducible] noncomputable def couplingSpace {μ ν : FinDist κ} (c : Coupling μ ν) : FinProb where
   Ω := κ × κ
   μ := c.joint
 

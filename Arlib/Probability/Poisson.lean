@@ -75,6 +75,7 @@ left tail is the single atom `p₀ = e^{-μ} ≤ e^{-μ/2}`.)
 
 No `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Mathlib.Analysis.SpecialFunctions.Exponential
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 import Mathlib.Analysis.SpecialFunctions.Sqrt
@@ -105,7 +106,7 @@ along `Real.exp_eq_exp_ℝ`. -/
 theorem hasSum_exp_series (x : ℝ) :
     HasSum (fun k : ℕ => x ^ k / (Nat.factorial k)) (Real.exp x) := by
   rw [Real.exp_eq_exp_ℝ]
-  exact NormedSpace.expSeries_div_hasSum_exp ℝ x
+  exact NormedSpace.expSeries_div_hasSum_exp x
 
 /-- The Poisson mass function sums to `1`. -/
 theorem hasSum_poissonPMF (mu : ℝ) : HasSum (poissonPMF mu) 1 := by
@@ -141,7 +142,6 @@ theorem hasSum_poissonPMF_mul_exp (mu t : ℝ) :
   intro k
   rw [poissonPMF, mul_pow, mul_comm t (k : ℝ), Real.exp_nat_mul]
   field_simp
-  ring
 
 /-- The moment generating function of the Poisson distribution:
 `∑ₖ pₖ e^{t k} = e^{μ (e^t - 1)}` for every real `t`. -/
@@ -226,7 +226,7 @@ theorem tsum_ite_poissonPMF_le {mu : ℝ} (hmu : 0 ≤ mu) (s c : ℝ) (P : ℕ 
     Summable.of_nonneg_of_le hnonneg hle hRHS.summable
   calc ∑' k : ℕ, (if P k then poissonPMF mu k else 0)
       ≤ ∑' k : ℕ, Real.exp (-c) * (poissonPMF mu k * Real.exp (s * k)) :=
-        tsum_le_tsum hle hsum hRHS.summable
+        Summable.tsum_le_tsum hle hsum hRHS.summable
     _ = Real.exp (-c) * Real.exp (mu * (Real.exp s - 1)) := hRHS.tsum_eq
 
 /-! ### Two sharp logarithmic inequalities
@@ -259,18 +259,15 @@ theorem sub_sq_div_two_le_log_one_add {x : ℝ} (hx : 0 ≤ x) :
       have hpoly : HasDerivAt (fun z : ℝ => z - z ^ 2 / 2) (1 - y) y := by
         have h2 : HasDerivAt (fun z : ℝ => z ^ 2 / 2) y y := by
           simpa using (hasDerivAt_pow 2 y).div_const 2
-        simpa using (hasDerivAt_id y).sub h2
-      have : HasDerivAt f (y ^ 2 / (1 + y)) y := by
-        have := hlog.sub hpoly
-        convert this using 1
-        field_simp
-        ring
+        exact (hasDerivAt_id y).sub h2
+      have : HasDerivAt f (y ^ 2 / (1 + y)) y :=
+        (hlog.sub hpoly).congr_deriv (by field_simp; ring)
       exact this.hasDerivWithinAt
     · intro y hy
       rw [interior_Ici, Set.mem_Ioi] at hy
       positivity
   have h0 : f 0 = 0 := by simp [hfdef]
-  have := hmono (Set.left_mem_Ici) (Set.mem_Ici.mpr hx) hx
+  have := hmono (Set.mem_Ici.mpr le_rfl) (Set.mem_Ici.mpr hx) hx
   rw [h0] at this
   simp only [hfdef] at this
   linarith
@@ -305,12 +302,9 @@ theorem neg_add_sq_div_two_le_one_sub_mul_log {x : ℝ} (hx0 : 0 ≤ x) (hx1 : x
       have hpoly : HasDerivAt (fun z : ℝ => -z + z ^ 2 / 2) (-1 + y) y := by
         have h2 : HasDerivAt (fun z : ℝ => z ^ 2 / 2) y y := by
           simpa using (hasDerivAt_pow 2 y).div_const 2
-        simpa using (hasDerivAt_id y).neg.add h2
-      have hd : HasDerivAt f (-Real.log (1 - y) - y) y := by
-        have := (hu.mul hv).sub hpoly
-        convert this using 1
-        field_simp
-        ring
+        exact (hasDerivAt_id y).neg.add h2
+      have hd : HasDerivAt f (-Real.log (1 - y) - y) y :=
+        ((hu.mul hv).sub hpoly).congr_deriv (by field_simp; ring)
       exact hd.hasDerivWithinAt
     · intro y hy
       rw [interior_Ico, Set.mem_Ioo] at hy
@@ -355,7 +349,7 @@ theorem poisson_tail_upper {mu a : ℝ} (hmu : 0 < mu) (ha : 0 < a) (hamu : a �
   rw [← Real.exp_add]
   refine Real.exp_le_exp.mpr ?_
   have hmean : mu * (Real.exp t - 1) = a := by
-    rw [hexpt]; field_simp
+    rw [hexpt]; field_simp; ring
   rw [hmean]
   have haux := sub_sq_div_two_le_log_one_add (x := a / mu) hx0.le
   rw [← ht] at haux
@@ -397,7 +391,6 @@ theorem poisson_tail_lower {mu a : ℝ} (hmu : 0 < mu) (ha : 0 < a) (hamu : a �
     refine Real.exp_le_exp.mpr ?_
     have hval : -a ^ 2 / (2 * a) = -a / 2 := by
       field_simp
-      ring
     rw [hval]
     linarith
   · -- Main case `a < μ`: Chernoff with tilt `s = log(1 - a/μ)`.
@@ -422,7 +415,7 @@ theorem poisson_tail_lower {mu a : ℝ} (hmu : 0 < mu) (ha : 0 < a) (hamu : a �
     have hmul : mu * (-(a / mu) + (a / mu) ^ 2 / 2) ≤ mu * ((1 - a / mu) * s) :=
       mul_le_mul_of_nonneg_left haux hmu.le
     have h1 : mu * (-(a / mu) + (a / mu) ^ 2 / 2) = -a + a ^ 2 / (2 * mu) := by
-      field_simp; ring
+      field_simp
     have h2 : mu * ((1 - a / mu) * s) = (mu - a) * s := by
       field_simp
     rw [h1, h2] at hmul
@@ -490,10 +483,10 @@ theorem poisson_two_sided_tail {mu a : ℝ} (hmu : 0 < mu) (ha : 0 < a) (hamu : 
   calc ∑' k : ℕ, (if a ≤ |(k : ℝ) - mu| then poissonPMF mu k else 0)
       ≤ ∑' k : ℕ, ((if mu + a ≤ (k : ℝ) then poissonPMF mu k else 0)
           + (if (k : ℝ) ≤ mu - a then poissonPMF mu k else 0)) :=
-        tsum_le_tsum (fun k => ite_abs_le_add_ite hp mu a k) hsa (hsu.add hsl)
+        Summable.tsum_le_tsum (fun k => ite_abs_le_add_ite hp mu a k) hsa (hsu.add hsl)
     _ = (∑' k : ℕ, (if mu + a ≤ (k : ℝ) then poissonPMF mu k else 0))
           + ∑' k : ℕ, (if (k : ℝ) ≤ mu - a then poissonPMF mu k else 0) :=
-        tsum_add hsu hsl
+        Summable.tsum_add hsu hsl
     _ ≤ _ := add_le_add (poisson_tail_upper hmu ha hamu) (poisson_tail_lower hmu ha hamu)
 
 /-- **Poisson upper tail at an arbitrary positive tilt** `s`:
@@ -580,14 +573,13 @@ theorem tsum_poissonPMF_mul_sqrt_le {mu : ℝ} (hmu : 0 ≤ mu) :
       refine h.congr_fun ?_
       intro k
       field_simp
-      ring
     have hsum : Summable (fun k : ℕ => poissonPMF mu k * Real.sqrt k) :=
       Summable.of_nonneg_of_le
         (fun k => mul_nonneg (poissonPMF_nonneg hmu k) (Real.sqrt_nonneg _))
         hbound hRHS.summable
     calc ∑' k : ℕ, poissonPMF mu k * Real.sqrt k
         ≤ ∑' k : ℕ, poissonPMF mu k * (((k : ℝ) / c + c) / 2) :=
-          tsum_le_tsum hbound hsum hRHS.summable
+          Summable.tsum_le_tsum hbound hsum hRHS.summable
       _ = c := hRHS.tsum_eq
 
 /-! ## Tier 5: convolution -/
@@ -622,6 +614,5 @@ theorem poissonPMF_conv (mu nu : ℝ) (k : ℕ) :
     exact_mod_cast Nat.choose_mul_factorial_mul_factorial hjk
   rw [poissonPMF, poissonPMF, ← hchoose, neg_add, Real.exp_add]
   field_simp
-  ring
 
 end Arlib.Probability

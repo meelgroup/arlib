@@ -515,7 +515,6 @@ theorem ip_act_pinLocalWalk (w : (V → S) → ℝ) (Λ : Finset V) (hw : ∀ σ
     rw [if_pos ⟨hx, hy, hne⟩, if_pos (fun hc : y.1 = x.1 => hne hc.symm),
       freeRestrict_of_not_mem hx, freeRestrict_of_not_mem hy]
     field_simp
-    ring
   · rw [if_neg hg, zero_mul]
     have hzero : (if y.1 ≠ x.1 then
         pairMass w x.1 y.1 x.2 y.2 / Z w
@@ -524,7 +523,7 @@ theorem ip_act_pinLocalWalk (w : (V → S) → ℝ) (Λ : Finset V) (hw : ∀ σ
       · rw [if_pos hne]
         have hor : x.1 ∈ Λ ∨ y.1 ∈ Λ := by
           by_contra hc
-          push_neg at hc
+          push Not at hc
           exact hg ⟨hc.1, hc.2, fun hh => hne hh.symm⟩
         rcases hor with h | h
         · rw [freeRestrict_of_mem h]

@@ -78,12 +78,13 @@ inequalities* rather than by the closed form is both more general and free of
 paper's `Õ`/`Ω̃`.  `exists_powering_params` then exhibits a valid triple, so the
 generality is not vacuous.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.KnowledgeCompilation.Circuits.DNF
 import Arlib.KnowledgeCompilation.Circuits.DNFMap
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Exp
-import Mathlib.Analysis.NormedSpace.HahnBanach.Separation
-import Mathlib.Analysis.Convex.Normed
+import Mathlib.Analysis.LocallyConvex.Separation
+import Mathlib.Analysis.Normed.Module.Convex
 
 namespace Arlib.KnowledgeCompilation
 namespace ConicalJunta
@@ -658,7 +659,7 @@ theorem hasConicalApprox_of_one_add {f : (V → Bool) → ℝ} (hf : ∀ α, f �
       rw [h0] at hab ⊢
       rw [abs_le] at hab
       have hub : (g α + ε) / 2 ≤ 3 / 4 := by linarith [hab.1]
-      have : ((g α + ε) / 2) ^ k ≤ (3 / 4 : ℝ) ^ k := pow_le_pow_left hhalf hub k
+      have : ((g α + ε) / 2) ^ k ≤ (3 / 4 : ℝ) ^ k := pow_le_pow_left₀ hhalf hub k
       have hnn : (0 : ℝ) ≤ ((g α + ε) / 2) ^ k := pow_nonneg hhalf k
       rw [abs_le]
       constructor <;> linarith
@@ -667,7 +668,7 @@ theorem hasConicalApprox_of_one_add {f : (V → Bool) → ℝ} (hf : ∀ α, f �
       rw [abs_le] at hab
       have hlb : (1 : ℝ) ≤ (g α + ε) / 2 := by linarith [hab.2]
       have hub : (g α + ε) / 2 ≤ 1 + ε := by linarith [hab.1]
-      have hle : ((g α + ε) / 2) ^ k ≤ (1 + ε) ^ k := pow_le_pow_left hhalf hub k
+      have hle : ((g α + ε) / 2) ^ k ≤ (1 + ε) ^ k := pow_le_pow_left₀ hhalf hub k
       have hge : (1 : ℝ) ≤ ((g α + ε) / 2) ^ k := one_le_pow₀ hlb
       rw [abs_le]
       constructor <;> linarith
@@ -702,7 +703,7 @@ theorem exists_powering_params {δ : ℝ} (hδ : 0 < δ) (hδ' : δ < 1 / 2) :
       linarith
     calc (1 + Real.log (1 + δ) / (k : ℝ)) ^ k
         ≤ (Real.exp (Real.log (1 + δ) / (k : ℝ))) ^ k := by
-          refine pow_le_pow_left ?_ hstep k
+          refine pow_le_pow_left₀ ?_ hstep k
           positivity
       _ = Real.exp ((k : ℝ) * (Real.log (1 + δ) / (k : ℝ))) := by
           rw [Real.exp_nat_mul]
@@ -738,7 +739,7 @@ theorem isConical_sum_ind (ψ : DNF V) {k : ℕ} (hk : DNF.IsKDNF k ψ) :
   | nil => exact (IsConical.zero k).congr (fun α => by simp)
   | cons t ψ ih =>
     have h1 : IsConical k (fun α => ind t α) :=
-      (IsConical.term 1 zero_le_one t (hk t (List.mem_cons_self t ψ))).congr
+      (IsConical.term 1 zero_le_one t (hk t (List.mem_cons_self))).congr
         (fun α => by ring)
     have h2 := ih (fun s hs => hk s (List.mem_cons_of_mem t hs))
     exact (h1.add h2).congr (fun α => by simp)
@@ -757,7 +758,7 @@ theorem isConical_of_unambiguous {k : ℕ} {ψ : DNF V} (hk : DNF.IsKDNF k ψ)
   · obtain ⟨t, ht, hst⟩ := DNF.eval_eq_true_iff.mp he
     have hmem : t ∈ ψ.satTerms α := DNF.mem_satTerms.mpr ⟨ht, hst⟩
     have h1 : 1 ≤ (ψ.satTerms α).length :=
-      List.length_pos.mpr (List.ne_nil_of_mem hmem)
+      List.length_pos_iff.mpr (List.ne_nil_of_mem hmem)
     rw [le_antisymm (hu α) h1]
     simp [he]
   · have hnil : ψ.satTerms α = [] := by
@@ -847,7 +848,7 @@ theorem exists_separates_of_not_hasConicalApprox {d : ℕ} {ε ε' : ℝ}
   have hnn : ∀ g, IsConical d g → 0 ≤ Φ g := by
     intro g hg
     by_contra hneg
-    push_neg at hneg
+    push Not at hneg
     have hcpos : 0 < (u - 1) / Φ g := div_pos_iff.mpr (Or.inr ⟨by linarith, hneg⟩)
     have hmem : IsConical d (fun α => ((u - 1) / Φ g) * g α) := hg.smul hcpos.le
     have hle := hcone (((u - 1) / Φ g) • g) (hmem.congr (fun α => rfl))

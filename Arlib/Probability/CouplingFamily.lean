@@ -142,7 +142,7 @@ Outcomes are triples `(w, x, y)`: the fiber label `w`, drawn from `π`, together
 with a pair `(x, y)` drawn from the maximal coupling of `μ w` and `ν w`.  The
 mass is the product, so the construction is exactly "draw the label, then draw
 the coupled pair from the coupling attached to that label". -/
-noncomputable def couplingFamilySpace (π : FinDist κ) (μ ν : κ → FinDist α) : FinProb where
+@[reducible] noncomputable def couplingFamilySpace (π : FinDist κ) (μ ν : κ → FinDist α) : FinProb where
   Ω := κ × (α × α)
   μ :=
     { p := fun ω => π ω.1 * (maximalCoupling (μ ω.1) (ν ω.1)).joint ω.2
@@ -191,7 +191,7 @@ theorem fiber_famW (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) :
     fiber (famW π μ ν) w = ({w} : Finset κ) ×ˢ (univ : Finset (α × α)) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [mem_fiber, famW, Finset.mem_univ, and_true]
+  exact ⟨fun h => ⟨mem_fiber.mp h, Finset.mem_univ _⟩, fun h => mem_fiber.mpr h.1⟩
 
 /-- The fiber of the label variable has probability `π w`. -/
 @[simp] theorem Pr_fiber_famW (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) :
@@ -210,9 +210,9 @@ theorem inter_fiber_famX (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) 
       = ({w} : Finset κ) ×ˢ (univ.filter fun q : α × α => q.1 = a) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and, mem_fiber,
-    famX, famW, Finset.mem_product, Finset.mem_singleton]
-  tauto
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and,
+    Finset.mem_product, Finset.mem_singleton]
+  exact ⟨fun h => ⟨mem_fiber.mp h.2, h.1⟩, fun h => ⟨h.2, mem_fiber.mpr h.1⟩⟩
 
 /-- The event "`Y = a` and the label is `w`" is the rectangle `{w} × {q.2 = a}`. -/
 theorem inter_fiber_famY (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) (a : α) :
@@ -220,9 +220,9 @@ theorem inter_fiber_famY (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) 
       = ({w} : Finset κ) ×ˢ (univ.filter fun q : α × α => q.2 = a) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and, mem_fiber,
-    famY, famW, Finset.mem_product, Finset.mem_singleton]
-  tauto
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and,
+    Finset.mem_product, Finset.mem_singleton]
+  exact ⟨fun h => ⟨mem_fiber.mp h.2, h.1⟩, fun h => ⟨h.2, mem_fiber.mpr h.1⟩⟩
 
 /-- The event "`X ≠ Y` and the label is `w`" is the rectangle `{w} × {q.1 ≠ q.2}`. -/
 theorem inter_fiber_famNe (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) :
@@ -230,9 +230,9 @@ theorem inter_fiber_famNe (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ)
       = ({w} : Finset κ) ×ˢ (univ.filter fun q : α × α => q.1 ≠ q.2) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and, mem_fiber,
-    famX, famY, famW, Finset.mem_product, Finset.mem_singleton]
-  tauto
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and,
+    Finset.mem_product, Finset.mem_singleton]
+  exact ⟨fun h => ⟨mem_fiber.mp h.2, h.1⟩, fun h => ⟨h.2, mem_fiber.mpr h.1⟩⟩
 
 /-- **The first conditional law.**  On the fiber `{W = w}` — which requires the
 label to be charged — the first coordinate has law exactly `μ w`. -/
@@ -414,7 +414,7 @@ theorem Pr_preimage_eq_of_Pr_fiber {R R' : FinProb} (proj : R'.Ω → R.Ω)
       exact hω
     · rw [if_neg hω]
       have hempty : (univ.filter fun ω => proj ω ∈ E) ∩ fiber proj ω₀ = ∅ := by
-        refine Finset.eq_empty_iff_forall_not_mem.mpr fun ω hω' => ?_
+        refine Finset.eq_empty_iff_forall_notMem.mpr fun ω hω' => ?_
         rw [Finset.mem_inter, Finset.mem_filter, mem_fiber] at hω'
         exact hω (hω'.2 ▸ hω'.1.2)
       rw [hempty, Pr_empty]
@@ -491,7 +491,7 @@ theorem sum_seqCouplingKernel (μ ν : (i : Fin q) → (Fin i.val → α × α) 
 `c : Fin q → α × α`, weighted by the sequential-kernel product of the per-level
 maximal couplings: at each level the pair is drawn from the maximal coupling of
 the two laws attached to the joint history so far. -/
-noncomputable def seqCouplingSpace
+@[reducible] noncomputable def seqCouplingSpace
     (μ ν : (i : Fin q) → (Fin i.val → α × α) → FinDist α) : FinProb where
   Ω := Fin q → α × α
   μ :=
@@ -547,8 +547,9 @@ theorem inter_fiber_seqHist (μ ν : (i : Fin q) → (Fin i.val → α × α) �
     (univ.filter fun c => c i ∈ S) ∩ fiber (seqHist μ ν i) w
       = univ.filter fun c => c i ∈ S ∧ histPrefix c i = w := by
   ext c
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and, mem_fiber,
-    seqHist]
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and]
+  rw [mem_fiber]
+  simp [seqHist, histPrefix]
 
 /-- **The slice computation at level `i`.**  The mass of "the joint history is
 `w` and the level-`i` letter lies in `S`" factors as the prefix weight of `w`
@@ -587,8 +588,8 @@ theorem filter_seqX_eq (μ ν : (i : Fin q) → (Fin i.val → α × α) → Fin
     (i : Fin q) (a : α) :
     (univ.filter fun c => seqX μ ν c i = a)
       = univ.filter fun c => c i ∈ (univ.filter fun s : α × α => s.1 = a) := by
-  ext c
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, seqX]
+  refine Finset.filter_congr fun c _ => ?_
+  simp [seqX]
 
 /-- The level-`i` value of the second trajectory, as a membership constraint on
 the level-`i` letter. -/
@@ -596,15 +597,15 @@ theorem filter_seqY_eq (μ ν : (i : Fin q) → (Fin i.val → α × α) → Fin
     (i : Fin q) (a : α) :
     (univ.filter fun c => seqY μ ν c i = a)
       = univ.filter fun c => c i ∈ (univ.filter fun s : α × α => s.2 = a) := by
-  ext c
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, seqY]
+  refine Finset.filter_congr fun c _ => ?_
+  simp [seqY]
 
 /-- Level-`i` disagreement, as a membership constraint on the level-`i` letter. -/
 theorem filter_seq_ne (μ ν : (i : Fin q) → (Fin i.val → α × α) → FinDist α) (i : Fin q) :
     (univ.filter fun c => seqX μ ν c i ≠ seqY μ ν c i)
       = univ.filter fun c => c i ∈ (univ.filter fun s : α × α => s.1 ≠ s.2) := by
-  ext c
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and, seqX, seqY]
+  refine Finset.filter_congr fun c _ => ?_
+  simp [seqX, seqY]
 
 /-- **The level-`i` conditional law of the first trajectory** is `μ i w`, on
 every charged joint history `w`. -/
@@ -702,7 +703,7 @@ theorem Pr_seq_ne_le (μ ν : (i : Fin q) → (Fin i.val → α × α) → FinDi
       rw [Finset.mem_filter] at hc
       have hex : ∃ i : Fin q, seqX μ ν c i ≠ seqY μ ν c i := by
         by_contra hcon
-        push_neg at hcon
+        push Not at hcon
         exact hc.2 (funext hcon)
       obtain ⟨i, hi⟩ := hex
       exact Finset.mem_biUnion.mpr

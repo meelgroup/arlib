@@ -463,10 +463,10 @@ theorem decisionOr_isDecisionDNNF : IsDecisionDNNF decisionOr := by
   constructor
   · intro i j k _ hg
     match i, hg with
-    | 0, hg => exact Gate.noConfusion hg
-    | 1, hg => exact Gate.noConfusion hg
-    | 2, hg => exact Gate.noConfusion hg
-    | 3, hg => exact Gate.noConfusion hg
+    | 0, hg => exact absurd hg (by simp [decisionOrGate])
+    | 1, hg => exact absurd hg (by simp [decisionOrGate])
+    | 2, hg => exact absurd hg (by simp [decisionOrGate])
+    | 3, hg => exact absurd hg (by simp [decisionOrGate])
     | 4, hg =>
       injection hg with h1 h2
       subst h1
@@ -479,15 +479,15 @@ theorem decisionOr_isDecisionDNNF : IsDecisionDNNF decisionOr := by
       subst h2
       rw [v2, v3]
       simp
-    | 6, hg => exact Gate.noConfusion hg
+    | 6, hg => exact absurd hg (by simp [decisionOrGate])
   · intro i j k _ hg
     match i, hg with
-    | 0, hg => exact Gate.noConfusion hg
-    | 1, hg => exact Gate.noConfusion hg
-    | 2, hg => exact Gate.noConfusion hg
-    | 3, hg => exact Gate.noConfusion hg
-    | 4, hg => exact Gate.noConfusion hg
-    | 5, hg => exact Gate.noConfusion hg
+    | 0, hg => exact absurd hg (by simp [decisionOrGate])
+    | 1, hg => exact absurd hg (by simp [decisionOrGate])
+    | 2, hg => exact absurd hg (by simp [decisionOrGate])
+    | 3, hg => exact absurd hg (by simp [decisionOrGate])
+    | 4, hg => exact absurd hg (by simp [decisionOrGate])
+    | 5, hg => exact absurd hg (by simp [decisionOrGate])
     | 6, _ =>
       exact ⟨0, 4, 5, decisionOr_gate_six,
         ⟨1, 0, decisionOr_gate_four, Or.inl decisionOr_gate_one⟩,
@@ -556,7 +556,7 @@ def oztokDarwiche_witness : OztokDarwiche (Fin 2) 0 7 where
       exact absurd huv (by
         rcases hcases u v (G.ne_of_adj huv) with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
         · exact hadj
-        · exact fun h => hadj (G.symm h))
+        · exact fun h => hadj h.symm)
 
 /-! ## `decisionDNNF_robp_separation` -/
 
@@ -688,7 +688,7 @@ theorem decisionDNNF_robp_separation_quintic {r mulConst addConst lowerBound : �
   have hle : 2 ^ (r + 1) ≤ n := by omega
   have hn0 : n ≠ 0 := by omega
   -- hence `r + 1 ≤ ⌊log₂ n⌋`, and the treewidth `2·(2r) - 1` is at most `4·⌊log₂ n⌋ + 4`.
-  have hlog : r + 1 ≤ Nat.log 2 n := (Nat.pow_le_iff_le_log (by norm_num) hn0).mp hle
+  have hlog : r + 1 ≤ Nat.log 2 n := (Nat.le_log_iff_pow_le (by norm_num) hn0).mpr hle
   have ht : 2 * (2 * r) - 1 ≤ 4 * Nat.log 2 n + 4 := by omega
   exact Nat.add_le_add_right
     (Nat.mul_le_mul_left _ (pow_mul_le_of_log_le hn0 ht)) addConst

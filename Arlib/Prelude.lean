@@ -17,7 +17,7 @@ import Mathlib.Data.Finset.Powerset
 import Mathlib.Data.Finset.Prod
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.List.Basic
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Tactic.Linarith
@@ -26,7 +26,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.GCongr
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.NormNum
-import Mathlib.Tactic.PushNeg
+import Mathlib.Tactic.Push
 import Mathlib.Tactic.Ring.RingNF
 
 namespace Arlib

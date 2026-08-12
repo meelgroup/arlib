@@ -155,7 +155,7 @@ this turns the accuracy event of an FPRAS into a `Set.Icc`, which is what
 `median_mem_Icc_of_majority` consumes. -/
 theorem relErr_eq_Icc (c r : ℝ) : {y : ℝ | |y - c| ≤ r} = Set.Icc (c - r) (c + r) := by
   ext y
-  simp only [Set.mem_setOf_eq, Set.mem_Icc, abs_le]
+  simp only [Set.mem_ofPred_eq, Set.mem_Icc, abs_le]
   constructor
   · rintro ⟨h1, h2⟩; exact ⟨by linarith, by linarith⟩
   · rintro ⟨h1, h2⟩; exact ⟨by linarith, by linarith⟩
@@ -188,7 +188,7 @@ theorem median_mem_Icc_of_majority {m : ℕ} (v : Fin m → ℝ) {a b : ℝ}
       (Finset.univ.filter fun i : Fin m => v i ∈ Set.Icc a b).card
         + (Finset.univ.filter fun i : Fin m => v i ∉ Set.Icc a b).card
       = (Finset.univ : Finset (Fin m)).card :=
-    Finset.filter_card_add_filter_neg_card_eq_card _
+    Finset.card_filter_add_card_filter_not _
   rw [Finset.card_univ, Fintype.card_fin] at hsplit
   have hgoal : 2 * (Finset.univ.filter fun i : Fin m => v i ∉ Set.Icc a b).card < m := by
     omega
@@ -324,7 +324,7 @@ theorem outProbR_medianPMF_ge (H : MajorityConcentration) (μ : PMF (ℝ × ℕ)
       Arlib.Probability.medianOf (fun _ => rfl) (Set.Icc a b)]
   refine le_trans (H.majority_ge μ (Set.Icc a b) m h) (outProbR_mono _ ?_)
   intro v hv
-  rw [Set.mem_setOf_eq] at hv
+  rw [Set.mem_ofPred_eq] at hv
   -- `hv` counts with `Classical.propDecidable` (the event `S` there is arbitrary),
   -- the lemma with `Set.decidableMemIcc`; `convert` identifies the two instances.
   refine median_mem_Icc_of_majority v ?_

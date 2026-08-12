@@ -2,7 +2,7 @@
 
 A curated, Mathlib-style Lean 4 library of reusable results in randomised algorithms,
 knowledge compilation, Markov chains, and the probability and information theory
-underneath them. Pinned to Lean and Mathlib `v4.15.0`.
+underneath them. Built against Lean and Mathlib `v4.33.0`.
 
 This document explains how the library is laid out and why. It is not a tutorial and not
 a result catalogue; for the actual mathematics, each area root file carries a long prose
@@ -794,7 +794,7 @@ The measure-theoretic group exists because those statements are genuinely about 
 conditional expectation and almost-sure convergence and have no finite surrogate — a.s.
 convergence of the Robbins–Monro recursion; the conditional mean of a centred fresh draw over
 an arbitrary sub-σ-algebra; a countably-indexed independent uniform family as Haar measure on
-`ι → AddCircle 1` (Mathlib v4.15 has no infinite product measure and no Kolmogorov extension);
+`ι → AddCircle 1` (Mathlib has no infinite product measure and no Kolmogorov extension);
 Lévy's conditional Borel–Cantelli; measurability of a quantity read at a random index.
 
 ### 4.5 Citations are bibliography keys, not paths
@@ -903,7 +903,7 @@ declares no structure at all; it builds a `RootedTD` for `T_r(P_{2p})` and produ
 `exists_decisionDNNF_binTree_boxProd` (:313) and
 `decisionDNNF_robp_separation_quintic_unconditional` (:341) — the FBDD-vs-decision-DNNF
 separation with *both* sides proved inside Lean. The general bundle over an arbitrary graph is
-not discharged, because it would need a treewidth API Mathlib v4.15 does not have.
+not discharged, because it would need a treewidth API Mathlib does not have.
 
 #### `Arlib.KnowledgeCompilation.Tseitin.Imported` — **17 bundles**
 
@@ -1088,7 +1088,7 @@ constants (§4.2).
 | --- | --- | --- |
 | `cor: ACsep` and the PSDD language | [docs/dev/KnowledgeCompilation-ROADMAP.md](docs/dev/KnowledgeCompilation-ROADMAP.md) §7 | needs PSDD (an arithmetic re-run of `Circuits/SDD.lean`), a constant-propagation surgery on the DAG, and the asymptotic step above |
 | Import I4 (de Colnet–Mengel Prop. 2) | same, §3 | its only consumer is `cor: ACsep`; adding a bundle with no consumer "would assert that something is being imported when nothing is being proved from it" |
-| A generic `OztokDarwiche` bundle over an arbitrary graph | [BranchingPrograms/OztokDarwicheBundle.lean](Arlib/KnowledgeCompilation/BranchingPrograms/OztokDarwicheBundle.lean) | would need an infinite→finite rooting of an arbitrary tree decomposition, which Mathlib v4.15's lack of a treewidth API rules out. Discharged on the concrete class instead |
+| A generic `OztokDarwiche` bundle over an arbitrary graph | [BranchingPrograms/OztokDarwicheBundle.lean](Arlib/KnowledgeCompilation/BranchingPrograms/OztokDarwicheBundle.lean) | would need an infinite→finite rooting of an arbitrary tree decomposition, which Mathlib's lack of a treewidth API rules out. Discharged on the concrete class instead |
 | A `Language` algebra for automata | [docs/dev/Automata-ROADMAP.md](docs/dev/Automata-ROADMAP.md) §7 | `NFA.language` exists and nothing uses it; every theorem is about state counts and is phrased on `Accepts`. Closure constructions were needed only for a length-counter step that turned out unnecessary |
 | `Fintype` on `Automata.Basic` | same | finiteness enters only where a count is needed, in `Simulation` and `DNFtoUFA`; nothing about runs or unambiguity requires it |
 | The *cost* of the tree-automaton re-indexing | [Automata/TreeAutomatonRelabelPreserves.lean](Arlib/Automata/TreeAutomatonRelabelPreserves.lean) | the size data is shown invariant, not the construction shown cheap; and nothing supplies the `Fintype` instances |

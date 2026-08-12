@@ -23,7 +23,7 @@ measure as the `sInf` of the `k` satisfying it.  The reason is that no proof in
 the paper ever computes a minimum: an upper bound is always *"here is a cover"*
 (`fixedCov_le_of_hasCover`) and a lower bound is always *"no cover of that size
 exists"* (`not_hasCover_of_lt_fixedCov`).  Both directions are then one
-application of `Nat.sInf_le` or `Nat.not_mem_of_lt_sInf`, and the minimum itself
+application of `Nat.sInf_le` or `Nat.notMem_of_lt_sInf`, and the minimum itself
 never has to be examined.
 
 ## The junk value, and how it is disposed of
@@ -170,10 +170,10 @@ particular it does not need `Coverable`, since if no cover exists the measure is
 `0` and the hypothesis `k < 0` is unsatisfiable.  This is the form in which a
 lower bound on `Cov_b^Π` is consumed. -/
 lemma not_hasCover_of_lt_fixedCov (h : k < fixedCov P f b) :
-    ¬ HasCoverOfSize P f b k := Nat.not_mem_of_lt_sInf h
+    ¬ HasCoverOfSize P f b k := Nat.notMem_of_lt_sInf h
 
 lemma not_hasPartition_of_lt_fixedPar (h : k < fixedPar P f b) :
-    ¬ HasPartitionOfSize P f b k := Nat.not_mem_of_lt_sInf h
+    ¬ HasPartitionOfSize P f b k := Nat.notMem_of_lt_sInf h
 
 /-- The measure is attained, when anything is. -/
 lemma hasCover_fixedCov (h : Coverable P f b) :
@@ -240,11 +240,11 @@ Unconditional: no `Coverable` hypothesis, for the same reason as
 `not_hasCover_of_lt_fixedCov`. -/
 theorem forall_not_hasCover_of_lt_bestCov (h : k < bestCov Z f b)
     (P : VarPartition Z) (hP : P.Balanced) : ¬ HasCoverOfSize P f b k :=
-  fun hc => Nat.not_mem_of_lt_sInf h ⟨P, hP, hc⟩
+  fun hc => Nat.notMem_of_lt_sInf h ⟨P, hP, hc⟩
 
 theorem forall_not_hasPartition_of_lt_bestPar (h : k < bestPar Z f b)
     (P : VarPartition Z) (hP : P.Balanced) : ¬ HasPartitionOfSize P f b k :=
-  fun hc => Nat.not_mem_of_lt_sInf h ⟨P, hP, hc⟩
+  fun hc => Nat.notMem_of_lt_sInf h ⟨P, hP, hc⟩
 
 /-- The best-partition measure is at most the fixed-partition measure at any
 balanced partition — the inequality `min_Π Cov_b^Π(f) ≤ Cov_b^Π(f)`.

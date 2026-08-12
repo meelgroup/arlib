@@ -229,7 +229,7 @@ private theorem sep_prod (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily Z)
   have hfun : (fun ω => Z a ω * ∏ i ∈ U, Z i ω) = fun ω => ∏ i ∈ insert a U, Z i ω :=
     funext fun ω => mul_prod_insert hZ a U ω
   have hcard' : (insert a U).card ≤ 4 := by
-    rw [Finset.card_insert_of_not_mem haU]; omega
+    rw [Finset.card_insert_of_notMem haU]; omega
   have h1 : P.Ex (fun ω => ∏ i ∈ insert a U, Z i ω) = ∏ i ∈ insert a U, P.Ex (Z i) :=
     hind (insert a U) hcard'
   have h2 : P.Ex (fun ω => ∏ i ∈ U, Z i ω) = ∏ i ∈ U, P.Ex (Z i) :=
@@ -243,7 +243,7 @@ private theorem sep_one (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily Z)
       = P.Ex (Z a) * P.Ex (fun ω => (∏ i ∈ U, Z i ω) * cen P Z x ω) := by
   have haU' : a ∉ insert x U := by
     simp only [Finset.mem_insert]
-    push_neg
+    push Not
     exact ⟨hax, haU⟩
   have hcard' : (insert x U).card ≤ 3 :=
     le_trans (Finset.card_insert_le x U) (by omega)
@@ -269,7 +269,7 @@ private theorem sep_two (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily Z)
       = P.Ex (Z a) * P.Ex (fun ω => (∏ i ∈ U, Z i ω) * (cen P Z x ω * cen P Z y ω)) := by
   have haU' : a ∉ insert x U := by
     simp only [Finset.mem_insert]
-    push_neg
+    push Not
     exact ⟨hax, haU⟩
   have hcard' : (insert x U).card ≤ 2 :=
     le_trans (Finset.card_insert_le x U) (by omega)
@@ -298,7 +298,7 @@ private theorem sep_three (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily Z)
             (∏ i ∈ U, Z i ω) * (cen P Z x ω * (cen P Z y ω * cen P Z z ω))) := by
   have haU' : a ∉ insert x U := by
     simp only [Finset.mem_insert]
-    push_neg
+    push Not
     exact ⟨hax, haU⟩
   have hcard' : (insert x U).card ≤ 1 :=
     le_trans (Finset.card_insert_le x U) (by omega)
@@ -327,7 +327,7 @@ private theorem sep_cen_one (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily Z)
     {a x : ι} (hax : a ≠ x) :
     P.Ex (fun ω => Z a ω * cen P Z x ω)
       = P.Ex (Z a) * P.Ex (fun ω => cen P Z x ω) := by
-  have h := sep_one hind hZ (U := (∅ : Finset ι)) (Finset.not_mem_empty a) hax (by simp)
+  have h := sep_one hind hZ (U := (∅ : Finset ι)) (Finset.notMem_empty a) hax (by simp)
   simpa using h
 
 /-- Separation of a single indicator from two centred factors. -/
@@ -335,7 +335,7 @@ private theorem sep_cen_two (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily Z)
     {a x y : ι} (hax : a ≠ x) (hay : a ≠ y) :
     P.Ex (fun ω => Z a ω * (cen P Z x ω * cen P Z y ω))
       = P.Ex (Z a) * P.Ex (fun ω => cen P Z x ω * cen P Z y ω) := by
-  have h := sep_two hind hZ (U := (∅ : Finset ι)) (Finset.not_mem_empty a) hax hay (by simp)
+  have h := sep_two hind hZ (U := (∅ : Finset ι)) (Finset.notMem_empty a) hax hay (by simp)
   simpa using h
 
 /-- Separation of a single indicator from three centred factors. -/
@@ -343,7 +343,7 @@ private theorem sep_cen_three (hind : KWiseIndep P 4 Z) (hZ : IsIndicatorFamily 
     {a x y z : ι} (hax : a ≠ x) (hay : a ≠ y) (haz : a ≠ z) :
     P.Ex (fun ω => Z a ω * (cen P Z x ω * (cen P Z y ω * cen P Z z ω)))
       = P.Ex (Z a) * P.Ex (fun ω => cen P Z x ω * (cen P Z y ω * cen P Z z ω)) := by
-  have h := sep_three hind hZ (U := (∅ : Finset ι)) (Finset.not_mem_empty a) hax hay haz
+  have h := sep_three hind hZ (U := (∅ : Finset ι)) (Finset.notMem_empty a) hax hay haz
     (by simp)
   simpa using h
 

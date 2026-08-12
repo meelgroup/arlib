@@ -56,7 +56,7 @@ instance decidableAgreesOn [DecidableEq S] (Λ : Finset V) (η σ : V → S) :
   unfold AgreesOn; infer_instance
 
 @[simp] theorem agreesOn_empty (η σ : V → S) : AgreesOn (∅ : Finset V) η σ := by
-  intro v hv; exact absurd hv (Finset.not_mem_empty v)
+  intro v hv; exact absurd hv (Finset.notMem_empty v)
 
 @[simp] theorem agreesOn_self (Λ : Finset V) (η : V → S) : AgreesOn Λ η η :=
   fun _ _ => rfl

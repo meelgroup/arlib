@@ -235,7 +235,7 @@ theorem indepEvents_of_disjoint (hpos : ∀ i c, 0 < C.coinMass i c) {B : ℕ}
       have hcongr : C.toFinProb.toProbSpace.Pr (C.toFinProb.toProbSpace.interEvent E ∅)
           = C.toFinProb.toProbSpace.Pr (fun _ : (∀ i, C.Coin i) => True) :=
         C.toFinProb.toProbSpace.Pr_congr (fun ω =>
-          ⟨fun _ => trivial, fun _ i hi => absurd hi (Finset.not_mem_empty i)⟩)
+          ⟨fun _ => trivial, fun _ i hi => absurd hi (Finset.notMem_empty i)⟩)
       have hind : indic (fun _ : (∀ i, C.Coin i) => True) = (fun _ => (1 : ℝ)) := by
         funext ω; simp only [indic_apply]; rw [if_pos trivial]
       rw [hcongr]

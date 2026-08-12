@@ -173,7 +173,7 @@ theorem Vpi_eq {s : S} (hs : M.isTerm s = false) :
     (M.tendsto_reachValPi π s).comp (tendsto_add_atTop_nat 1)
   have h2 : Tendsto (fun k => ∑ s', M.P s (π s) s' * M.reachValPi π k s') atTop
       (𝓝 (∑ s', M.P s (π s) s' * M.Vpi π s')) :=
-    tendsto_finset_sum _ fun s' _ => (M.tendsto_reachValPi π s').const_mul (M.P s (π s) s')
+    tendsto_finsetSum _ fun s' _ => (M.tendsto_reachValPi π s').const_mul (M.P s (π s) s')
   exact tendsto_nhds_unique
     (Filter.Tendsto.congr (fun k => M.reachValPi_succ_nonterm π k hs) h1) h2
 

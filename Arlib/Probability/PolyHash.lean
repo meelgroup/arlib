@@ -5,7 +5,7 @@ Authors: Kuldeep S. Meel
 -/
 import Arlib.Probability.KWiseIndependent
 import Mathlib.LinearAlgebra.Lagrange
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Data.Fintype.Pi
 
 /-!
@@ -132,7 +132,7 @@ theorem polyOfCoeffs_coeff {k : ℕ} (hk : 0 < k) {p : Polynomial F}
 coefficient vectors: outcomes are `Fin k → F` (equivalently, by
 `polyOfCoeffs`/`polyOfCoeffs_coeff`, the polynomials of degree `< k`), each of
 mass `(|F| ^ k)⁻¹`. -/
-noncomputable def polyHashSpace (F : Type) [Field F] [Fintype F] [DecidableEq F]
+@[reducible] noncomputable def polyHashSpace (F : Type) [Field F] [Fintype F] [DecidableEq F]
     (k : ℕ) : FinProb where
   Ω := Fin k → F
   μ :=
@@ -163,7 +163,6 @@ theorem polyHashSpace_Ex {k : ℕ} (X : (Fin k → F) → ℝ) :
     (polyHashSpace F k).Ex X
       = ((Fintype.card F : ℝ) ^ k)⁻¹ * ∑ c : Fin k → F, X c := by
   rw [FinProb.Ex, Finset.mul_sum]
-  rfl
 
 /-! ## The evaluation map, and the key bijection -/
 
@@ -325,10 +324,10 @@ theorem card_fiber_evalVector_eq (hk : 0 < k) (hcard : Fintype.card κ ≤ k) {x
   refine Finset.card_nbij' (fun c => fun j => c j + (b j - a j))
     (fun c => fun j => c j - (b j - a j)) ?_ ?_ ?_ ?_
   · intro c hc
-    rw [mem_filter] at hc ⊢
+    simp only [Finset.mem_coe, mem_filter] at hc ⊢
     exact ⟨mem_univ _, hshift c hc.2⟩
   · intro c hc
-    rw [mem_filter] at hc ⊢
+    simp only [Finset.mem_coe, mem_filter] at hc ⊢
     exact ⟨mem_univ _, hshift' c hc.2⟩
   · intro c _; funext j; ring
   · intro c _; funext j; ring
@@ -468,7 +467,7 @@ theorem ex_polyHash_indicator (hk : 0 < k) {x : ι → F} (hx : Function.Injecti
     (S : Finset F) (i : ι) :
     (polyHashSpace F k).Ex (polyHashIndicator x S i)
       = (S.card : ℝ) / (Fintype.card F : ℝ) := by
-  have h := ex_prod_polyHashIndicator hk hx S {i} (by simpa using hk)
+  have h := ex_prod_polyHashIndicator hk hx S {i} (by simp; omega)
   rw [Finset.card_singleton, pow_one] at h
   simpa using h
 

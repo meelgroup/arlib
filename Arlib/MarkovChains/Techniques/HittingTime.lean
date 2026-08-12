@@ -339,7 +339,8 @@ private theorem sum_range_mul_le (K : FinChain Ω) (T : Finset Ω) {c : ℝ} (hc
       have hsplit : ∑ j ∈ Finset.range (N * n), survive K T j x
             + ∑ j ∈ Finset.Ico (N * n) ((N + 1) * n), survive K T j x
           = ∑ j ∈ Finset.range ((N + 1) * n), survive K T j x := by
-        rw [Finset.range_eq_Ico, Finset.sum_Ico_consecutive _ (Nat.zero_le _) hle]
+        rw [Finset.range_eq_Ico, Finset.sum_Ico_consecutive _ (Nat.zero_le _) hle,
+          ← Finset.range_eq_Ico]
       have hcard : (N + 1) * n - N * n = n := by
         rw [Nat.succ_mul, Nat.add_sub_cancel_left]
       have hblock : ∑ j ∈ Finset.Ico (N * n) ((N + 1) * n), survive K T j x
@@ -369,7 +370,7 @@ theorem sum_range_le_of_survive_le (K : FinChain Ω) (T : Finset Ω) {c : ℝ}
       _ ≤ m * n := Nat.mul_le_mul_left m hn
   have hgrow : ∑ k ∈ Finset.range m, survive K T k x
       ≤ ∑ k ∈ Finset.range (m * n), survive K T k x :=
-    Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset.mpr hmn)
+    Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_subset_range.mpr hmn)
       fun k _ _ => survive_nonneg K T k x
   have hblocks := sum_range_mul_le K T hc0 n h x m
   have hgeom : (n : ℝ) * ∑ k ∈ Finset.range m, c ^ k ≤ (n : ℝ) * (1 / (1 - c)) :=
@@ -392,13 +393,13 @@ This is the identity that makes `EHT` a ranking supermartingale with
 theorem EHT_recursion (K : FinChain Ω) (T : Finset Ω) (hs : ∀ y, HittingSummable K T y)
     {x : Ω} (hx : x ∉ T) :
     EHT K T x = 1 + ∑ y, K x y * EHT K T y := by
-  rw [EHT, tsum_eq_zero_add (hs x)]
+  rw [EHT, Summable.tsum_eq_zero_add (hs x)]
   congr 1
   · rw [survive_zero, offTarget_apply, if_neg hx]
   · have hstep : ∀ n, survive K T (n + 1) x = ∑ y, K x y * survive K T n y := fun n => by
       rw [survive_succ_apply, if_neg hx]
     simp only [hstep]
-    rw [tsum_sum (fun y _ => (hs y).mul_left (K x y))]
+    rw [Summable.tsum_finsetSum (fun y _ => (hs y).mul_left (K x y))]
     exact Finset.sum_congr rfl fun y _ => tsum_mul_left
 
 end Arlib.MarkovChains

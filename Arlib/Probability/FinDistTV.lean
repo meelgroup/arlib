@@ -39,7 +39,7 @@ Everything here is proved from first principles with no `sorry`.
 -/
 import Arlib.Probability.FinDistFunctional
 import Arlib.Probability.FinKernelAlgebra
-import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Real.Sqrt
 
 namespace Arlib.Probability
 
@@ -126,7 +126,7 @@ theorem tvDist_triangle (μ ν ρ : FinDist Ω) : tvDist μ ρ ≤ tvDist μ ν 
   refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun x _ => ?_) (by norm_num)
   have : μ x - ρ x = (μ x - ν x) + (ν x - ρ x) := by ring
   rw [this]
-  exact abs_add _ _
+  exact abs_add_le _ _
 
 /-! ## The event characterisation -/
 
@@ -137,7 +137,7 @@ theorem tvDist_eq_sum_posPart (μ ν : FinDist Ω) :
     tvDist μ ν = ∑ x, max (μ x - ν x) 0 := by
   have habs : ∀ a : ℝ, |a| = 2 * max a 0 - a := by
     intro a
-    rcases le_or_lt 0 a with h | h
+    rcases le_or_gt 0 a with h | h
     · rw [abs_of_nonneg h, max_eq_left h]; ring
     · rw [abs_of_neg h, max_eq_right h.le]; ring
   have htot : ∑ x : Ω, (μ x - ν x) = 0 := by

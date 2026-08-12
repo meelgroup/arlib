@@ -14,7 +14,7 @@ Per-area open lists live in the area roadmaps; see the bottom of this file.
 *Was:* the only statement in the `Forgetting/` area that was neither proved nor
 hypothesized. `Forgetting/Treewidth.lean` needed `treewidth(Δⁿ) ≥ n`, which is
 blocked on `min-degree ≤ treewidth`, which needs leaf-removal induction, which
-needs "a finite tree has a leaf" — and Mathlib v4.15 has neither treewidth nor
+needs "a finite tree has a leaf" — and Mathlib has neither treewidth nor
 that lemma.
 
 *Now:* proved. `Arlib/KnowledgeCompilation/Forgetting/MinDegree.lean` builds the
@@ -41,7 +41,7 @@ Theorem 1 is proved constructively in
 *Caveat, and the remaining work:* the **generic** `DecisionDNNF.OztokDarwiche`
 bundle, over an arbitrary graph, is still not discharged. Doing so needs a
 general tree-decomposition → `RootedTD` normalization plus an `O(|V|)` node
-bound, and Mathlib v4.15 has no treewidth API to build on. It is not needed for
+bound, and Mathlib has no treewidth API to build on. It is not needed for
 the separation: for the actual separating class,
 `OztokDarwicheBundle.decisionDNNF_robp_separation_quintic_unconditional`
 constructs the `RootedTD` explicitly and is fully unconditional.

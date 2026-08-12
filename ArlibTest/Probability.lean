@@ -27,7 +27,9 @@ noncomputable def fairCoin : FinProb where
       p_sum := by simp }
 
 /-- Probabilities of the two outcomes. -/
-example : fairCoin.Pr {true} = 1 / 2 := by simp [FinProb.Pr, FinProb.mass, fairCoin]
+example : fairCoin.Pr {true} = 1 / 2 := by
+  simp [FinProb.Pr, FinProb.mass, fairCoin]
+  rfl
 
 /-- The union bound, the workhorse of the area, over a `Finset` of events. -/
 example (P : FinProb) (s : Finset ℕ) (E : ℕ → P.Event) :

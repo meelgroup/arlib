@@ -163,7 +163,7 @@ theorem forall₂_accepts_map_some {ts : List (LTree Γ)}
     cases ss with
     | nil => simp
     | cons s ss =>
-      have h₁ := ih t (List.mem_cons_self t ts) s
+      have h₁ := ih t (List.mem_cons_self) s
       have h₂ := iht (fun u hu => ih u (List.mem_cons_of_mem t hu)) ss
       simp only [List.map_cons, List.forall₂_cons]
       exact and_congr h₁ h₂
@@ -374,7 +374,7 @@ theorem forall₂_ofBinary_toBinaryList (ts : List (LTree Γ))
   induction ts with
   | nil => simp
   | cons t ts iht =>
-    exact List.Forall₂.cons (ih t (List.mem_cons_self t ts))
+    exact List.Forall₂.cons (ih t (List.mem_cons_self))
       (iht fun u hu => ih u (List.mem_cons_of_mem t hu))
 
 /-- **`ofBinary` is a left inverse of `toBinary`.**  Every unranked tree is
@@ -420,7 +420,7 @@ theorem sizeList_toBinaryList (ts : List (LTree Γ))
   induction ts with
   | nil => simp
   | cons t ts iht =>
-    have h₁ := ih t (List.mem_cons_self t ts)
+    have h₁ := ih t (List.mem_cons_self)
     have h₂ := iht fun u hu => ih u (List.mem_cons_of_mem t hu)
     simp only [toBinaryList_cons, sizeList_cons, List.length_cons]
     omega
@@ -536,8 +536,7 @@ def equivEncoded : LTree Γ ≃ {b : LTree (Γ ⊕ Unit) // IsEncoded b} where
   invFun b := (ofBinary b.1).get b.2
   left_inv t := by
     apply Option.some_injective (LTree Γ)
-    rw [Option.some_get]
-    exact ofBinary_toBinary t
+    exact (Option.some_get (isEncoded_toBinary t)).trans (ofBinary_toBinary t)
   right_inv b := Subtype.ext (toBinary_ofBinary b.1 _ (Option.some_get b.2).symm)
 
 end LTree

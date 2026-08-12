@@ -10,9 +10,17 @@ testDriver = "ArlibTest"
 # randomised algorithms, knowledge compilation, and the probability and
 # information theory underneath them.
 #
-# Pin Mathlib to the git tag matching the toolchain in `lean-toolchain`
-# (leanprover/lean4:v4.15.0). If you bump the toolchain, bump this tag too and
-# re-run `lake update` + `lake exe cache get`.
+# The Mathlib `rev` below is a **lock, not a commitment**: nothing in the library
+# is written against a particular Lean release, and the pin exists only so that a
+# build is reproducible and Lake does not re-resolve (and warn) on every
+# invocation. It moves forward whenever someone runs the upgrade:
+#
+#     lake update mathlib                                      # or: pick a tag
+#     cp .lake/packages/mathlib/lean-toolchain lean-toolchain  # follow Mathlib
+#     lake exe cache get && lake build
+#
+# `lean-toolchain` must always be whatever Mathlib's own `lean-toolchain` says —
+# elan needs a concrete toolchain, and a mismatch fails deep inside Mathlib.
 #
 # `doc-gen4` is deliberately NOT required here. Adding it would make every
 # `lake build` — including offline ones that reuse an already-materialised
@@ -23,7 +31,7 @@ testDriver = "ArlibTest"
 name = "mathlib"
 scope = "leanprover-community"
 git = "https://github.com/leanprover-community/mathlib4.git"
-rev = "v4.15.0"
+rev = "v4.33.0"
 
 [[lean_lib]]
 name = "Arlib"

@@ -136,7 +136,7 @@ theorem sum_ite_card_between {k : ℕ} {τ : Finset E} (hτ : τ.card = k) (σ :
         if_congr (by rw [Finset.insert_subset_iff]; exact and_iff_left hts) rfl rfl
     have hint : τᶜ ∩ σ = σ \ τ := by
       rw [Finset.inter_comm, Finset.sdiff_eq_inter_compl]
-    rw [hcond, Finset.sum_ite_mem, hint, Finset.sum_const, Finset.card_sdiff hts, hτ,
+    rw [hcond, Finset.sum_ite_mem, hint, Finset.sum_const, Finset.card_sdiff_of_subset hts, hτ,
       nsmul_eq_mul]
   · rw [if_neg hts]
     refine Finset.sum_eq_zero fun e _ => if_neg fun hc => hts ?_
@@ -253,7 +253,6 @@ theorem act_up_act_up_eq_div (w : Finset E → ℝ) (n k : ℕ)
       by_cases hc : σ.card = k + 2 ∧ η ⊆ σ
       · rw [if_pos hc, if_pos hc]
         field_simp
-        ring
       · rw [if_neg hc, if_neg hc, zero_mul, mul_zero, zero_div]
     · have h0 : mu w η = 0 := le_antisymm (not_lt.mp hmη) (mu_nonneg hw η)
       rw [h0, zero_mul]
@@ -316,7 +315,6 @@ theorem Ex_linkShiftPi_two_eq_act_up_act_up (w : Finset E → ℝ) (n k : ℕ)
   rw [Ex_linkShiftPi_eq_div w n 2 τ hw hsupp hτn hpos hj G,
     act_up_act_up_eq_div w n k hw hsupp hk1 hk2 hcard hpos G, hcard, ← hchoose]
   field_simp
-  ring
 
 /-! ## The monograph's two identities
 

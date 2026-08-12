@@ -147,7 +147,7 @@ theorem outProb_map' {β : Type u} {γ : Type v} (μ : PMF (β × ℕ)) (F : β 
   rw [outProb, PMF.toOuterMeasure_map_apply]
   congr 1
   ext p
-  simp only [Set.mem_preimage, Set.mem_setOf_eq, hF p]
+  simp only [Set.mem_preimage, Set.mem_ofPred_eq, hF p]
 
 /-- Real-valued form of `outProb_map'`. -/
 theorem outProbR_map' {β : Type u} {γ : Type v} (μ : PMF (β × ℕ)) (F : β × ℕ → γ × ℕ)
@@ -251,7 +251,7 @@ theorem outProbR_tagAlg_some (tag : (w : α) → Ω w ↪ T)
   cases o with
   | none => simp
   | some y =>
-    simp only [Set.mem_preimage, Option.map_some', Set.mem_singleton_iff, Option.some.injEq]
+    simp only [Set.mem_preimage, Option.map_some, Set.mem_singleton_iff, Option.some.injEq]
     exact ⟨fun h => (tag w).injective h, fun h => congrArg _ h⟩
 
 /-- Tagging does not change the probability of reporting `none`. -/

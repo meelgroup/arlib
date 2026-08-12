@@ -491,7 +491,6 @@ noncomputable def pinDist (w : (V → S) → ℝ) (Λ : Finset V) (hw : ∀ σ, 
   p x := if x.1 ∈ Λ then 0
     else siteMass w x.1 x.2 / (((Fintype.card V - Λ.card : ℕ) : ℝ) * Z w)
   p_nonneg x := by
-    dsimp only
     split
     · exact le_rfl
     · exact div_nonneg (siteMass_nonneg hw _ _) (mul_nonneg (Nat.cast_nonneg _) hZ.le)
@@ -505,7 +504,7 @@ noncomputable def pinDist (w : (V → S) → ℝ) (Λ : Finset V) (hw : ∀ σ, 
           = if v ∈ Λᶜ then (((Fintype.card V - Λ.card : ℕ) : ℝ))⁻¹ else 0 := by
       intro v
       by_cases h : v ∈ Λ
-      · rw [if_neg (Finset.not_mem_compl.mpr h)]
+      · rw [if_neg (Finset.notMem_compl.mpr h)]
         exact Finset.sum_eq_zero fun s _ => if_pos h
       · rw [if_pos (Finset.mem_compl.mpr h),
           Finset.sum_congr rfl fun s _ => if_neg h, ← Finset.sum_div, sum_siteMass,
@@ -581,7 +580,6 @@ noncomputable def pinLocalWalk (w : (V → S) → ℝ) (Λ : Finset V) (hw : ∀
       else 0)
     else (if y = x then 1 else 0)
   P_nonneg x y := by
-    dsimp only
     split
     · split
       · exact div_nonneg (pairMass_nonneg hw _ _ _ _)
@@ -697,7 +695,6 @@ theorem pinDist_mul_pinLocalWalk (w : (V → S) → ℝ) (Λ : Finset V) (hw : �
           rw [pinDist_apply, if_neg hi, pinLocalWalk_apply, if_pos ⟨hi, hA⟩,
             if_pos ⟨hj, fun hc => hij hc.symm⟩]
           field_simp
-          ring
         · have h0 : siteMass w x.1 x.2 = 0 := le_antisymm (not_lt.mp hA) (siteMass_nonneg hw _ _)
           rw [hnull hA, zero_mul,
             pairMass_eq_zero_of_siteMass_eq_zero hw x.1 y.1 x.2 y.2 h0, zero_div]

@@ -244,11 +244,13 @@ Two failure modes to watch for, both of which have occurred here:
   that is not real, which misleads a reader in the opposite direction from
   vacuity. Give the bundle real fields or drop it.
 
-## 8. Mathlib v4.15.0 notes
+## 8. Mathlib notes
 
-Recorded because they cost time repeatedly. The pin is `v4.15.0` for both Lean
-and Mathlib; several of these are fixed in later versions, so revisit the list at
-the next toolchain bump.
+Recorded because they cost time repeatedly. The library follows Mathlib rather
+than a fixed release (see [CONTRIBUTING.md](CONTRIBUTING.md)); these notes were
+last checked against the revision in `lake-manifest.json`, currently the one
+paired with Lean `v4.33.0`. Revisit the list at the next bump — some of these
+gaps get filled upstream.
 
 **Destructuring `ExistsUnique` needs three components.** `∃! x, p x` unfolds to
 `∃ x, p x ∧ ∀ y, p y → y = x`, so the pattern is
@@ -272,7 +274,7 @@ same applies to the `unused section variable` warning generally: `omit … in` h
 no effect when a docstring precedes the declaration, so the alternative fix is to
 narrow the `variable` line or wrap it in a `section … end`.
 
-**No treewidth API, and no "a finite tree has a leaf".** Mathlib v4.15 has
+**No treewidth API, and no "a finite tree has a leaf".** Mathlib has
 neither. Leaf-removal inductions have to be built from scratch at the `Finset`
 level; when you build one, make it general and put it somewhere reusable rather
 than inline.
@@ -293,3 +295,45 @@ shrinks by an arbitrarily small amount, which usually costs nothing downstream.
 **Mathlib has no discrete Shannon information theory.** Entropy, mutual
 information and KL divergence for finite random variables are built here, on
 `Arlib.Probability`, not imported.
+
+### Notes from the v4.15 → v4.33 upgrade
+
+These are the patterns that broke, and the fix each time. They generalise to the
+next bump.
+
+**Spell a structure's carrier one way, or mark the constructor `@[reducible]`.**
+The single largest source of breakage was a space or circuit built by a `def`
+returning a structure (`CoinSpace`, `FinProb`, `NNF`, `AC`, …) whose statements
+mix `C.toFinProb.Ω` with the underlying `∀ i, C.Coin i`. Those are equal by
+`rfl`, but `rw`, `simp` and instance search now match up to *reducible*
+transparency only, so a projection of a plain `def` is opaque to them. Marking
+the constructor `@[reducible]` — with a one-line note in its docstring saying
+why — makes both spellings interchangeable again and fixed whole files at once.
+
+**`field_simp` closes more, and leaves different residue.** A trailing `ring`
+after `field_simp` is now often an error ("no goals"), and occasionally the
+opposite: `field_simp` stops one `ring` short. Both are mechanical.
+
+**`linarith` failing on visibly identical atoms is an instance mismatch.** Two
+copies of the same term can carry different `Mul`/`Decidable` instance paths, and
+`linarith` treats them as distinct atoms. `ring_nf at h ⊢` first canonicalises
+them.
+
+**`convert … using n` on `HasDerivAt` spawns instance-equality goals.** Use
+`HasDerivAt.congr_deriv` to adjust the derivative value instead of `convert`.
+
+**Sum lemmas moved from `fun x => ∑ …` to `∑ …` (function-valued) form.**
+`Finset.stronglyMeasurable_sum`, `HasDerivAt.sum` and friends now conclude about
+a sum *of functions*; rewrite the goal with `funext`/`Finset.sum_apply` before
+applying them.
+
+**`Finset` is a `SetLike` now.** Membership arriving through `Set.MapsTo` (as in
+`Finset.card_nbij'`, `card_le_card_of_injOn`) is stated on the coercion; add
+`Finset.mem_coe` to the simp set, or restate the hypothesis with a defeq `have`.
+
+**`SimpleGraph.symm`/`loopless` are `Std.Symm`/`Std.Irrefl` class values.**
+Structure instances need `symm := ⟨…⟩`, and `G.loopless a h` is now `G.irrefl h`.
+
+**Measure-valued integrals return `μ.real`.** `integral_const` and
+`setIntegral_const` produce `μ.real s • c`; insert `measureReal_def` in the
+rewrite chain.

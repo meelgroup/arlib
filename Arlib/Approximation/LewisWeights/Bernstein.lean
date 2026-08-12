@@ -28,6 +28,7 @@ finite-probability primitives in `Arlib.Probability`:
 
 No `sorry`; the final theorems are axiom-clean.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.Probability.CondExpProd
 import Arlib.Probability.Markov
 import Mathlib.Analysis.Convex.SpecificFunctions.Basic
@@ -49,7 +50,7 @@ theorem exp_convex_bound {B : ℝ} (hB : 0 < B) (lam x : ℝ) (hx0 : 0 ≤ x)
   have hconv := convexOn_exp.2 (Set.mem_univ (0 : ℝ)) (Set.mem_univ (lam * B))
     (show (0:ℝ) ≤ 1 - x / B by linarith) hxB0 (show (1 - x / B) + x / B = 1 by ring)
   simp only [smul_eq_mul, Real.exp_zero, mul_zero, mul_one, zero_add] at hconv
-  have harg : (x / B) * (lam * B) = lam * x := by field_simp; ring
+  have harg : (x / B) * (lam * B) = lam * x := by field_simp
   rw [harg] at hconv
   have heq : 1 + (x / B) * (Real.exp (lam * B) - 1)
       = (1 - x / B) + (x / B) * Real.exp (lam * B) := by ring
@@ -146,7 +147,7 @@ theorem Ex_exp_sum_le (hpos : ∀ i c, 0 < C.coinMass i c) (hB : 0 < b)
     rw [hstep]
     exact C.Ex_prod_of_disjoint hpos (fun i => {i})
       (fun i ω => Real.exp (lam * g i (ω i))) Finset.univ
-      (by intro i _ ω ω' h; dsimp only; rw [h i (Finset.mem_singleton_self i)])
+      (by intro i _ ω ω' h; rw [h i (Finset.mem_singleton_self i)])
       (by intro i _ i' _ hii'; simp only [Finset.disjoint_singleton]; exact hii')
   rw [hfact]
   have hμ : C.toFinProb.Ex (S C g) = ∑ i, C.toFinProb.Ex (fun ω => g i (ω i)) := by
@@ -207,7 +208,7 @@ theorem chernoff_upper (hpos : ∀ i c, 0 < C.coinMass i c) (hB : 0 < b)
           - (γ / b) * ((1 + γ) * C.toFinProb.Ex (S C g))
         = (C.toFinProb.Ex (S C g) / b) * (Real.exp γ - 1 - γ * (1 + γ)) := by ring
     have htarget : -(γ ^ 2 * C.toFinProb.Ex (S C g)) / (4 * b)
-        = (C.toFinProb.Ex (S C g) / b) * (-γ ^ 2 / 4) := by field_simp; ring
+        = (C.toFinProb.Ex (S C g) / b) * (-γ ^ 2 / 4) := by field_simp
     rw [hfactor, htarget]
     exact mul_le_mul_of_nonneg_left hinner hBμ
   calc C.toFinProb.Pr
@@ -259,7 +260,7 @@ theorem chernoff_lower (hpos : ∀ i c, 0 < C.coinMass i c) (hB : 0 < b)
           - (-(γ / b)) * ((1 - γ) * C.toFinProb.Ex (S C g))
         = (C.toFinProb.Ex (S C g) / b) * (Real.exp (-γ) - 1 + γ * (1 - γ)) := by ring
     have htarget : -(γ ^ 2 * C.toFinProb.Ex (S C g)) / (4 * b)
-        = (C.toFinProb.Ex (S C g) / b) * (-γ ^ 2 / 4) := by field_simp; ring
+        = (C.toFinProb.Ex (S C g) / b) * (-γ ^ 2 / 4) := by field_simp
     rw [hfactor, htarget]
     exact mul_le_mul_of_nonneg_left hinner hBμ
   calc C.toFinProb.Pr
@@ -291,7 +292,7 @@ theorem chernoff_relative (hpos : ∀ i c, 0 < C.coinMass i c) (hB : 0 < b)
     rw [Finset.mem_filter] at hω
     rw [Finset.mem_union, Finset.mem_filter, Finset.mem_filter]
     have hdev := hω.2
-    rcases le_or_lt (S C g ω) (C.toFinProb.Ex (S C g)) with hle | hgt
+    rcases le_or_gt (S C g ω) (C.toFinProb.Ex (S C g)) with hle | hgt
     · right
       refine ⟨Finset.mem_univ _, ?_⟩
       rw [abs_of_nonpos (by linarith)] at hdev

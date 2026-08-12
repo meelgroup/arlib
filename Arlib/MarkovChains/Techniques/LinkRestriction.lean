@@ -401,7 +401,7 @@ theorem sum_ite_disjoint_union (τ : Finset E) (j : ℕ) (Φ : Finset E → ℝ)
     constructor
     · rintro ⟨hcard, hsub⟩
       refine ⟨σ \ τ, ⟨?_, Finset.disjoint_sdiff⟩, ?_⟩
-      · rw [Finset.card_sdiff hsub, hcard]
+      · rw [Finset.card_sdiff_of_subset hsub, hcard]
         omega
       · rw [Finset.union_comm, Finset.sdiff_union_of_subset hsub]
     · rintro ⟨ρ, ⟨hc, hd⟩, rfl⟩
@@ -702,7 +702,6 @@ noncomputable def linkShiftPiOf (w : Finset E → ℝ) (n j : ℕ) (τ : Finset 
       linkShiftPi w n j τ hw hsupp (by omega) h.1 (by omega) ρ
     else (if ρ = ∅ then 1 else 0)
   p_nonneg ρ := by
-    dsimp only
     by_cases h : 0 < mu w τ ∧ τ.card + j ≤ n
     · rw [dif_pos h]
       exact (linkShiftPi w n j τ hw hsupp (by omega) h.1 (by omega)).p_nonneg ρ

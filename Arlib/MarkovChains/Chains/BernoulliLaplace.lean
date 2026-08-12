@@ -194,7 +194,7 @@ theorem uniformLocalWalk_dirichlet {n : ℕ} (hn : n ≤ Fintype.card E) {τ : F
     intro e
     rw [uniformLinkDist_apply hn (Nat.lt_of_succ_lt hk) e]
     by_cases he : e ∈ τ
-    · rw [if_pos he, if_neg (Finset.not_mem_compl.mpr he)]
+    · rw [if_pos he, if_neg (Finset.notMem_compl.mpr he)]
     · rw [if_neg he, if_pos (Finset.mem_compl.mpr he)]
   -- the mean
   have hEx : Ex (uniformLinkDist E n τ hn (Nat.lt_of_succ_lt hk)) f
@@ -381,11 +381,11 @@ theorem act_uniformLinkUp_singleton {n : ℕ} (hn : n ≤ Fintype.card E) {τ : 
     · have hnd : ¬ Disjoint τ (insert e' ({e} : Finset E)) := fun hc =>
         (Finset.disjoint_insert_right.mp hc).1 hmem
       rw [mu_linkShiftNorm_eq_zero_of_not_disjoint _ hnd, zero_div, zero_mul,
-        if_neg (by simp [Finset.mem_insert, hmem])]
+        if_neg (by simp [hmem])]
     · have hd2 : Disjoint τ (insert e' ({e} : Finset E)) :=
         Finset.disjoint_insert_right.mpr ⟨hmem, hde⟩
       have hcard2 : (insert e' ({e} : Finset E)).card = 2 := by
-        rw [Finset.card_insert_of_not_mem hne', Finset.card_singleton]
+        rw [Finset.card_insert_of_notMem hne', Finset.card_singleton]
       have hcardins : (τ ∪ insert e' ({e} : Finset E)).card = τ.card + 1 + 1 := by
         rw [Finset.card_union_of_disjoint hd2, hcard2]
       have hA := mu_uniformWeight_ratio hn (by omega : τ.card + 1 < n) hcarde hcardins
@@ -415,7 +415,7 @@ theorem act_down_one_pair {e e' : E} (hne : e' ≠ e) (f : Finset E → ℝ) :
     (down 1).act f (insert e' ({e} : Finset E)) = 1 / 2 * f {e'} + 1 / 2 * f {e} := by
   have hne' : e' ∉ ({e} : Finset E) := by simpa using hne
   have hcard : (insert e' ({e} : Finset E)).card = 1 + 1 := by
-    rw [Finset.card_insert_of_not_mem hne', Finset.card_singleton]
+    rw [Finset.card_insert_of_notMem hne', Finset.card_singleton]
   have hstep : ∀ ρ : Finset E, down 1 (insert e' ({e} : Finset E)) ρ * f ρ
       = if ρ.card = 1 ∧ ρ ⊆ insert e' ({e} : Finset E) then 1 / 2 * f ρ else 0 := by
     intro ρ
@@ -463,11 +463,10 @@ theorem act_uniformLinkUpDown_singleton {n : ℕ} (hn : n ≤ Fintype.card E) {�
     have hhalf : 1 / (2 * (((Fintype.card E - τ.card : ℕ) : ℝ) - 1))
         = 1 / (((Fintype.card E - τ.card : ℕ) : ℝ) - 1) * (1 / 2) := by
       field_simp
-      ring
     rw [act_down_one_pair hne f, hhalf]
     ring
   have hcardc : ((insert e τ)ᶜ.card : ℝ) = ((Fintype.card E - τ.card : ℕ) : ℝ) - 1 := by
-    rw [Finset.card_compl, Finset.card_insert_of_not_mem he, hsub1]
+    rw [Finset.card_compl, Finset.card_insert_of_notMem he, hsub1]
   have hsum : ∑ e' ∈ (insert e τ)ᶜ, f {e'} = (∑ e' ∈ τᶜ, f {e'}) - f {e} := by
     rw [Finset.compl_insert]
     have hmem : e ∈ (τᶜ : Finset E) := Finset.mem_compl.mpr he
@@ -552,7 +551,6 @@ theorem uniformLinkUpDown_dirichlet {n : ℕ} (hn : n ≤ Fintype.card E) {τ : 
             = 1 / ((Fintype.card E - τ.card : ℕ) : ℝ)
                 * (1 / (2 * (((Fintype.card E - τ.card : ℕ) : ℝ) - 1))) := by
           field_simp
-          ring
         rw [if_pos hc, if_pos hc, act_uniformLinkUpDown_singleton hn hτn h1' f hx, hsplit]
         ring
       · rw [if_neg hc, if_neg hc, zero_mul, zero_mul]
@@ -658,6 +656,7 @@ theorem improvedFactor_blGamma {N : ℕ} : ∀ i : ℕ, i + 1 ≤ N →
     rw [improvedFactor_zero]
     push_cast
     field_simp
+    ring
   | succ i ih =>
     intro h
     have hx := two_le_cast_sub (by omega : i + 2 ≤ N)
@@ -690,6 +689,7 @@ theorem sum_improvedFactor_blGamma {N : ℕ} : ∀ d : ℕ, d + 1 ≤ N →
     rw [Finset.sum_range_one, improvedFactor_zero]
     push_cast
     field_simp
+    ring
   | succ d ih =>
     intro h
     have hx := two_le_cast_sub (by omega : d + 2 ≤ N)
@@ -720,7 +720,6 @@ theorem improvedGap_blGamma {N d : ℕ} (h : d + 1 ≤ N) :
   have h4 : ((d : ℝ) + 1) ≠ 0 := by positivity
   rw [improvedFactor_blGamma d (by omega), sum_improvedFactor_blGamma d h]
   field_simp
-  ring
 
 /-! ## The audit: the local-to-global gap against the exact Rayleigh quotient -/
 

@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Approximation.LewisWeights.Net
+import Mathlib.Analysis.Matrix.Order
 import Mathlib.LinearAlgebra.Matrix.PosDef
-import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Real.Sqrt
 
 /-
 # ε-nets in the metric of a positive-definite matrix
@@ -31,6 +32,9 @@ open scoped Matrix
 
 namespace Arlib.Approximation.LewisWeights
 
+-- `CFC.sqrt` on matrices lives behind the scoped `MatrixOrder` partial order.
+open scoped MatrixOrder
+
 /-- The quadratic form `y ↦ yᵀ M y` associated to `M`. -/
 def Mq {d : Type*} [Fintype d] (M : Matrix d d ℝ) (y : d → ℝ) : ℝ := y ⬝ᵥ (M *ᵥ y)
 
@@ -43,12 +47,12 @@ of `M`, the `M`-quadratic form of `y` equals the squared Euclidean length of
 `R *ᵥ y`. -/
 theorem Mq_eq_sqSum {d : Type*} [Fintype d] [DecidableEq d]
     (M : Matrix d d ℝ) (hM : M.PosDef) (y : d → ℝ) :
-    Mq M y = sqSum (hM.posSemidef.sqrt *ᵥ y) := by
-  set R := hM.posSemidef.sqrt with hR
-  have hRR : R * R = M := hM.posSemidef.sqrt_mul_self
+    Mq M y = sqSum (CFC.sqrt M *ᵥ y) := by
+  set R := CFC.sqrt M with hR
+  have hRR : R * R = M := CFC.sqrt_mul_sqrt_self M
   have hRsymm : Rᵀ = R := by
     rw [← Matrix.conjTranspose_eq_transpose_of_trivial]
-    exact hM.posSemidef.posSemidef_sqrt.1
+    exact (Matrix.nonneg_iff_posSemidef.mp (CFC.sqrt_nonneg M)).1
   unfold Mq sqSum
   have h1 : M *ᵥ y = R *ᵥ (R *ᵥ y) := by rw [Matrix.mulVec_mulVec, hRR]
   rw [h1, Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose, hRsymm]
@@ -94,8 +98,8 @@ theorem exists_Mnet {d : Type*} [Fintype d] [DecidableEq d]
       rw [hz]; positivity
   · -- positive dimension: transport the Euclidean net through `R = M^{1/2}`.
     set n := Fintype.card d with hn
-    set R := hM.posSemidef.sqrt with hR
-    have hRR : R * R = M := hM.posSemidef.sqrt_mul_self
+    set R := CFC.sqrt M with hR
+    have hRR : R * R = M := CFC.sqrt_mul_sqrt_self M
     -- `R` is invertible since `det R * det R = det M > 0`.
     have hdetM : 0 < M.det := hM.det_pos
     have hRRdet : R.det * R.det = M.det := by rw [← Matrix.det_mul, hRR]
@@ -146,7 +150,7 @@ theorem exists_Mnet {d : Type*} [Fintype d] [DecidableEq d]
       rw [Mq_eq_sqSum M hM]
       have hvec : R *ᵥ (y - R⁻¹ *ᵥ s) = z - s := by
         rw [Matrix.mulVec_sub, Matrix.mulVec_mulVec, hRinv, Matrix.one_mulVec]
-      rw [show hM.posSemidef.sqrt = R from rfl, hvec]
+      rw [show CFC.sqrt M = R from rfl, hvec]
       have hn0' : (n : ℝ) ≠ 0 := by positivity
       calc sqSum (z - s) ≤ (n : ℝ) * ‖z - s‖ ^ 2 := sqSum_le (z - s)
         _ ≤ (n : ℝ) * ε' ^ 2 := by

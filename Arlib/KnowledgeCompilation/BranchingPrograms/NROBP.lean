@@ -268,9 +268,9 @@ theorem polarity_unique {ls : List (Lit V)} (h : (ls.map Prod.fst).Nodup) {x : V
 /-- A read-once concatenation reads disjoint sets of variables on its two halves. -/
 theorem varSet_disjoint_of_nodup {ls ms : List (Lit V)}
     (h : ((ls ++ ms).map Prod.fst).Nodup) {x : V} (hx : x ∈ varSet ls) : x ∉ varSet ms := by
-  rw [List.map_append, List.nodup_append] at h
+  rw [List.map_append, List.nodup_append'] at h
   intro hx'
-  exact h.2.2 (by simpa [varSet] using hx) (by simpa [varSet] using hx')
+  exact h.2.2 (List.mem_toFinset.1 hx) (List.mem_toFinset.1 hx')
 
 /-- **The canonical assignment of a read-once path**: send a vertex to `true` exactly when
 the path reads it positively.  On a read-once path this really does extend the path's
@@ -487,7 +487,7 @@ theorem exists_split_crossMatching (hro : Z.ReadOnce) (hu : Z.Uniform)
   refine ⟨a, ls₁, ls₂, rfl, hp₁, hp₂, ?_⟩
   -- The prefix of the induced ordering at index `i` is exactly `varSet ls₁`.
   have hsplitmap : (ls₁ ++ ls₂).map Prod.fst = ls₁.map Prod.fst ++ ls₂.map Prod.fst :=
-    List.map_append _ _ _
+    List.map_append
   have hpre : prefixSet (listOrder ((ls₁ ++ ls₂).map Prod.fst) hnd hall) i = varSet ls₁ := by
     ext v
     have hclamp : v ∈ prefixSet (listOrder ((ls₁ ++ ls₂).map Prod.fst) hnd hall) i ↔
@@ -496,7 +496,7 @@ theorem exists_split_crossMatching (hro : Z.ReadOnce) (hu : Z.Uniform)
       simp only [mem_prefixSet, lt_min_iff,
         and_iff_left ((listOrder ((ls₁ ++ ls₂).map Prod.fst) hnd hall).symm v).isLt]
     rw [hclamp, ← hl₁]
-    have hA : (ls₁.map Prod.fst).length = ls₁.length := List.length_map _ _
+    have hA : (ls₁.map Prod.fst).length = ls₁.length := List.length_map _
     have := mem_prefixSet_listOrder (A := ls₁.map Prod.fst) (B := ls₂.map Prod.fst)
       (by rw [← hsplitmap]; exact hnd) (by rw [← hsplitmap]; exact hall) v
     rw [mem_prefixSet, hA] at this
@@ -561,7 +561,7 @@ theorem exists_split_isTNode (hro : Z.ReadOnce) (hu : Z.Uniform) (hR : Z.Realise
         M.right k ∈ vcOf (ms ++ ns)
     · exact ⟨M.right k, Or.inr rfl, hRt⟩
     exfalso
-    push_neg at hL hRt
+    push Not at hL hRt
     obtain ⟨as₁, as₂, ha₁, ha₂, hau⟩ := hL
     obtain ⟨bs₁, bs₂, hb₁, hb₂, hbv⟩ := hRt
     set u := M.left k with hu_def

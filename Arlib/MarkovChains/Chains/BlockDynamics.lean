@@ -162,7 +162,7 @@ theorem w_le_Zblk {w : (V → S) → ℝ} (hw : ∀ σ, 0 ≤ w σ) (B : Finset 
   calc w σ = (if AgreesOn Bᶜ σ σ then w σ else 0) := (if_pos (agreesOn_self Bᶜ σ)).symm
     _ ≤ ∑ τ, (if AgreesOn Bᶜ σ τ then w τ else 0) :=
         Finset.single_le_sum (f := fun τ => if AgreesOn Bᶜ σ τ then w τ else 0)
-          (fun ρ _ => by dsimp only; split; exacts [hw ρ, le_rfl]) (mem_univ σ)
+          (fun ρ _ => by split; exacts [hw ρ, le_rfl]) (mem_univ σ)
     _ = Zblk w B σ := (Zblk_apply w B σ).symm
 
 /-- On the support of the Gibbs distribution the block-local partition function

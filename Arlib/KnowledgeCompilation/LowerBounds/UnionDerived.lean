@@ -77,12 +77,12 @@ def place {κ : Type} (i : κ) : Fin 2 × Fin b → Gadget.Var κ b := fun q => 
 variable {κ : Type} [Fintype κ] [DecidableEq κ]
 
 /-- The gadget at coordinate `i`, as a DNF over the composed variables. -/
-noncomputable def posDNF (g : (Fin b → Bool) → (Fin b → Bool) → Bool) (i : κ) :
+@[reducible] noncomputable def posDNF (g : (Fin b → Bool) → (Fin b → Bool) → Bool) (i : κ) :
     DNF (Gadget.Var κ b) :=
   DNF.mapDNF (place i) (minterms (localFn g))
 
 /-- Its negation, as a DNF. -/
-noncomputable def negDNF (g : (Fin b → Bool) → (Fin b → Bool) → Bool) (i : κ) :
+@[reducible] noncomputable def negDNF (g : (Fin b → Bool) → (Fin b → Bool) → Bool) (i : κ) :
     DNF (Gadget.Var κ b) :=
   DNF.mapDNF (place i) (minterms (fun q => !(localFn g q)))
 
@@ -199,7 +199,7 @@ needed to know the set of partition sizes is nonempty and so that `fixedPar` is
 not its junk value. -/
 private theorem dependsOn_univ {V : Type*} [Fintype V] [DecidableEq V]
     (f : (V → Bool) → Bool) :
-    DependsOn f (Finset.univ : Finset V) := by
+    Communication.DependsOn f (Finset.univ : Finset V) := by
   intro α β h
   have : α = β := funext fun x => h x (Finset.mem_univ x)
   rw [this]
@@ -264,7 +264,7 @@ noncomputable def unionHard_of_imports
     -- so the infimum is at least `liftBound d`
     rw [hfun]
     by_contra hlt
-    push_neg at hlt
+    push Not at hlt
     exact hpart _ hlt (Nat.sInf_mem (partitionable_of_dependsOn _
       (dependsOn_univ _) true))
 

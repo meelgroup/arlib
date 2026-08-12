@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Approximation.Amplification
-import Mathlib.Data.Complex.ExponentialBounds
+import Mathlib.Analysis.Complex.ExponentialBounds
 
 /-!
 # Hoeffding for `PMF` products: discharging `MajorityConcentration`
@@ -133,7 +133,7 @@ theorem pexp_bind {β γ : Type*} (ν : PMF β) (κ : β → PMF γ) (g : γ →
 /-- Expectation is monotone in the integrand. -/
 theorem pexp_mono {β : Type*} (ν : PMF β) {g h : β → ℝ≥0∞} (hgh : ∀ b, g b ≤ h b) :
     pexp ν g ≤ pexp ν h :=
-  ENNReal.tsum_le_tsum fun b => mul_le_mul_left' (hgh b) _
+  ENNReal.tsum_le_tsum fun b => mul_le_mul_right (hgh b) _
 
 /-- Constants pull out of an expectation. -/
 theorem pexp_const_mul {β : Type*} (ν : PMF β) (c : ℝ≥0∞) (g : β → ℝ≥0∞) :
@@ -160,8 +160,8 @@ theorem outProb_le_pexp (ν : PMF (β × ℕ)) (T : Set β) (g : β × ℕ → �
   by_cases hx : x.1 ∈ T
   · rw [Set.indicator_of_mem (show x ∈ {p : β × ℕ | p.1 ∈ T} from hx)]
     exact le_mul_of_one_le_right' (hg x hx)
-  · rw [Set.indicator_of_not_mem (show x ∉ {p : β × ℕ | p.1 ∈ T} from hx)]
-    exact zero_le _
+  · rw [Set.indicator_of_notMem (show x ∉ {p : β × ℕ | p.1 ∈ T} from hx)]
+    exact zero_le
 
 /-- An event and its complement have output probabilities summing to `1`. -/
 theorem outProb_add_compl (ν : PMF (β × ℕ)) (T : Set β) :
@@ -177,7 +177,7 @@ theorem outProbR_compl (ν : PMF (β × ℕ)) (T : Set β) :
     outProbR ν Tᶜ = 1 - outProbR ν T := by
   have h := outProb_add_compl ν T
   have := congrArg ENNReal.toReal h
-  rw [ENNReal.toReal_add (outProb_ne_top ν T) (outProb_ne_top ν Tᶜ), ENNReal.one_toReal] at this
+  rw [ENNReal.toReal_add (outProb_ne_top ν T) (outProb_ne_top ν Tᶜ), ENNReal.toReal_one] at this
   simp only [outProbR]
   linarith
 
@@ -298,7 +298,7 @@ theorem exp_half_mul_quarter_le : Real.exp (1/2) * (1/4 + 3/4 * Real.exp (-1))
     have h5 : ((8 : ℕ) : ℝ) * (-(1:ℝ)/8) = -1 := by norm_num
     rw [h5, hexpneg]
   rw [hlhs, hrhs, div_le_iff₀ (by positivity)]
-  have h6 : E⁻¹ * (65536 * E ^ 4) = 65536 * E ^ 3 := by field_simp; ring
+  have h6 : E⁻¹ * (65536 * E ^ 4) = 65536 * E ^ 3 := by field_simp
   rw [h6]
   exact hmain
 
@@ -366,7 +366,7 @@ theorem outProb_minority_le (μ : PMF (ℝ × ℕ)) (S : Set ℝ) (m : ℕ)
       ≤ ENNReal.ofReal (Real.exp (-(m : ℝ)/8)) := by
   have hstep := mgf_step_le μ S h
   refine le_trans (outProb_minority_le_mgf μ S m) ?_
-  refine le_trans (mul_le_mul_left' (pow_le_pow_left' hstep m) _) ?_
+  refine le_trans (mul_le_mul_right (pow_le_pow_left' hstep m) _) ?_
   rw [← ENNReal.ofReal_pow (by positivity), ← ENNReal.ofReal_mul (Real.exp_nonneg _)]
   exact ENNReal.ofReal_le_ofReal
     (exp_pow_bound (by positivity) exp_half_mul_quarter_le m)

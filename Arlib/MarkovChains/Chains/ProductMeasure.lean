@@ -78,7 +78,7 @@ eigenvalue, and no spectral theorem, appears anywhere.
 -/
 import Arlib.MarkovChains.Chains.GlauberTensorization
 import Arlib.MarkovChains.Techniques.Transport
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 
 namespace Arlib.MarkovChains
 
@@ -236,7 +236,7 @@ theorem prod_ite_erase_eq_agreeOff (v : V) (σ τ : V → S) :
     exact Finset.prod_eq_one fun u hu => if_pos (h u (Finset.mem_erase.mp hu).1).symm
   · rw [if_neg h]
     simp only [AgreeOff] at h
-    push_neg at h
+    push Not at h
     obtain ⟨u, hu, hne⟩ := h
     exact Finset.prod_eq_zero (Finset.mem_erase.mpr ⟨hu, mem_univ u⟩)
       (if_neg fun k => hne k.symm)
@@ -316,7 +316,7 @@ noncomputable def prodProj (hφ : ∀ v s, 0 ≤ φ v s) (hc : ∀ v, 0 < ∑ s,
 theorem prodProjMat_empty (σ τ : V → S) :
     prodProjMat φ ∅ σ τ = if τ = σ then 1 else 0 := by
   rw [prodProjMat_apply, ← prod_ite_eq_indicator σ τ]
-  exact Finset.prod_congr rfl fun v _ => if_neg (Finset.not_mem_empty v)
+  exact Finset.prod_congr rfl fun v _ => if_neg (Finset.notMem_empty v)
 
 /-- Resampling the single site `v` keeps the spins off `v` and draws the spin at
 `v` from its marginal. -/

@@ -284,7 +284,6 @@ theorem one_add_div_pow_le {ε : ℝ} {n : ℕ} (hn : 0 < n) (hε : 0 ≤ ε) (h
   have ha : 0 ≤ ε / (3 * n) := div_nonneg hε (by linarith)
   have hprod : (n : ℝ) * (ε / (3 * n)) = ε / 3 := by
     field_simp
-    ring
   have hn2 : (n : ℝ) * (ε / (3 * n)) ≤ 1 / 2 := by rw [hprod]; linarith
   calc (1 + ε / (3 * n)) ^ n ≤ 1 + 2 * n * (ε / (3 * n)) :=
         one_add_pow_le_one_add_two_mul ha n hn2
@@ -309,7 +308,6 @@ theorem one_sub_div_pow_ge {ε : ℝ} {n : ℕ} (hε : 0 ≤ ε) (hε1 : ε ≤ 
   have hber := one_add_mul_le_pow ha n
   have hprod : (n : ℝ) * (ε / (3 * n)) = ε / 3 := by
     field_simp
-    ring
   have : (1 : ℝ) - ε / 3 ≤ (1 - ε / (3 * n)) ^ n := by
     have h1 : (1 : ℝ) + (n : ℝ) * -(ε / (3 * n)) = 1 - ε / 3 := by
       rw [mul_neg, hprod]; ring
@@ -529,7 +527,7 @@ theorem relErr_div {ε ε' a b a' b' : ℝ} (hε : 0 ≤ ε) (hε1 : ε ≤ 1)
     rw [key]
     exact div_nonneg (by nlinarith [mul_nonneg hε hε', sq_nonneg ε'])
       (mul_nonneg h1p'.le h1e'.le)
-  · have key : (1 + ε) / (1 - ε') = 1 + (ε + ε') / (1 - ε') := by field_simp
+  · have key : (1 + ε) / (1 - ε') = 1 + (ε + ε') / (1 - ε') := by field_simp; ring
     exact le_of_eq key
 
 /-- **The step the paper writes as `(1±ε)`.**  A ratio of two `(1±ε)` quantities

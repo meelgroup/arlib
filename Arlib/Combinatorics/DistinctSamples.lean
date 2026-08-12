@@ -90,13 +90,13 @@ theorem card_filter_piFinset_succ (S : Finset α) (B : ℕ)
   refine Finset.sum_congr rfl fun y hy => ?_
   refine Finset.card_nbij' (fun ω => Fin.tail ω) (fun τ => Fin.cons y τ) ?_ ?_ ?_ ?_
   · intro ω hω
-    simp only [Finset.mem_filter, Fintype.mem_piFinset] at hω ⊢
+    simp only [Finset.mem_coe, Finset.mem_filter, Fintype.mem_piFinset] at hω ⊢
     obtain ⟨⟨hmem, hP⟩, h0⟩ := hω
     refine ⟨fun i => hmem i.succ, ?_⟩
     rw [← h0, Fin.cons_self_tail]
     exact hP
   · intro τ hτ
-    simp only [Finset.mem_filter, Fintype.mem_piFinset] at hτ ⊢
+    simp only [Finset.mem_coe, Finset.mem_filter, Fintype.mem_piFinset] at hτ ⊢
     obtain ⟨hmem, hP⟩ := hτ
     refine ⟨⟨?_, hP⟩, by simp⟩
     intro i
@@ -104,7 +104,7 @@ theorem card_filter_piFinset_succ (S : Finset α) (B : ℕ)
     · simpa using hy
     · intro j; simpa using hmem j
   · intro ω hω
-    simp only [Finset.mem_filter] at hω
+    simp only [Finset.mem_coe, Finset.mem_filter] at hω
     show Fin.cons y (Fin.tail ω) = ω
     rw [← hω.2]
     exact Fin.cons_self_tail ω
@@ -170,7 +170,7 @@ theorem card_filter_lt_distinct_le (S : Finset α) (N : ℕ) (hNS : N ≤ S.card
   induction B with
   | zero =>
     intro Z hZS hZN
-    rcases lt_or_le Z.card N with hk | hk
+    rcases lt_or_ge Z.card N with hk | hk
     · have hcard : (Fintype.piFinset fun _ : Fin 0 => S).card = 1 := by
         simp [Fintype.card_piFinset]
       have h1 : (((Fintype.piFinset fun _ : Fin 0 => S).filter
@@ -187,7 +187,7 @@ theorem card_filter_lt_distinct_le (S : Finset α) (N : ℕ) (hNS : N ≤ S.card
       simp
   | succ B ih =>
     intro Z hZS hZN
-    rcases lt_or_le Z.card N with hk | hk
+    rcases lt_or_ge Z.card N with hk | hk
     swap
     · rw [filter_lt_distinct_eq_empty S N (B + 1) Z hk, Nat.sub_eq_zero_of_le hk]
       simp
@@ -263,7 +263,7 @@ theorem card_filter_lt_distinct_le (S : Finset α) (N : ℕ) (hNS : N ≤ S.card
             have hyZ : y ∉ Z := (Finset.mem_sdiff.mp hy).2
             have hyS : y ∈ S := (Finset.mem_sdiff.mp hy).1
             have hcard : (insert y Z).card = Z.card + 1 :=
-              Finset.card_insert_of_not_mem hyZ
+              Finset.card_insert_of_notMem hyZ
             have hc2 : ((N - (insert y Z).card : ℕ) : ℝ) = (N : ℝ) - k - 1 := by
               rw [hcard, Nat.cast_sub (by omega), hkdef]
               push_cast
@@ -272,7 +272,7 @@ theorem card_filter_lt_distinct_le (S : Finset α) (N : ℕ) (hNS : N ≤ S.card
             rw [hc2] at this
             linarith [this]
         _ = (m - k) * (((N : ℝ) - k - 1) * (c ^ B * m ^ B)) := by
-            rw [Finset.sum_const, nsmul_eq_mul, Finset.card_sdiff hZS,
+            rw [Finset.sum_const, nsmul_eq_mul, Finset.card_sdiff_of_subset hZS,
               Nat.cast_sub hZm, hkdef, hmdef]
     -- The exact algebraic identity that makes the induction close.
     have key : k * ((N : ℝ) - k) + (m - k) * ((N : ℝ) - k - 1) ≤ ((N : ℝ) - k) * c * m := by

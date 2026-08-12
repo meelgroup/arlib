@@ -331,7 +331,7 @@ theorem sum_surviveVal_le (k : ℕ) (s : S) :
   set F := ∑ j ∈ Finset.range k, M.surviveVal j s with hF
   have h1 : F ≤ ∑ j ∈ Finset.range (e.n + k), M.surviveVal j s := by
     refine Finset.sum_le_sum_of_subset_of_nonneg
-      (Finset.range_subset.2 (Nat.le_add_left _ _)) fun i _ _ => M.surviveVal_nonneg i s
+      (Finset.range_subset_range.2 (Nat.le_add_left _ _)) fun i _ _ => M.surviveVal_nonneg i s
   have h2 : (∑ j ∈ Finset.range (e.n + k), M.surviveVal j s)
       = (∑ j ∈ Finset.range e.n, M.surviveVal j s)
         + ∑ j ∈ Finset.range k, M.surviveVal (e.n + j) s :=
@@ -393,7 +393,7 @@ theorem timeVal_le_succ : ∀ (k : ℕ) (s : S), M.timeVal k s ≤ M.timeVal (k 
       rw [timeVal_succ, timeVal_succ]
       split_ifs with hs
       · exact le_rfl
-      · refine add_le_add_left ?_ 1
+      · refine add_le_add_right ?_ 1
         refine Finset.sup'_le _ _ fun a ha => ?_
         refine le_trans (Finset.sum_le_sum fun s' _ =>
           mul_le_mul_of_nonneg_left (ih s') (M.P_nonneg s a s')) ?_
@@ -463,7 +463,7 @@ theorem exists_escapeBound_of_noEC {M : MDP S A} (h : M.NoEC) :
   -- The antitone chain `Good 0 ⊇ Good 1 ⊇ …` of finite sets must stabilise.
   have hstab : ∃ j, M.Good j = M.Good (j + 1) := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have hlt : ∀ j, (M.Good (j + 1)).card < (M.Good j).card := fun j =>
       Finset.card_lt_card (lt_of_le_of_ne (M.Good_antitone j) fun heq => hcon j heq.symm)
     have hbd : ∀ j, (M.Good j).card + j ≤ (M.Good 0).card := by
@@ -494,7 +494,7 @@ theorem exists_escapeBound_of_noEC {M : MDP S A} (h : M.NoEC) :
   -- Hence every state survives `j` steps with probability `< 1`.
   have hlt1 : ∀ s, M.surviveVal j s < 1 := by
     intro s
-    have hns : s ∉ M.Good j := by rw [hempty]; exact Finset.not_mem_empty s
+    have hns : s ∉ M.Good j := by rw [hempty]; exact Finset.notMem_empty s
     exact lt_of_le_of_ne (M.surviveVal_le_one j s) fun hc => hns (M.mem_Good.2 hc)
   have hmax : maxOver M.nontermSet 0 (M.surviveVal j) < 1 :=
     maxOver_lt one_pos fun s _ => hlt1 s
@@ -532,7 +532,7 @@ theorem exists_hittingWeight_of_escapeBound {M : MDP S A} (e : MDP.EscapeBound M
         (fun k => (∑ s', M.P s a s' * M.timeVal k s') + 1) Filter.atTop
         (nhds ((∑ s', M.P s a s' * M.timeSup s') + 1)) := by
       refine Filter.Tendsto.add_const 1 ?_
-      exact tendsto_finset_sum _ fun s' _ => (M.tendsto_timeVal e s').const_mul _
+      exact tendsto_finsetSum _ fun s' _ => (M.tendsto_timeVal e s').const_mul _
     refine le_of_tendsto htend ?_
     filter_upwards with k
     have hstep : (∑ s', M.P s a s' * M.timeVal k s') + 1 ≤ M.timeVal (k + 1) s := by

@@ -120,7 +120,7 @@ import Mathlib.Algebra.Order.Ring.Pow
 import Mathlib.Data.Finset.Interval
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Fintype.Powerset
-import Mathlib.Data.Matrix.Rank
+import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
@@ -338,7 +338,7 @@ theorem exists_sepFamily (n k : ℕ) :
     obtain ⟨-, h1, h2, h3⟩ := hp
     have hnon : (Finset.univ.filter (fun Z : Finset (Fin n) => ¬ Separates Z p.1 p.2)).card
         = 2 ^ n - 2 ^ (n - 2 * k) := by
-      rw [Finset.filter_not, Finset.card_sdiff (Finset.filter_subset _ _), huniv,
+      rw [Finset.filter_not, Finset.card_sdiff_of_subset (Finset.filter_subset _ _), huniv,
         card_sepFinset p.1 p.2 h1 h2 h3]
     rw [hB]
     simp only [Fintype.card_piFinset, Finset.prod_const, Finset.card_fin, hnon]
@@ -382,7 +382,7 @@ theorem exists_sepFamily (n k : ℕ) :
   -- Read off a good family.
   have hex : ∃ f : Fin ℓ → Finset (Fin n), f ∉ P.biUnion B := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     exact absurd (Finset.card_le_card (fun f _ => hcon f)) (not_le.mpr hcount)
   obtain ⟨f, hf⟩ := hex
   refine ⟨f, fun S T hS hT hd => ?_⟩
@@ -392,7 +392,7 @@ theorem exists_sepFamily (n k : ℕ) :
   have hfB : f ∉ B (S, T) := fun h => hf (Finset.mem_biUnion.mpr ⟨(S, T), hp, h⟩)
   rw [hB] at hfB
   simp only [Fintype.mem_piFinset, Finset.mem_filter, Finset.mem_univ, true_and] at hfB
-  push_neg at hfB
+  push Not at hfB
   obtain ⟨i, hi⟩ := hfB
   exact ⟨i, hi⟩
 

@@ -137,7 +137,7 @@ import Arlib.KnowledgeCompilation.BranchingPrograms.Basic
 import Mathlib.Combinatorics.SimpleGraph.Prod
 import Mathlib.Combinatorics.SimpleGraph.Hasse
 import Mathlib.Data.Nat.Log
-import Mathlib.Logic.Equiv.Fin
+import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Data.Fintype.BigOperators
 
 namespace Arlib.KnowledgeCompilation
@@ -385,7 +385,7 @@ theorem exists_rich_copy {A : Finset α} {p : ℕ} (hp : 1 ≤ p)
     ∃ t ∈ A, p ≤ (Finset.univ.filter (fun v => P t v)).card := by
   classical
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   -- the fibre of `D` over `t ∈ A` is the set of `P`-vertices of the copy at `t`
   have hfiber : ∀ t ∈ A, (D.filter (fun x => x.1 = t)).card
       = (Finset.univ.filter (fun v => P t v)).card := by
@@ -490,30 +490,30 @@ theorem crossMatching_of_balanced {T : SimpleGraph α} {H : SimpleGraph β}
     · simpa using hsplitA (hgmem i)
     · simpa using hsplitA (hgmem i)
   · -- few copies meet both sides: some copy is homogeneous
-    push_neg at hcase
+    push Not at hcase
     have hne : (A \ split).Nonempty := by
-      rw [← Finset.card_pos, Finset.card_sdiff hsplitA]
+      rw [← Finset.card_pos, Finset.card_sdiff_of_subset hsplitA]
       omega
     obtain ⟨t₁, ht₁⟩ := hne
     rw [Finset.mem_sdiff] at ht₁
     obtain ⟨ht₁A, ht₁split⟩ := ht₁
     have hhom : (∀ v, (t₁, v) ∈ S) ∨ (∀ v, (t₁, v) ∉ S) := by
       rw [hsplitdef, Finset.mem_filter] at ht₁split
-      push_neg at ht₁split
+      push Not at ht₁split
       by_cases hx : ∃ v, (t₁, v) ∈ S
       · exact Or.inl fun v => by
           by_contra hv
-          exact absurd (ht₁split ht₁A hx) (by push_neg; exact ⟨v, hv⟩)
-      · push_neg at hx; exact Or.inr hx
+          exact absurd (ht₁split ht₁A hx) (by push Not; exact ⟨v, hv⟩)
+      · push Not at hx; exact Or.inr hx
     have hout : ∀ t ∈ A, t ∉ split → (∀ v, (t, v) ∈ S) ∨ (∀ v, (t, v) ∉ S) := by
       intro t ht hts
       rw [hsplitdef, Finset.mem_filter] at hts
-      push_neg at hts
+      push Not at hts
       by_cases hx : ∃ v, (t, v) ∈ S
       · exact Or.inl fun v => by
           by_contra hv
-          exact absurd (hts ht hx) (by push_neg; exact ⟨v, hv⟩)
-      · push_neg at hx; exact Or.inr hx
+          exact absurd (hts ht hx) (by push Not; exact ⟨v, hv⟩)
+      · push Not at hx; exact Or.inr hx
     rcases hhom with hall | hnone
     · -- `t₁` sits entirely inside `S`; find a copy with `p` vertices outside `S`
       obtain ⟨t₂, ht₂A, ht₂⟩ :=
@@ -845,7 +845,7 @@ def boolListsLe : ℕ → Finset (List Bool)
 
 theorem mem_boolListsLe (r : ℕ) (l : List Bool) : l ∈ boolListsLe r ↔ l.length ≤ r := by
   induction r generalizing l with
-  | zero => simp [boolListsLe, List.length_eq_zero]
+  | zero => simp [boolListsLe, List.length_eq_zero_iff]
   | succ r ih =>
     simp only [boolListsLe, Finset.mem_insert, Finset.mem_image, Finset.mem_product,
       Finset.mem_univ, true_and, Prod.exists]
@@ -870,7 +870,7 @@ theorem card_boolListsLe (r : ℕ) : (boolListsLe r).card = 2 ^ (r + 1) - 1 := b
     have hnot : ([] : List Bool) ∉
         (((Finset.univ : Finset Bool) ×ˢ boolListsLe r).image fun q => q.1 :: q.2) := by
       simp
-    rw [boolListsLe, Finset.card_insert_of_not_mem hnot,
+    rw [boolListsLe, Finset.card_insert_of_notMem hnot,
       Finset.card_image_of_injective _ hinj, Finset.card_product, ih, Finset.card_univ]
     have h1 : 1 ≤ 2 ^ (r + 1) := Nat.one_le_two_pow
     have h2 : 2 ^ (r + 1 + 1) = 2 * 2 ^ (r + 1) := by ring
@@ -898,9 +898,9 @@ theorem card_binTreeNode (r : ℕ) : Fintype.card (BinTreeNode r) = 2 ^ (r + 1) 
 when one is obtained from the other by prepending a single turn. -/
 def binTree (r : ℕ) : SimpleGraph (BinTreeNode r) where
   Adj u v := (∃ b, v.1 = b :: u.1) ∨ (∃ b, u.1 = b :: v.1)
-  symm := by intro u v h; tauto
-  loopless := by
-    rintro u (⟨b, hb⟩ | ⟨b, hb⟩) <;> exact absurd (congrArg List.length hb) (by simp)
+  symm := ⟨by intro u v h; tauto⟩
+  loopless := ⟨by
+    rintro u (⟨b, hb⟩ | ⟨b, hb⟩) <;> exact absurd (congrArg List.length hb) (by simp)⟩
 
 /-- **The vertex count of `T_r(H)`** ([Raz16, §5]):
 `|V(T_r(H))| = (2^{r+1} - 1) · |V(H)|`. -/
@@ -943,7 +943,7 @@ theorem reachableWithin_root {r : ℕ} {A : Finset (BinTreeNode r)} {w : BinTree
     induction n with
     | zero =>
       intro v hlen hv
-      have hnil : v.1 = [] := List.length_eq_zero.mp (by omega)
+      have hnil : v.1 = [] := List.length_eq_zero_iff.mp (by omega)
       have hb := hbelow v hv
       rw [hnil] at hb
       have hwnil : w.1 = [] := List.suffix_nil.mp hb
@@ -1017,7 +1017,7 @@ theorem pow_le_card_subtreeAt {r : ℕ} (w : List Bool) (h : ℕ) (hwh : w.lengt
   have := Finset.card_le_card_of_injOn
     (f := fun f : Fin h → Bool => (⟨List.ofFn f ++ w, hmap f⟩ : BinTreeNode r))
     (s := (Finset.univ : Finset (Fin h → Bool))) (t := subtreeAt r w)
-    (fun f _ => by simp only [mem_subtreeAt]; exact List.suffix_append _ _)
+    (fun f _ => by simp only [Finset.mem_coe, mem_subtreeAt]; exact List.suffix_append _ _)
     (fun f _ g _ hfg => by
       have : List.ofFn f ++ w = List.ofFn g ++ w := congrArg Subtype.val hfg
       exact List.ofFn_injective (List.append_cancel_right this))
@@ -1189,7 +1189,7 @@ theorem maxDegreeLe_pathGraph (n : ℕ) : MaxDegreeLe (SimpleGraph.pathGraph n) 
       (t := (Finset.univ : Finset Bool)) (fun a _ => Finset.mem_univ _)
       (by
         intro a ha c hc hac
-        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_univ, true_and] at ha hc
+        simp only [Finset.coe_filter, Set.mem_ofPred_eq, Finset.mem_univ, true_and] at ha hc
         simp only [decide_eq_decide] at hac
         exact Fin.ext (by omega))
     simpa using hcard

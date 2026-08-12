@@ -95,7 +95,7 @@ theorem phase1_event_subset {A Ahat : ℝ} (hA : 2 ≤ A)
     (hfail : Ahat + Real.sqrt Ahat + 2 < A) :
     Ahat < A - 3/2 - Real.sqrt (A - 7/4) := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hle := phase1_mono hcon
   rw [phase1_threshold_fixed hA] at hle
   linarith
@@ -129,7 +129,7 @@ theorem phase2_upper_budget {A e d r : ℝ} (hA : 1 ≤ A) (he0 : 0 < e) (he1 : 
     rw [hfe]; exact mul_pos (by positivity) (by linarith)
   have hkey : (1/2) * r * e^2 / A - (1/2) * r * e^3 / A^2
       = (r / 2) * (e^2 / A) * (1 - e / A) := by
-    field_simp; ring
+    field_simp
   rw [hkey]
   have hr2 : A * (e^2 - e^3)⁻¹ * d ≤ r / 2 := by linarith
   have hfac : 0 < e^2 / A := by positivity
@@ -150,7 +150,6 @@ theorem phase2_upper_budget {A e d r : ℝ} (hA : 1 ≤ A) (he0 : 0 < e) (he1 : 
     have hfe : e^2 - e^3 = e^2 * (1 - e) := by ring
     rw [hfe]
     field_simp
-    ring
   rw [hcalc]
   rw [le_div_iff₀ (by linarith : (0:ℝ) < 1 - e)]
   have : e / A ≤ e := by
@@ -172,7 +171,7 @@ theorem phase2_lower_budget {A e d r : ℝ} (hA : 0 < A) (he0 : 0 < e) (he1 : e 
   have hcalc : A * (e^2 - e^3)⁻¹ * d * (e^2 / A) = d / (1 - e) := by
     have hfe : e^2 - e^3 = e^2 * (1 - e) := by ring
     have h1e : (1 : ℝ) - e ≠ 0 := by linarith
-    rw [hfe]; field_simp; ring
+    rw [hfe]; field_simp
   have hgoal : (1/2) * r * e^2 / A = (r / 2) * (e^2 / A) := by field_simp
   rw [hgoal]
   refine le_trans ?_ hstep

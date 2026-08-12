@@ -296,7 +296,7 @@ theorem absSpectralBound_iter {μ : FinDist Ω} {P : FinChain Ω} (hrev : Revers
       _ = (c ^ t * ip μ f f) ^ 2 := by rw [hpow]; ring
   have hrhs : 0 ≤ c ^ t * ip μ f f := mul_nonneg (pow_nonneg hc0 t) hff
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have h1 := mul_self_lt_mul_self hrhs hcon
   rw [← pow_two, ← pow_two, sq_abs] at h1
   linarith

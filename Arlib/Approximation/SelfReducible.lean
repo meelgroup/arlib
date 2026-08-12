@@ -223,6 +223,7 @@ theorem sum_card_ext {t : τ} (hr : P.rank t ≠ 0) :
     exact (P.ext_cover t hr x).symm
   rw [← hb, Finset.card_biUnion]
   intro a ha b hb' hab
+  simp only [Function.onFun]
   rw [Finset.disjoint_left]
   intro x hxa hxb
   exact hab (P.ext_disjoint t a ha b hb' x hxa hxb)
@@ -272,7 +273,6 @@ theorem prod_card_ratio_chainFrom {x : Ω} {t : τ} {k : ℕ} (hx : x ∈ P.U t)
       have hne : ((P.U (P.chainFrom x t n)).card : ℝ) ≠ 0 := Nat.cast_ne_zero.2 hpos.ne'
       rw [Finset.prod_range_succ, ih (by omega)]
       field_simp
-      ring
   rw [key k le_rfl, P.card_chainFrom_last hx hr]
   norm_num
 
@@ -550,7 +550,7 @@ noncomputable def childPMF (t : τ) : PMF τ :=
           P.sum_childProb E h, ENNReal.ofReal_one])
       (by
         intro a ha
-        exact Set.indicator_of_not_mem (by exact_mod_cast ha) _)
+        exact Set.indicator_of_notMem (by exact_mod_cast ha) _)
   else PMF.pure t
 
 /-- The child-sampling distribution on a child. -/
@@ -565,7 +565,7 @@ theorem childPMF_apply_of_not_mem {t t' : τ} (hw : 0 < P.weight E t) (ht' : t' 
     P.childPMF E t t' = 0 := by
   have h : t' ∉ (↑(P.ext t) : Set τ) := by exact_mod_cast ht'
   rw [childPMF, dif_pos hw, PMF.ofFinset_apply,
-    Set.indicator_of_not_mem h fun t' => ENNReal.ofReal (P.childProb E t t')]
+    Set.indicator_of_notMem h fun t' => ENNReal.ofReal (P.childProb E t t')]
 
 /-! ## The random walk -/
 
@@ -616,7 +616,7 @@ theorem walk_support_eq : ∀ (k : ℕ) (t : τ) (φ : ℝ), P.rank t = k → (P
       not_le] at ha
     have hval : 0 < E.val a := by
       by_contra hcon
-      push_neg at hcon
+      push Not at hcon
       have : E.val a = 0 := le_antisymm hcon (E.val_nonneg a)
       rw [childProb, this, zero_div] at ha
       exact lt_irrefl _ ha
@@ -664,7 +664,7 @@ theorem walk_apply_chainFrom : ∀ (k : ℕ) (t : τ) (φ : ℝ) (x : Ω), P.ran
         · rw [P.childPMF_apply E hw hmem, Ne, ENNReal.ofReal_eq_zero, not_le] at h0
           have hval : 0 < E.val a := by
             by_contra hcon
-            push_neg at hcon
+            push Not at hcon
             have : E.val a = 0 := le_antisymm hcon (E.val_nonneg a)
             rw [childProb, this, zero_div] at h0
             exact lt_irrefl _ h0
@@ -685,6 +685,21 @@ theorem walk_apply_chainFrom : ∀ (k : ℕ) (t : τ) (φ : ℝ) (x : Ω), P.ran
 
 /-! ## The sampler -/
 
+/-- The two-point law on `Bool` with `Pr[true] = q`, for an **extended** real
+`q ≤ 1`.
+
+Mathlib's `PMF.bernoulli` takes its parameter in `ℝ≥0`, but the acceptance
+probability below is built out of `ENNReal.ofReal` and a `min`, so it naturally
+lives in `ℝ≥0∞`; restating the coin there keeps every downstream computation free
+of `toNNReal` round-trips. -/
+noncomputable def bernoulliE (q : ℝ≥0∞) (hq : q ≤ 1) : PMF Bool :=
+  ⟨fun b => bif b then q else 1 - q, by
+    simpa [Fintype.sum_bool, add_tsub_cancel_of_le hq] using
+      hasSum_fintype (fun b : Bool => bif b then q else 1 - q)⟩
+
+@[simp] theorem bernoulliE_apply (q : ℝ≥0∞) (hq : q ≤ 1) (b : Bool) :
+    bernoulliE q hq b = bif b then q else 1 - q := rfl
+
 /-- The acceptance probability at the end of a run: `1 / (2 φ Ñ(root))`.
 
 The outer `min 1` is a definitional device making this a legal probability
@@ -695,10 +710,16 @@ probability. -/
 noncomputable def accProb (p : τ × ℝ) : ℝ≥0∞ :=
   min 1 (ENNReal.ofReal (1 / (2 * p.2 * E.val P.root)))
 
+/-- The acceptance probability is a probability.  Stated separately from the
+`min_le_left` that proves it so that the coin in `outcome` carries a hypothesis
+phrased in terms of `accProb` itself: rewriting with `outcome` then leaves a
+`bernoulliE (P.accProb E p) _` that lemmas about the coin can match. -/
+theorem accProb_le_one (p : τ × ℝ) : P.accProb E p ≤ 1 := min_le_left _ _
+
 /-- The law of the sampler's output: `none` is `FAIL`. -/
 noncomputable def outcome : PMF (Option Ω) :=
   (P.walk E P.depth (P.root, 1)).bind fun p =>
-    (PMF.bernoulli (P.accProb E p) (min_le_left _ _)).map
+    (bernoulliE (P.accProb E p) (P.accProb_le_one E p)).map
       fun b => if b then some (P.leafVal p.1) else none
 
 /-- **The sampler, as a randomized algorithm** in the sense of
@@ -721,16 +742,16 @@ theorem outProb_sample_singleton (o : Option Ω) :
 
 /-- The acceptance coin, read at a successful output. -/
 theorem bernoulli_map_some (q : ℝ≥0∞) (hq : q ≤ 1) (y x : Ω) :
-    ((PMF.bernoulli q hq).map fun b => if b then some y else none) (some x)
+    ((bernoulliE q hq).map fun b => if b then some y else none) (some x)
       = if x = y then q else 0 := by
   rw [PMF.map_apply, tsum_bool]
-  by_cases h : x = y <;> simp [h, PMF.bernoulli_apply]
+  by_cases h : x = y <;> simp [h]
 
 /-- The acceptance coin, read at `FAIL`. -/
 theorem bernoulli_map_none (q : ℝ≥0∞) (hq : q ≤ 1) (y : Ω) :
-    ((PMF.bernoulli q hq).map fun b => if b then some y else none) none = 1 - q := by
+    ((bernoulliE q hq).map fun b => if b then some y else none) none = 1 - q := by
   rw [PMF.map_apply, tsum_bool]
-  simp [PMF.bernoulli_apply]
+  simp
 
 /-- The law of a successful output, unfolded. -/
 theorem outcome_apply_some (x : Ω) :
@@ -754,7 +775,7 @@ theorem outcome_apply_some_eq_zero (hroot : (P.U P.root).Nonempty) {x : Ω}
     (hx : x ∉ P.U P.root) :
     P.outcome E (some x) = 0 := by
   rw [P.outcome_apply_some E]
-  refine tsum_eq_zero_iff (ENNReal.summable) |>.2 ?_
+  refine Summable.tsum_eq_zero_iff (ENNReal.summable) |>.2 ?_
   rintro ⟨s, ψ⟩
   by_cases hxs : x = P.leafVal s
   · rcases eq_or_ne (P.walk E P.depth (P.root, 1) (s, ψ)) 0 with h0 | h0
@@ -796,7 +817,6 @@ theorem half_le_phi_mul_val {x : Ω} (hx : x ∈ P.U P.root) :
       ((1 - E.err) * ((P.U P.root).card : ℝ))
       = (((1 + E.err) / (1 - E.err)) ^ P.depth)⁻¹ * (1 - E.err) := by
     field_simp
-    ring
   rw [hsimp] at hstep
   refine le_trans ?_ hstep
   have hinv : (2 * (1 - E.err))⁻¹ ≤ (((1 + E.err) / (1 - E.err)) ^ P.depth)⁻¹ :=
@@ -826,7 +846,6 @@ theorem phi_mul_val_le_two {x : Ω} (hx : x ∈ P.U P.root) :
       ((1 + E.err) * ((P.U P.root).card : ℝ))
       = ((1 + E.err) / (1 - E.err)) ^ P.depth * (1 + E.err) := by
     field_simp
-    ring
   rw [hsimp] at hstep
   refine le_trans hstep ?_
   have h2 : ((1 + E.err) / (1 - E.err)) ^ P.depth * (1 + E.err)
@@ -838,7 +857,7 @@ theorem phi_mul_val_le_two {x : Ω} (hx : x ∈ P.U P.root) :
 theorem phi_pos {x : Ω} (hx : x ∈ P.U P.root) : 0 < P.phi E x := by
   have h := P.half_le_phi_mul_val E hroot hacc hx
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have h0 : P.phi E x = 0 := le_antisymm hcon (P.phi_nonneg E x)
   rw [h0, zero_mul] at h
   linarith
@@ -903,7 +922,6 @@ theorem outcome_apply_some_eq {x : Ω} (hx : x ∈ P.U P.root) :
   rw [this, ← ENNReal.ofReal_mul (P.phi_nonneg E x)]
   congr 1
   field_simp
-  ring
 
 /-- **Uniformity, in the form used downstream.**  Any two solutions are produced
 with the same probability. -/
@@ -935,7 +953,7 @@ theorem outProbR_sample_none_le : outProbR (P.sample E) {none} ≤ 3 / 4 := by
         rw [show (s, ψ) = (P.chainFrom (P.leafVal s) P.root P.depth, P.phi E (P.leafVal s)) by
           rw [Prod.mk.injEq]; exact ⟨g3, by rw [g4, one_mul, phi]⟩]
         exact this
-      refine mul_le_mul_left' ?_ _
+      refine mul_le_mul_right ?_ _
       calc (1 : ℝ≥0∞) - P.accProb E (s, ψ) ≤ 1 - ENNReal.ofReal (1 / 4) :=
             tsub_le_tsub_left hq 1
         _ = ENNReal.ofReal (3 / 4) := by
@@ -969,8 +987,8 @@ theorem outProbR_sample_not_none :
       intro hy
       exact ho (Finset.mem_insert_of_mem (Finset.mem_image_of_mem _ hy))
   have h1 : ∑ o ∈ s, P.outcome E o = 1 := by
-    rw [← tsum_eq_sum hzero]
-    exact PMF.tsum_coe _
+    have hcoe := PMF.tsum_coe (P.outcome E)
+    rwa [tsum_eq_sum hzero] at hcoe
   have h2 : ∑ o ∈ s, P.outcome E o
       = P.outcome E none + ∑ y ∈ P.U P.root, P.outcome E (some y) := by
     rw [hs, Finset.sum_insert (by simp),
@@ -984,8 +1002,8 @@ theorem outProbR_sample_not_none :
   have hne2 : ((P.U P.root).card : ℝ≥0∞) * ENNReal.ofReal (1 / (2 * E.val P.root)) ≠ ⊤ :=
     ENNReal.mul_ne_top (by simp) ENNReal.ofReal_ne_top
   have hR := congrArg ENNReal.toReal h1
-  rw [ENNReal.toReal_add hne hne2, ENNReal.one_toReal, ENNReal.toReal_mul,
-    ENNReal.toReal_nat, ENNReal.toReal_ofReal (by positivity)] at hR
+  rw [ENNReal.toReal_add hne hne2, ENNReal.toReal_one, ENNReal.toReal_mul,
+    ENNReal.toReal_natCast, ENNReal.toReal_ofReal (by positivity)] at hR
   rw [outProbR, P.outProb_sample_singleton E]
   linarith
 

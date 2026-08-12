@@ -40,6 +40,7 @@ statement reusable across stochastic-approximation schemes.
 See `Arlib.Probability.RobbinsMonro` and
 `Arlib.Probability.StochasticApproximation` for what consumes these.
 -/
+import Mathlib.MeasureTheory.Function.ConditionalExpectation.PullOut
 import Mathlib.MeasureTheory.Function.ConditionalExpectation.Real
 import Mathlib.Probability.ConditionalExpectation
 
@@ -101,19 +102,19 @@ theorem integral_indicator_draw (hX : Measurable X) (s' : S) :
   have hset : MeasurableSet {ω | X ω = s'} := hX (measurableSet_singleton s')
   have : (fun ω => if X ω = s' then (1 : ℝ) else 0)
       = Set.indicator {ω | X ω = s'} (fun _ => (1 : ℝ)) := by
-    funext ω; by_cases h : X ω = s' <;> simp [Set.indicator, h, Set.mem_setOf_eq]
-  rw [this, integral_indicator_const _ hset, smul_eq_mul, mul_one]
+    funext ω; by_cases h : X ω = s' <;> simp [Set.indicator, h]
+  rw [this, integral_indicator_const _ hset, smul_eq_mul, mul_one, measureReal_def]
 
 /-- **A fresh-draw indicator is conditionally deterministic.**
 
 If `X` is independent of the past `m`, then `E[1{X = s'} ∣ m]` is the constant
-`P(X = s')`, almost surely.  This is `condexp_indep_eq` specialised to the
+`P(X = s')`, almost surely.  This is `MeasureTheory.condExp_indep_eq` specialised to the
 indicator, with the resulting integral evaluated. -/
 theorem condexp_indep_indicator (hm : m ≤ m0) (hX : Measurable X)
     (hindep : Indep (MeasurableSpace.comap X inferInstance) m μ) (s' : S) :
     μ[fun ω => (if X ω = s' then (1 : ℝ) else 0)|m]
       =ᵐ[μ] fun _ => (μ {ω | X ω = s'}).toReal := by
-  have h := condexp_indep_eq (hX.comap_le) hm (stronglyMeasurable_comap_indicator s') hindep
+  have h := MeasureTheory.condExp_indep_eq (hX.comap_le) hm (stronglyMeasurable_comap_indicator s') hindep
   refine h.trans ?_
   rw [integral_indicator_draw hX s']
 
@@ -125,7 +126,7 @@ indicator, tested against `f`, has conditional mean zero:
 
     E[ (1{X = s'} − p) · f ∣ m ] = 0   a.s.
 
-The `m`-measurable factor is pulled out with `condexp_stronglyMeasurable_mul`,
+The `m`-measurable factor is pulled out with `MeasureTheory.condExp_mul_of_stronglyMeasurable_left`,
 and what is left is `E[1{X = s'} ∣ m] − p = p − p = 0` by
 `condexp_indep_indicator`.  Every integrability side condition is discharged by
 boundedness on a probability measure. -/
@@ -153,17 +154,18 @@ theorem condexp_centred_draw_eq_zero (hm : m ≤ m0) (hX : Measurable X)
           mul_le_mul (hfb ω) (hgb ω) (abs_nonneg _) zero_le_one
       _ = 1 + |p| := one_mul _
   -- Pull the past-measurable factor out.
-  have hpull : μ[f * g|m] =ᵐ[μ] f * μ[g|m] := condexp_stronglyMeasurable_mul hf hfgi hgi
+  have hpull : μ[f * g|m] =ᵐ[μ] f * μ[g|m] :=
+    MeasureTheory.condExp_mul_of_stronglyMeasurable_left hf hfgi hgi
   -- The remaining conditional expectation is `p - p = 0`.
   have hzero : μ[g|m] =ᵐ[μ] 0 := by
     have hsub : μ[g|m] =ᵐ[μ] μ[fun ω => (if X ω = s' then (1 : ℝ) else 0)|m]
         - μ[fun _ : Ω => p|m] := by
-      have := condexp_sub (μ := μ) (m := m)
+      have := MeasureTheory.condExp_sub (μ := μ) (m := m)
         (integrable_of_bounded (C := 1) ((stronglyMeasurable_comap_indicator s').mono hX.comap_le)
           (fun ω => by by_cases h : X ω = s' <;> simp [h]))
         (integrable_const p)
       exact this
-    have hconst : μ[fun _ : Ω => p|m] = fun _ => p := condexp_const hm p
+    have hconst : μ[fun _ : Ω => p|m] = fun _ => p := MeasureTheory.condExp_const hm p
     filter_upwards [hsub, condexp_indep_indicator hm hX hindep s'] with ω h1 h2
     simp only [Pi.sub_apply, hconst] at h1
     rw [h1, h2, hp, sub_self]
@@ -187,7 +189,7 @@ If `X : Ω → S` is a draw on a finite space, independent of the past `m`, with
 
 This is the *unbiasedness of a sampled target*: it is the shape into which the
 noise of any scheme that estimates `∑_{s'} p s' · f s'` by the single sample
-`f (X)` decomposes.  The proof is `condexp_finset_sum` to push the conditioning
+`f (X)` decomposes.  The proof is `MeasureTheory.condExp_finset_sum` to push the conditioning
 inside the (finite) sum, then `condexp_centred_draw_eq_zero` termwise. -/
 theorem condexp_fresh_draw_eq_zero (hm : m ≤ m0) (hX : Measurable X)
     (hindep : Indep (MeasurableSpace.comap X inferInstance) m μ)
@@ -215,7 +217,7 @@ theorem condexp_fresh_draw_eq_zero (hm : m ≤ m0) (hX : Measurable X)
   have hsum : (fun ω => ∑ s' : S, F s' ω) = ∑ s' ∈ (univ : Finset S), F s' := by
     funext ω; simp
   rw [hsum]
-  refine (condexp_finset_sum hFi).trans ?_
+  refine (MeasureTheory.condExp_finsetSum hFi m).trans ?_
   have hterm : ∀ s' ∈ (univ : Finset S), μ[F s'|m] =ᵐ[μ] (0 : Ω → ℝ) := fun s' _ =>
     condexp_centred_draw_eq_zero hm hX hindep (hf s') (hfb s') (hlaw s')
   have := eventuallyEq_sum (s := (univ : Finset S)) (f := fun s' => μ[F s'|m])
@@ -235,16 +237,16 @@ variable {Ω : Type*} {m m0 : MeasurableSpace Ω} {μ : Measure Ω} [IsProbabili
 /-- **The `err_second` field, abstractly, with `B = 1`.**
 
 If `|g| ≤ 1` pointwise then `E[g² ∣ m] ≤ 1` almost surely.  Being a pointwise
-bound, `g² ≤ 1` passes through `condexp_mono` against the constant `1`, whose
-conditional expectation is itself (`condexp_const`). -/
+bound, `g² ≤ 1` passes through `MeasureTheory.condExp_mono` against the constant `1`, whose
+conditional expectation is itself (`MeasureTheory.condExp_const`). -/
 theorem condexp_sq_le_one (hm : m ≤ m0) {g : Ω → ℝ} (hg : StronglyMeasurable g)
     (hb : ∀ ω, |g ω| ≤ 1) : μ[fun ω => (g ω) ^ 2|m] ≤ᵐ[μ] fun _ => 1 := by
   have hle : (fun ω => (g ω) ^ 2) ≤ᵐ[μ] fun _ : Ω => (1 : ℝ) := by
     filter_upwards with ω
     have : |g ω| ^ 2 ≤ 1 ^ 2 := pow_le_pow_left₀ (abs_nonneg _) (hb ω) 2
     simpa [abs_pow, sq_abs] using this
-  have := condexp_mono (m := m) (integrable_sq_of_bounded hg hb) (integrable_const (1 : ℝ)) hle
-  rwa [condexp_const hm (1 : ℝ)] at this
+  have := MeasureTheory.condExp_mono (m := m) (integrable_sq_of_bounded hg hb) (integrable_const (1 : ℝ)) hle
+  rwa [MeasureTheory.condExp_const hm (1 : ℝ)] at this
 
 end SecondMoment
 

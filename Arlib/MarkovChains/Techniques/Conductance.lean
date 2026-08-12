@@ -302,7 +302,6 @@ theorem spectralGap_le_conductance {μ : FinDist Ω} {P : FinChain Ω} {γ : ℝ
   have heq : (2 * cut μ P A - γ * Pr μ A) / Pr μ A = 2 * conductance μ P A - γ := by
     rw [conductance_apply]
     field_simp
-    ring
   rw [heq] at hdiv
   linarith
 

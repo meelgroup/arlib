@@ -161,7 +161,7 @@ counts. -/
     | nil => simp
     | cons u us ihl =>
       simp only [mapLabelList_cons, sizeList_cons]
-      rw [ih u (List.mem_cons_self u us), ihl (fun v hv => ih v (List.mem_cons_of_mem u hv))]
+      rw [ih u (List.mem_cons_self), ihl (fun v hv => ih v (List.mem_cons_of_mem u hv))]
 
 /-- Relabelling twice is relabelling once. -/
 theorem mapLabel_comp (g : Γ' → Γ'') (t : LTree Γ) :
@@ -173,7 +173,7 @@ theorem mapLabel_comp (g : Γ' → Γ'') (t : LTree Γ) :
     | nil => simp
     | cons u us ihl =>
       simp only [mapLabelList_cons, List.cons.injEq]
-      exact ⟨ih u (List.mem_cons_self u us),
+      exact ⟨ih u (List.mem_cons_self),
         ihl (fun v hv => ih v (List.mem_cons_of_mem u hv))⟩
 
 /-! #### Injectivity -/
@@ -197,7 +197,7 @@ private theorem mapLabelList_inj_aux :
     | nil => simp at h
     | cons v vs =>
       simp only [mapLabelList_cons, List.cons.injEq] at h
-      have h₁ := hmem t (List.mem_cons_self t ts) v h.1
+      have h₁ := hmem t (List.mem_cons_self) v h.1
       have h₂ := iht vs (fun u hu => hmem u (List.mem_cons_of_mem t hu)) h.2
       simp [h₁, h₂]
 
@@ -235,7 +235,7 @@ theorem labelsIn_range_mapLabel (t : LTree Γ) : LabelsIn (Set.range f) (mapLabe
       intro v hv
       simp only [mapLabelList_cons, List.mem_cons] at hv
       rcases hv with rfl | hv
-      · exact ih u (List.mem_cons_self u us)
+      · exact ih u (List.mem_cons_self)
       · exact ihl (fun x hx => ih x (List.mem_cons_of_mem u hx)) v hv
 
 /-- `LabelsIn` is monotone in the label set. -/
@@ -257,7 +257,7 @@ private theorem exists_mapLabelList :
   | nil => intro _; exact ⟨[], rfl⟩
   | cons t ts ih =>
     intro h
-    obtain ⟨s, hs⟩ := h t (List.mem_cons_self t ts)
+    obtain ⟨s, hs⟩ := h t (List.mem_cons_self)
     obtain ⟨ss, hss⟩ := ih fun u hu => h u (List.mem_cons_of_mem t hu)
     exact ⟨s :: ss, by simp [hs, hss]⟩
 
@@ -343,7 +343,7 @@ theorem forall₂_accepts_relabelTo {ts : List (LTree ↥Λ)}
     cases qs with
     | nil => simp
     | cons q qs =>
-      have h₁ := ih t (List.mem_cons_self t ts) q
+      have h₁ := ih t (List.mem_cons_self) q
       have h₂ := iht (fun u hu => ih u (List.mem_cons_of_mem t hu)) qs
       simp only [LTree.mapLabelList_cons, List.forall₂_cons]
       exact and_congr h₁ h₂

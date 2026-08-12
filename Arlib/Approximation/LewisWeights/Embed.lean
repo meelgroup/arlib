@@ -172,7 +172,7 @@ theorem embeds_of_net_good [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w i
         have h1 := Real.sqrt_le_sqrt hs
         rwa [Real.sqrt_sq hε₀nn] at h1
       have hDeps : (Fintype.card d : ℝ) * (δ / (4 * (Fintype.card d : ℝ))) = δ / 4 := by
-        field_simp; ring
+        field_simp
       have hfL : |(sampledWPS w hw a m ω).E z - (sampledWPS w hw a m ω).E s| ≤ δ / 4 := by
         calc |(sampledWPS w hw a m ω).E z - (sampledWPS w hw a m ω).E s|
             ≤ (Fintype.card d : ℝ) * Real.sqrt (Mq (gram w a) (z - s)) :=
@@ -342,7 +342,7 @@ theorem lewis_importance_embeds [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 
       · have hmem : s ∈ S.filter (fun s => 0 < (WPS.exact ι a).E s) :=
           Finset.mem_filter.mpr ⟨hsS, hgs⟩
         by_contra hcon
-        push_neg at hcon
+        push Not at hcon
         exact hω (Finset.mem_filter.mpr ⟨Finset.mem_univ _, ⟨s, hmem, le_of_lt hcon⟩⟩)
       · have hgs0 : (WPS.exact ι a).E s = 0 :=
           le_antisymm (not_lt.mp hgs) (WPS.E_nonneg _ _)

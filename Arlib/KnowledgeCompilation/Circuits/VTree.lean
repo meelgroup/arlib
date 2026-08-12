@@ -191,7 +191,7 @@ theorem wellFormed_iff_nodup_leaves (T : VTree V) : T.WellFormed ↔ T.leaves.No
   induction T with
   | leaf x => simp
   | node tl tr ihl ihr =>
-    rw [leaves_node, List.nodup_append, wellFormed_node, ihl, ihr,
+    rw [leaves_node, List.nodup_append', wellFormed_node, ihl, ihr,
       ← List.disjoint_toFinset_iff_disjoint, ← vars_eq_toFinset_leaves,
       ← vars_eq_toFinset_leaves]
 

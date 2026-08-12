@@ -57,7 +57,7 @@ Every measure here is built in two steps: a `Prop`-valued predicate
 is not a stylistic preference.  No proof in this development ever computes a
 minimum — an upper bound is always "here is a cover" and a lower bound is always
 "no cover of that size exists" — so both directions are one application of
-`Nat.sInf_le` or `Nat.not_mem_of_lt_sInf`, and the minimum itself never has to be
+`Nat.sInf_le` or `Nat.notMem_of_lt_sInf`, and the minimum itself never has to be
 examined.
 
 The corollary is a hazard that is documented rather than engineered away:

@@ -105,6 +105,7 @@ by the repackaging is visible as a lemma (`log_add_one_bound`) rather than hidde
 inside a constant.
 -/
 import Arlib.KnowledgeCompilation.BranchingPrograms.Separation
+import Mathlib.Tactic.IntervalCases
 
 namespace Arlib.KnowledgeCompilation
 
@@ -137,7 +138,7 @@ theorem two_mul_log_le (r : ℕ) : 2 * Nat.log 2 r ≤ r := by
 /-- `⌈log₂ r⌉ ≤ ⌊log₂ r⌋ + 1`: the two logarithms the paper conflates differ by
 at most one. -/
 theorem clog_le_log_succ (r : ℕ) : Nat.clog 2 r ≤ Nat.log 2 r + 1 :=
-  (Nat.le_pow_iff_clog_le (by norm_num)).1 (Nat.lt_pow_succ_log_self (by norm_num) r).le
+  Nat.clog_le_of_le_pow (Nat.lt_pow_succ_log_self (by norm_num) r).le
 
 /-- `2^r ≤ 2^{r+1} - 1`.  This one estimate replaces the whole of the paper's
 `log(n/20+1)` detour ([Raz16, §5]). -/
@@ -265,7 +266,7 @@ needed, which is why the paper's `k ≥ 50` and its "sufficiently large `r`" at
 [Raz16, §5] both disappear. -/
 theorem le_log_numVertices {k : ℕ} (hk : 3 ≤ k) (r : ℕ) :
     r ≤ Nat.log 2 (numVertices k r) := by
-  refine (Nat.pow_le_iff_le_log (by norm_num) (numVertices_ne_zero hk r)).1 ?_
+  refine (Nat.le_log_iff_pow_le (by norm_num) (numVertices_ne_zero hk r)).2 ?_
   have hp : 1 ≤ 2 * pathParam k := by have := one_le_pathParam hk; omega
   calc 2 ^ r ≤ 2 ^ (r + 1) - 1 := pow_le_pred_pow r
     _ = (2 ^ (r + 1) - 1) * 1 := by ring
@@ -289,7 +290,7 @@ theorem log_numVertices_le {k : ℕ} (hk : 3 ≤ k) (r : ℕ) :
     calc numVertices k r = (2 ^ (r + 1) - 1) * (2 * pathParam k) := rfl
       _ ≤ 2 ^ (r + 1) * (2 * pathParam k) := Nat.mul_le_mul h1 le_rfl
       _ < 2 ^ (r + 1) * 2 ^ (m + 1) :=
-          mul_lt_mul_of_pos_left h2 (Nat.pos_pow_of_pos _ (by norm_num))
+          mul_lt_mul_of_pos_left h2 (Nat.pow_pos (by norm_num))
       _ = 2 ^ (r + 1 + (m + 1)) := (pow_add 2 (r + 1) (m + 1)).symm
   have := Nat.log_lt_of_lt_pow (numVertices_ne_zero hk r) hlt
   omega
@@ -495,7 +496,6 @@ theorem numVertices_rpow_le_size {k r size : ℕ} (hk : 3 ≤ k) (hr : 5 * Nat.c
         - ((L : ℝ) + 1) * ((k : ℝ) / (64 * TCover.f 5))
         = (64 * ((L * k / 32 : ℕ) : ℝ) - ((L : ℝ) + 1) * (k : ℝ)) / (64 * TCover.f 5) := by
       field_simp
-      ring
     have h0 : 0 ≤ ((L * k / 32 : ℕ) : ℝ) / TCover.f 5
         - ((L : ℝ) + 1) * ((k : ℝ) / (64 * TCover.f 5)) := by
       rw [hsplit]
@@ -533,7 +533,7 @@ theorem binTreePathNumVertices_ne_zero {r : ℕ} (hr : 1 ≤ r) :
 /-- `r ≤ ⌊log₂ n⌋` for `T_r(P_{2r})`. -/
 theorem le_log_binTreePathNumVertices {r : ℕ} (hr : 1 ≤ r) :
     r ≤ Nat.log 2 (binTreePathNumVertices r) := by
-  refine (Nat.pow_le_iff_le_log (by norm_num) (binTreePathNumVertices_ne_zero hr)).1 ?_
+  refine (Nat.le_log_iff_pow_le (by norm_num) (binTreePathNumVertices_ne_zero hr)).2 ?_
   calc 2 ^ r ≤ 2 ^ (r + 1) - 1 := pow_le_pred_pow r
     _ = (2 ^ (r + 1) - 1) * 1 := by ring
     _ ≤ (2 ^ (r + 1) - 1) * (2 * r) := Nat.mul_le_mul le_rfl (by omega)
@@ -557,7 +557,7 @@ theorem log_binTreePathNumVertices_le {r : ℕ} (hr : 1 ≤ r) :
     calc binTreePathNumVertices r = (2 ^ (r + 1) - 1) * (2 * r) := rfl
       _ ≤ 2 ^ (r + 1) * (2 * r) := Nat.mul_le_mul h1 le_rfl
       _ < 2 ^ (r + 1) * 2 ^ (m + 1) :=
-          mul_lt_mul_of_pos_left h2 (Nat.pos_pow_of_pos _ (by norm_num))
+          mul_lt_mul_of_pos_left h2 (Nat.pow_pos (by norm_num))
       _ = 2 ^ (r + 1 + (m + 1)) := (pow_add 2 (r + 1) (m + 1)).symm
   have := Nat.log_lt_of_lt_pow (binTreePathNumVertices_ne_zero hr) hlt
   omega
@@ -706,7 +706,6 @@ theorem binTreePathNumVertices_rpow_le_size {r size : ℕ} (hr : 7 ≤ r)
         - ((L : ℝ) + 1) * ((L : ℝ) / (32 * TCover.f 5))
         = (32 * ((L * L / 16 : ℕ) : ℝ) - ((L : ℝ) + 1) * (L : ℝ)) / (32 * TCover.f 5) := by
       field_simp
-      ring
     have h0 : 0 ≤ ((L * L / 16 : ℕ) : ℝ) / TCover.f 5
         - ((L : ℝ) + 1) * ((L : ℝ) / (32 * TCover.f 5)) := by
       rw [hsplit]

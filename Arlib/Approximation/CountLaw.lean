@@ -231,8 +231,8 @@ theorem toOuterMeasure_iidList_countP (ν : PMF Ω) (p : Ω → Bool) (c n : ℕ
       = outProb (repeatPMF (countTrial ν p c) n) {v : Fin n → ℝ | f (∑ i, v i) ∈ T} := by
   have hmap := congrArg (fun μ : PMF ℝ => μ.toOuterMeasure (f ⁻¹' T))
     (map_countP_iidList ν p c n)
-  simpa only [PMF.toOuterMeasure_map_apply, outProb, Set.preimage_setOf_eq,
-    Set.mem_preimage] using hmap
+  simp only [PMF.toOuterMeasure_map_apply] at hmap
+  exact hmap
 
 /-- **The event form, with the predicate changed `ν`-a.s.**  The combination of
 `toOuterMeasure_iidList_countP` and `map_countP_iidList_congr` that a caller
@@ -243,6 +243,7 @@ theorem toOuterMeasure_iidList_countP_congr (ν : PMF Ω) {p q : Ω → Bool}
       = (iidList ν n).toOuterMeasure {l : List Ω | f ((l.countP q : ℕ) : ℝ) ∈ T} := by
   have hmap := congrArg (fun μ : PMF ℝ => μ.toOuterMeasure (f ⁻¹' T))
     (map_countP_iidList_congr ν hpq n)
-  simpa only [PMF.toOuterMeasure_map_apply, Set.preimage_setOf_eq, Set.mem_preimage] using hmap
+  simp only [PMF.toOuterMeasure_map_apply] at hmap
+  exact hmap
 
 end Arlib.Approximation

@@ -339,7 +339,7 @@ noncomputable def swapDist : FinDist Bool where
 reversible, ergodic-looking chain that never forgets anything. -/
 def swapChain : FinChain Bool where
   P x y := if x = y then 0 else 1
-  P_nonneg x y := by dsimp only; split <;> norm_num
+  P_nonneg x y := by split <;> norm_num
   P_sum x := by cases x <;> · rw [Fintype.sum_bool]; norm_num
 
 theorem swapChain_apply (x y : Bool) : swapChain x y = if x = y then 0 else 1 := rfl
@@ -468,12 +468,14 @@ avoid. -/
 theorem continuous_Ent_add_const (μ : FinDist Ω) (f : Ω → ℝ) :
     Continuous fun ε : ℝ => Ent μ (fun x => f x + ε) := by
   have h2 : Continuous fun ε : ℝ => ∑ x, μ x * (f x + ε) := by
-    refine continuous_finset_sum _ fun x _ => Continuous.mul continuous_const ?_
+    refine continuous_finsetSum _ fun x _ => Continuous.mul continuous_const ?_
     exact Continuous.add continuous_const continuous_id
   have h1 : Continuous fun ε : ℝ => ∑ x, μ x * ((f x + ε) * Real.log (f x + ε)) := by
-    refine continuous_finset_sum _ fun x _ => Continuous.mul continuous_const ?_
+    refine continuous_finsetSum _ fun x _ => Continuous.mul continuous_const ?_
     exact Real.Continuous.mul_log (Continuous.add continuous_const continuous_id)
-  simpa only [Ent_apply, Ex_apply] using Continuous.sub h1 (Real.Continuous.mul_log h2)
+  have hsub := Continuous.sub h1 (Real.Continuous.mul_log h2)
+  simp only [Ent_apply, Ex_apply]
+  exact hsub
 
 /-- **A one-step entropy bound extends from `f > 0` to `f ≥ 0`.**
 
@@ -792,7 +794,6 @@ theorem entropyContraction_avg_of_tensorization {μ : FinDist Ω} {K : ι → Fi
   have e : (1 / (C * (Fintype.card ι : ℝ))) * (C * ∑ i, localEnt μ (K i) f)
       = (1 / (Fintype.card ι : ℝ)) * ∑ i, localEnt μ (K i) f := by
     field_simp
-    ring
   calc (1 / (C * (Fintype.card ι : ℝ))) * Ent μ f
       ≤ (1 / (C * (Fintype.card ι : ℝ))) * (C * ∑ i, localEnt μ (K i) f) :=
         mul_le_mul_of_nonneg_left h1 (by positivity)

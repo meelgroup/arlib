@@ -474,7 +474,7 @@ def nonnegLifting_witness (κ : Type) [Fintype κ] [DecidableEq κ] {b : ℕ} (h
     -- The degree hypothesis rules out the constantly-false `f`.
     obtain ⟨α, hα⟩ : ∃ α, f α = true := by
       by_contra hno
-      push_neg at hno
+      push Not at hno
       refine hf ⟨0, ConicalJunta.IsConical.zero d, fun α => ?_⟩
       have hfa : f α = false := Bool.eq_false_iff.mpr (hno α)
       simpa [hfa] using hδ

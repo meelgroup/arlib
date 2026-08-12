@@ -122,7 +122,7 @@ private theorem length_filter_flatMap_le {A B : Type*} (L : List A) (g : A → L
     rw [List.flatMap_cons, List.filter_append, List.length_append, List.filter_cons]
     by_cases hq : q a = true
     · rw [if_pos hq]
-      have := h1 a (List.mem_cons_self _ _)
+      have := h1 a (List.mem_cons_self)
       simp only [List.length_cons]
       omega
     · rw [if_neg hq]
@@ -130,7 +130,7 @@ private theorem length_filter_flatMap_le {A B : Type*} (L : List A) (g : A → L
         have : (g a).filter p = [] := by
           rw [List.filter_eq_nil_iff]
           intro b hb hpb
-          exact hq (h2 a (List.mem_cons_self _ _) ⟨b, hb, hpb⟩)
+          exact hq (h2 a (List.mem_cons_self) ⟨b, hb, hpb⟩)
         rw [this]; rfl
       omega
 
@@ -140,7 +140,7 @@ private theorem length_flatMap_const {A B : Type*} {L : List A} {g : A → List 
   induction L with
   | nil => simp
   | cons a L ih =>
-    rw [List.flatMap_cons, List.length_append, h a (List.mem_cons_self _ _),
+    rw [List.flatMap_cons, List.length_append, h a (List.mem_cons_self),
       ih (fun x hx => h x (List.mem_cons_of_mem _ hx))]
     simp [Nat.succ_mul, Nat.add_comm]
 
@@ -189,7 +189,7 @@ paper's `m^k` derived terms per term ([VS24, §4.4.1]). -/
 theorem canonChoices_length :
     (canonChoices m t).length = m ^ (Copies.posPart t).card := by
   classical
-  rw [canonChoices, List.length_map, Finset.length_toList, Finset.card_pi]
+  rw [canonChoices, List.length_map _, Finset.length_toList, Finset.card_pi]
   simp
 
 /-- Members of the enumeration take the default value outside `posPart t`.  This
@@ -284,7 +284,7 @@ theorem unambiguous_copiesDNF (hψ : DNF.Unambiguous ψ) :
     exact hψ (Copies.collapse α)
   · -- each original term contributes at most one derived term
     intro t _
-    rw [filter_map_comm, List.length_map]
+    rw [filter_map_comm, List.length_map _]
     refine length_le_one_of_nodup (List.Nodup.filter _ canonChoices_nodup) ?_
     intro c hc c' hc'
     rw [List.mem_filter] at hc hc'
@@ -345,7 +345,7 @@ theorem isKDNF_copiesDNF {k : ℕ} (hk : DNF.IsKDNF k ψ) :
     have : (t.filter (fun p : Lit ι => p.2 = true)).card
         + (t.filter (fun p : Lit ι => p.2 = false)).card = t.card := by
       rw [hneg]
-      exact Finset.filter_card_add_filter_neg_card_eq_card _
+      exact Finset.card_filter_add_card_filter_not _
     have hw : Term.width t = t.card := rfl
     omega
   calc Term.width (Copies.copyTerm t c)
@@ -459,7 +459,7 @@ and no constant suppressed (`docs/dev/KnowledgeCompilation-ROADMAP.md` §5). -/
 theorem numTerms_permDNF (e : ι × Fin m → F) (rep : F × F → Zι → Bool) (ψ : DNF ι) :
     (permDNF e rep ψ).numTerms = (maps F).card * (copiesDNF m ψ).numTerms := by
   rw [permDNF, DNF.numTerms, length_flatMap_const (c := (copiesDNF m ψ).numTerms)
-    (fun p _ => List.length_map _ _), Finset.length_toList]
+    (fun p _ => List.length_map _), Finset.length_toList]
 
 /-- The term count against the bounds of the inputs: for an unambiguous `k`-DNF
 `ψ` with at most `ℓ` terms, `ψ'` has at most `|𝒫|·ℓ·m^k` terms. -/
@@ -494,7 +494,7 @@ theorem unambiguous_permDNF (hrep : Set.InjOn rep (maps F)) (hψ : DNF.Unambiguo
       (((copiesDNF m ψ).map (permTerm e rep p)).filter
         (fun w => decide (Term.Sat w α))).length ≤ 1 := by
     intro p _
-    rw [filter_map_comm, List.length_map]
+    rw [filter_map_comm, List.length_map _]
     refine le_trans (List.Sublist.length_le (List.monotone_filter_right _ (fun u hu => ?_)))
       (unambiguous_copiesDNF hψ (pull e p α))
     exact decide_eq_true (sat_permTerm.mp (of_decide_eq_true hu)).2

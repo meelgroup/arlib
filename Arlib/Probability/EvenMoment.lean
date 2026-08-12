@@ -231,7 +231,7 @@ private theorem abs_two_term_le {p q : ℝ} (hp0 : 0 ≤ p) (hq0 : 0 ≤ q)
   have h2 : p ^ m ≤ p := pow_le_of_le_one hp0 hp1 (by omega)
   have hprod : 0 ≤ p * q := mul_nonneg hp0 hq0
   have habs : |p * q ^ (m + 1) + q * (-p) ^ (m + 1)| ≤ p * q ^ (m + 1) + q * p ^ (m + 1) := by
-    refine (abs_add _ _).trans (le_of_eq ?_)
+    refine (abs_add_le _ _).trans (le_of_eq ?_)
     rw [abs_of_nonneg (mul_nonneg hp0 (pow_nonneg hq0 _)), abs_mul,
       abs_of_nonneg hq0, abs_pow, abs_neg, abs_of_nonneg hp0]
   have hsplit : p * q ^ (m + 1) + q * p ^ (m + 1) = p * q * (q ^ m + p ^ m) := by ring
@@ -300,16 +300,16 @@ theorem sep_gen (hind : KWiseIndep P K Z) (hZ : IsIndicatorFamily Z) {a : ι}
       congrArg P.Ex (funext fun ω => hZ.mul_prod_insert a U ω)
     rw [h1,
       hind.ex_prod_finset (u := insert a U)
-        (by rw [Finset.card_insert_of_not_mem haU]; omega),
+        (by rw [Finset.card_insert_of_notMem haU]; omega),
       hind.ex_prod_finset (u := U) (by omega), Finset.prod_insert haU]
   | @insert b u hb ih =>
     intro U haU hne hcard
-    have hcb : (insert b u).card = u.card + 1 := Finset.card_insert_of_not_mem hb
+    have hcb : (insert b u).card = u.card + 1 := Finset.card_insert_of_notMem hb
     have hfb : f b ≠ a := hne b (Finset.mem_insert_self b u)
     have hne' : ∀ x ∈ u, f x ≠ a := fun x hx => hne x (Finset.mem_insert_of_mem hx)
     have haU' : a ∉ insert (f b) U := by
       simp only [Finset.mem_insert]
-      push_neg
+      push Not
       exact ⟨fun h => hfb h.symm, haU⟩
     have hcard1 : (insert (f b) U).card + u.card + 1 ≤ K := by
       have hle := Finset.card_insert_le (f b) U
@@ -370,7 +370,7 @@ theorem Ex_indicator_mul_centre_sum_pow (hind : KWiseIndep P K Z)
     exact ha (hx ▸ hp x)
   have hcard : (∅ : Finset ι).card + (Finset.univ : Finset (Fin m)).card + 1 ≤ K := by
     simpa using hm
-  have h := sep_gen hind hZ (f := p) Finset.univ ∅ (Finset.not_mem_empty a) hne hcard
+  have h := sep_gen hind hZ (f := p) Finset.univ ∅ (Finset.notMem_empty a) hne hcard
   simpa using h
 
 /-- **Separating a power of a fresh centred indicator from a power of the centred
@@ -556,7 +556,7 @@ theorem moment_bounds (hind : KWiseIndep P 6 Z) (hZ : IsIndicatorFamily Z)
     refine ⟨?_, ?_, ?_, ?_⟩
     · rw [r2, varSum_insert P Z ha, ih2]; ring
     · rw [r3, varSum_insert P Z ha]
-      have habs := abs_add (P.Ex fun ω => (∑ i ∈ s, centre Z i ω) ^ 3)
+      have habs := abs_add_le (P.Ex fun ω => (∑ i ∈ s, centre Z i ω) ^ 3)
         (P.Ex fun ω => centre Z a ω ^ 3)
       linarith [ih3, hm3, habs]
     · rw [r4, varSum_insert P Z ha, ih2]
@@ -675,7 +675,6 @@ theorem sixth_moment_relative_tail (hind : KWiseIndep P 6 Z) (hZ : IsIndicatorFa
   have h := sixth_moment_tail hind hZ s (mul_pos hγ hmean)
   refine h.trans_eq ?_
   field_simp
-  ring
 
 end Sixth
 

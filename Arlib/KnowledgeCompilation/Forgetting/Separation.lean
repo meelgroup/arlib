@@ -83,7 +83,7 @@ operation cannot be a polynomial-size d-DNNF-to-d-DNNF map.
 -/
 import Arlib.KnowledgeCompilation.Forgetting.Basic
 import Mathlib.Algebra.Ring.Parity
-import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 namespace Arlib.KnowledgeCompilation
 namespace Forgetting

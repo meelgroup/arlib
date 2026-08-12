@@ -45,7 +45,7 @@ variable {ι X : Type} [Fintype ι] [DecidableEq ι] [Fintype X] [DecidableEq X]
 
 /-- The product of the finite distributions `μ j` on a common outcome type `X`.
 Outcomes are functions `ω : ι → X`, with `mass ω = ∏ j, μ j (ω j)`. -/
-def prodSpace (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ μ j x) (h1 : ∀ j, ∑ x, μ j x = 1) :
+@[reducible] def prodSpace (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ μ j x) (h1 : ∀ j, ∑ x, μ j x = 1) :
     CoinSpace where
   ι := ι
   ιFin := inferInstance

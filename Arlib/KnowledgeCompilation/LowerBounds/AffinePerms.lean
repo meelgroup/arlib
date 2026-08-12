@@ -65,7 +65,7 @@ theorem bijective_toFun {p : F × F} (hp : p.1 ≠ 0) : Function.Bijective (toFu
     have : p.1 * x = p.1 * y := by linear_combination hxy
     exact mul_left_cancel₀ hp this
   · intro y
-    exact ⟨(y - p.2) / p.1, by field_simp⟩
+    exact ⟨(y - p.2) / p.1, by simp only [toFun_apply]; field_simp; ring⟩
 
 /-- `|𝒫| = (|F| − 1)·|F|`, the paper's `n'·(n'−1)`. -/
 theorem card_maps : (maps F).card = (Fintype.card F - 1) * Fintype.card F := by

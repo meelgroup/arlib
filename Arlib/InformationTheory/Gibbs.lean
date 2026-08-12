@@ -71,7 +71,7 @@ theorem sum_mul_log_div_nonneg {α : Type*} [Fintype α] (p q : α → ℝ)
     0 ≤ ∑ a, p a * Real.log (p a / q a) := by
   have key : ∑ a, (p a - q a) ≤ ∑ a, p a * Real.log (p a / q a) :=
     Finset.sum_le_sum fun a _ => sub_le_mul_log_div (hp a) (hq a) (hac a)
-  have hsplit : ∑ a, (p a - q a) = (∑ a, p a) - ∑ a, q a := Finset.sum_sub_distrib
+  have hsplit : ∑ a, (p a - q a) = (∑ a, p a) - ∑ a, q a := Finset.sum_sub_distrib p q
   rw [hsplit] at key
   linarith
 

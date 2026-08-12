@@ -86,7 +86,8 @@ theorem Ex_prodFinProb_swapPair (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < 
     (σ : Fin m → Bool) (X : ((Fin m → ι) × (Fin m → ι)) → ℝ) :
     (prodFinProb (sampleSpace w hw m) (sampleSpace w hw m)).Ex (fun p => X (swapPair σ p))
       = (prodFinProb (sampleSpace w hw m) (sampleSpace w hw m)).Ex X := by
-  rw [prodFinProb_Ex_eq_sum, prodFinProb_Ex_eq_sum]
+  refine (prodFinProb_Ex_eq_sum _ _ _).trans
+    (Eq.trans ?_ (prodFinProb_Ex_eq_sum _ _ _).symm)
   -- Reindex the sum by the involution `swapPairEquiv σ`.  The per-summand obligation
   -- is exactly mass invariance (`mass_swapPair`); `swapPairEquiv σ p = swapPair σ p`
   -- holds definitionally.

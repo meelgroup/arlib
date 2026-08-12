@@ -109,7 +109,7 @@ theorem induction_on {motive : LTree Γ → Prop} (t : LTree Γ)
     motive t :=
   LTree.rec (motive_1 := motive) (motive_2 := fun ts => ∀ u ∈ ts, motive u)
     node
-    (fun u hu => absurd hu (List.not_mem_nil u))
+    (fun u hu => absurd hu (List.not_mem_nil))
     (fun _ _ iht ihts u hu => (List.mem_cons.1 hu).elim (fun h => h ▸ iht) (ihts u))
     t
 
@@ -235,7 +235,7 @@ theorem size_attachMap (f : LTree Γ → β) (t : LTree Γ) : (attachMap f t).si
     | nil => simp
     | cons u us ihl =>
       simp only [attachMapList_cons, sizeList_cons]
-      rw [ih u (List.mem_cons_self u us), ihl (fun v hv => ih v (List.mem_cons_of_mem u hv))]
+      rw [ih u (List.mem_cons_self), ihl (fun v hv => ih v (List.mem_cons_of_mem u hv))]
 
 @[simp] theorem label_attachMap (f : LTree Γ → β) (t : LTree Γ) :
     (attachMap f t).label = f t := by

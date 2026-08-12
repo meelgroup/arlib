@@ -173,7 +173,7 @@ theorem coverBound_le_bestCov_permDNF
     exact ⟨j, Γ₀, hΓ₀, hj⟩
   obtain ⟨Γ, hΓ, hcov⟩ := Nat.sInf_mem hne
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   exact H.not_hasCover hlt (hasCoverOfSize_of_hasCoverOfSize_permDNF (P := H.P) he
     (fun _ _ _ _ h => hrep h) rfl hΓ hm hz hcov)
 
@@ -203,7 +203,7 @@ theorem coverBound_le_size_of_computes_not
     (hC : C.Computes (fun α => !(DNF.eval (permDNF e rep H.ψ) α))) :
     coverBound ≤ C.size := by
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   -- graft the omitted variables onto `T`: `C` respects the larger v-tree too
   obtain ⟨T', hT', hR', hsub, hT'vars⟩ :=
     NNF.Respects.exists_graft hT hR (Finset.univ : Finset (F ⊕ Zι))

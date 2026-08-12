@@ -96,7 +96,7 @@ theorem partBound_le_size_of_computes_union
       DNF.eval (permDNF e rep H.φ) α)) :
     partBound ≤ C.size := by
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   -- graft the omitted variables onto `T`: `C` respects the larger v-tree too
   obtain ⟨T', hT', hR', hsub, hT'vars⟩ :=
     NNF.Respects.exists_graft hT hR (Finset.univ : Finset (F ⊕ Zι))

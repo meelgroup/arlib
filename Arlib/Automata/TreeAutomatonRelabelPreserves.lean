@@ -51,7 +51,7 @@ the re-indexing would say something weaker than it appears to.  It does not:
 
 Both are one-line consequences of results already in `TreeAutomatonRelabel`; they
 are stated here rather than left to the caller because the second passes through
-`Set.ncard_univ` and `Set.Nat.card_coe_set_eq`, which is exactly the step a
+`Set.ncard_univ` and `Nat.card_coe_set_eq`, which is exactly the step a
 caller is likely to get wrong (the used labels of the re-indexed automaton are
 `Set.univ` in the *subtype*, not the original set).
 
@@ -135,7 +135,7 @@ theorem ncard_reachableStates_relabelTo (hΛ : A.usedLabels ⊆ Λ) :
 `↥A.usedLabels`, which is `A.usedLabels.ncard`. -/
 theorem ncard_usedLabels_restrictAlphabet (A : TreeAutomaton S Γ) :
     (restrictAlphabet A).usedLabels.ncard = A.usedLabels.ncard := by
-  rw [usedLabels_restrictAlphabet, Set.ncard_univ, Set.Nat.card_coe_set_eq]
+  rw [usedLabels_restrictAlphabet, Set.ncard_univ, Nat.card_coe_set_eq]
 
 end TreeAutomaton
 

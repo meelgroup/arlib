@@ -190,7 +190,7 @@ theorem Pr_prodSpace_filter_eq_pow (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ 
           Finset.prod_congr rfl fun j hj => by
             rw [hr j (Finset.mem_sdiff.mp hj).1]
       _ = (1 - r) ^ (T \ S).card := Finset.prod_const _
-      _ = (1 - r) ^ (T.card - S.card) := by rw [Finset.card_sdiff hST]
+      _ = (1 - r) ^ (T.card - S.card) := by rw [Finset.card_sdiff_of_subset hST]
   rw [Pr_prodSpace_filter_eq μ h0 h1 p hST, hS, hTS]
 
 /-! ## The binomial law -/

@@ -328,7 +328,6 @@ theorem spectralGapAtLeast_glauber_of_approxTensorization {w : (V → S) → ℝ
   calc Var (gibbs w hw hZ) f ≤ C * ∑ v, siteVar w hw hZ v f := h
     _ = (1 / (Fintype.card V : ℝ)) * (∑ v, siteVar w hw hZ v f) * (C * (Fintype.card V : ℝ)) := by
         field_simp
-        ring
 
 /-- **A spectral gap implies approximate tensorization.**  If the Glauber
 dynamics satisfies the Poincaré inequality with constant `γ > 0`, then the Gibbs
@@ -556,7 +555,6 @@ theorem glauber_mixesWithin_of_approxTensorization {w : (V → S) → ℝ}
   · have hrw : (1 / (C * (Fintype.card V : ℝ))) / 2
         = 1 / (2 * C * (Fintype.card V : ℝ)) := by
       field_simp
-      ring
     rw [hrw]
     exact ht
 

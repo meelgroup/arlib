@@ -389,7 +389,6 @@ noncomputable def linkDist (w : Finset E → ℝ) (n : ℕ) (τ : Finset E)
     (hpos : 0 < mu w τ) (hk : τ.card < n) : FinDist E where
   p e := if e ∈ τ then 0 else mu w (insert e τ) / (((n - τ.card : ℕ) : ℝ) * mu w τ)
   p_nonneg e := by
-    dsimp only
     split
     · exact le_rfl
     · exact div_nonneg (mu_nonneg hw _) (mul_nonneg (Nat.cast_nonneg _) (mu_nonneg hw τ))
@@ -402,7 +401,7 @@ noncomputable def linkDist (w : Finset E → ℝ) (n : ℕ) (τ : Finset E)
               / (((n - τ.card : ℕ) : ℝ) * mu w τ) := by
       intro e
       by_cases h : e ∈ τ
-      · rw [if_pos h, if_neg (Finset.not_mem_compl.mpr h), zero_div]
+      · rw [if_pos h, if_neg (Finset.notMem_compl.mpr h), zero_div]
       · rw [if_neg h, if_pos (Finset.mem_compl.mpr h)]
     rw [Finset.sum_congr rfl fun e _ => hstep e, ← Finset.sum_div, Finset.sum_ite_mem,
       Finset.univ_inter, sum_insert_mu w n τ.card hsupp rfl, div_self (mul_ne_zero hD hm)]
@@ -463,7 +462,6 @@ noncomputable def linkDistOf (w : Finset E → ℝ) (n : ℕ)
     if h : 0 < mu w τ ∧ τ.card < n then linkDist w n τ hw hsupp h.1 h.2 e
     else (if e = Classical.arbitrary E then 1 else 0)
   p_nonneg e := by
-    dsimp only
     by_cases h : 0 < mu w τ ∧ τ.card < n
     · rw [dif_pos h]
       exact (linkDist w n τ hw hsupp h.1 h.2).p_nonneg e
@@ -525,7 +523,6 @@ noncomputable def localWalk (w : Finset E → ℝ) (n : ℕ) (τ : Finset E)
       else 0)
     else (if e' = e then 1 else 0)
   P_nonneg e e' := by
-    dsimp only
     split
     · split
       · exact div_nonneg (mu_nonneg hw _) (mul_nonneg (Nat.cast_nonneg _) (mu_nonneg hw _))
@@ -536,7 +533,7 @@ noncomputable def localWalk (w : Finset E → ℝ) (n : ℕ) (τ : Finset E)
   P_sum e := by
     by_cases h : e ∉ τ ∧ 0 < mu w (insert e τ)
     · simp only [if_pos h]
-      have hcard : (insert e τ).card = τ.card + 1 := Finset.card_insert_of_not_mem h.1
+      have hcard : (insert e τ).card = τ.card + 1 := Finset.card_insert_of_notMem h.1
       have hD : ((n - (τ.card + 1) : ℕ) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
       have hm : mu w (insert e τ) ≠ 0 := h.2.ne'
       have hstep : ∀ e' : E,
@@ -548,7 +545,7 @@ noncomputable def localWalk (w : Finset E → ℝ) (n : ℕ) (τ : Finset E)
                 / (((n - (τ.card + 1) : ℕ) : ℝ) * mu w (insert e τ)) := by
         intro e'
         by_cases h' : e' ∈ insert e τ
-        · rw [if_neg (not_not_intro h'), if_neg (Finset.not_mem_compl.mpr h'), zero_div]
+        · rw [if_neg (not_not_intro h'), if_neg (Finset.notMem_compl.mpr h'), zero_div]
         · rw [if_pos h', if_pos (Finset.mem_compl.mpr h')]
       rw [Finset.sum_congr rfl fun e' _ => hstep e', ← Finset.sum_div, Finset.sum_ite_mem,
         Finset.univ_inter, sum_insert_mu w n (τ.card + 1) hsupp hcard,
@@ -625,7 +622,6 @@ theorem linkDist_mul_localWalk (w : Finset E → ℝ) (n : ℕ) (τ : Finset E)
         · have hA' : mu w (insert e τ) ≠ 0 := hA.ne'
           rw [linkDist_apply, if_neg he, localWalk_apply, if_pos ⟨he, hA⟩, if_pos hnm]
           field_simp
-          ring
         · have hA0 : mu w (insert e τ) = 0 := le_antisymm (not_lt.mp hA) (mu_nonneg hw _)
           have hX : mu w (insert e' (insert e τ)) = 0 :=
             mu_eq_zero_of_subset hw (Finset.subset_insert e' (insert e τ)) hA0

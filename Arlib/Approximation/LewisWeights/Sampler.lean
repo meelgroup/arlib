@@ -28,6 +28,7 @@ equals the exact functional `∑ᵢ |⟨y, aᵢ⟩|`.
 
 No `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.Probability.ProductSpace
 import Arlib.Probability.Markov
 import Arlib.Approximation.Coresets.Basic
@@ -45,7 +46,7 @@ variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 
 /-- **A single importance draw.**  The outcome is the drawn index `i : ι`, drawn
 with probability `mass i = wᵢ / (∑ⱼ wⱼ) ∝ wᵢ`. -/
-noncomputable def drawSpace (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i) : FinProb where
+@[reducible] noncomputable def drawSpace (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i) : FinProb where
   Ω := ι
   μ :=
     { p := fun i => w i / (∑ j, w j)
@@ -68,13 +69,12 @@ theorem single_draw_unbiased (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i
   have hW : (∑ j, w j) ≠ 0 := (Finset.sum_pos (fun j _ => hw j) Finset.univ_nonempty).ne'
   show (w i / (∑ j, w j)) * ((∑ j, w j) / w i * |a i ⬝ᵥ y|) = |a i ⬝ᵥ y|
   field_simp
-  ring
 
 /-! ## The m-fold product of iid draws -/
 
 /-- **`m` iid draws** as a `CoinSpace` over `Fin m`, each coin a copy of the draw
 distribution `mass i = wᵢ / (∑ⱼ wⱼ)`. -/
-noncomputable def sampleCoin (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i) (m : ℕ) :
+@[reducible] noncomputable def sampleCoin (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i) (m : ℕ) :
     CoinSpace where
   ι := Fin m
   Coin := fun _ => ι
@@ -176,7 +176,6 @@ theorem estimator_unbiased (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i)
             * ((1 / ((m : ℝ) * (w c / (∑ j, w j)))) * |dot y (a c)|)
             = (1 / (m : ℝ)) * |dot y (a c)|
         field_simp
-        ring
     _ = (m : ℝ) * ((1 / (m : ℝ)) * ∑ c, |dot y (a c)|) := by
         rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
     _ = ∑ c, |dot y (a c)| := by

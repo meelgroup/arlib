@@ -162,13 +162,13 @@ theorem card_filter_and_mul_card (A : Finset ι) (P Q : (∀ i, β i) → Prop)
     refine Finset.card_nbij' (fun z => (graft A z.1 z.2, graft A z.2 z.1))
       (fun z => (graft A z.1 z.2, graft A z.2 z.1)) ?_ ?_ ?_ ?_
     · rintro ⟨c, d⟩ hz
-      simp only [Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and,
-        and_true] at hz ⊢
+      simp only [Finset.mem_coe, Finset.mem_product, Finset.mem_filter, Finset.mem_univ,
+        true_and, and_true] at hz ⊢
       exact ⟨(hQ c (graft A c d) (fun i hi => (graft_of_not_mem hi).symm)).1 hz.2,
         (hP c (graft A d c) (fun i hi => (graft_of_mem hi).symm)).1 hz.1⟩
     · rintro ⟨c, d⟩ hz
-      simp only [Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and,
-        and_true] at hz ⊢
+      simp only [Finset.mem_coe, Finset.mem_product, Finset.mem_filter, Finset.mem_univ,
+        true_and, and_true] at hz ⊢
       exact ⟨(hP d (graft A c d) (fun i hi => (graft_of_mem hi).symm)).1 hz.2,
         (hQ c (graft A c d) (fun i hi => (graft_of_not_mem hi).symm)).1 hz.1⟩
     · rintro ⟨c, d⟩ -
@@ -356,7 +356,7 @@ theorem exists_indep_subset {x : ℕ} (hx : G.maxDegree ≤ x) (S : Finset V) :
       · intro a b ha hb
         rcases Finset.mem_insert.1 ha with rfl | ha' <;>
           rcases Finset.mem_insert.1 hb with rfl | hb'
-        · exact G.loopless _
+        · exact G.irrefl
         · intro hadj
           have : b ∈ D := Finset.mem_insert_of_mem (by rwa [SimpleGraph.mem_neighborFinset])
           exact (Finset.mem_sdiff.1 (hIS' hb')).2 this
@@ -378,7 +378,7 @@ theorem exists_indep_subset {x : ℕ} (hx : G.maxDegree ≤ x) (S : Finset V) :
           have hdeg : (G.neighborFinset u).card ≤ x :=
             le_trans (G.degree_le_maxDegree u) hx
           omega
-        rw [Finset.card_insert_of_not_mem huI]
+        rw [Finset.card_insert_of_notMem huI]
         have hring : (x + 1) * (I.card + 1) = (x + 1) * I.card + (x + 1) := by ring
         omega
 
@@ -490,7 +490,7 @@ theorem card_avoid_mul (u : V) :
       = (Finset.univ.filter (fun c : Outcome V => u ∉ outcomeSet G c)).card := by
     refine congrArg Finset.card (Finset.filter_congr (fun c _ => ?_))
     rw [mem_outcomeSet]
-    push_neg
+    push Not
     rfl
   have h2 : ∏ e ∈ G.incidenceFinset u, Fintype.card {x : V // x ∈ e} = 2 ^ G.degree u := by
     rw [Finset.prod_congr rfl (fun e he => card_mem_eq_two (hedge e he).1), Finset.prod_const,
@@ -507,7 +507,7 @@ theorem count_singleton_add_avoid (u : V) :
     count G {u} + (Finset.univ.filter (fun c : Outcome V => u ∉ outcomeSet G c)).card
       = Fintype.card (Outcome V) := by
   rw [count_singleton, ← Finset.card_univ]
-  exact Finset.filter_card_add_filter_neg_card_eq_card _
+  exact Finset.card_filter_add_card_filter_not _
 
 end Count
 
@@ -575,7 +575,6 @@ theorem count_singleton_le {x : ℕ} (hx : G.maxDegree ≤ x) (u : V) :
   rw [base_eq]
   have hexp : (N : ℝ) * (1 - ((2 : ℝ) ^ x)⁻¹) = (N : ℝ) - (N : ℝ) / (2 : ℝ) ^ x := by
     field_simp
-    ring
   linarith
 
 /-- **The claim, for independent sets** ([Raz16, §4.1]):
@@ -611,7 +610,7 @@ theorem count_le_pow {x : ℕ} (hx : G.maxDegree ≤ x) {I : Finset V} (hI : IsI
               (mul_nonneg (Nat.cast_nonneg _) (pow_nonneg hb _))
         _ = ((Fintype.card (Outcome V) : ℝ) * (base x ^ I.card * base x))
             * (Fintype.card (Outcome V) : ℝ) := by ring
-    rw [Finset.card_insert_of_not_mem hu, pow_succ]
+    rw [Finset.card_insert_of_notMem hu, pow_succ]
     exact le_of_mul_le_mul_right hmul hN
 
 /-- **The Claim** ([Raz16, §4.1]):
@@ -786,7 +785,6 @@ theorem two_rpow_div_f {x : ℕ} (hx : 1 ≤ x) (t : ℕ) :
   congr 1
   rw [f, div_div_eq_mul_div, neg_mul, div_neg]
   field_simp
-  ring
 
 /-- **Theorem `lbengine`, in the paper's exponential form**
 ([Raz16, `lbengine`]): a `t`-cover of `VC(H)` has at least

@@ -62,6 +62,7 @@ indicator sum over *all* of `Finset E` and not by a filtered sum.
 
 Everything here is proved from first principles with no `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.MarkovChains.Techniques.Adjoint
 import Mathlib.Data.Nat.Choose.Basic
 
@@ -91,7 +92,7 @@ theorem nonempty_of_weight {w : Finset E → ℝ} {n : ℕ}
   have hzero : ∀ σ : Finset E, w σ = 0 := by
     intro σ
     refine hsupp σ ?_
-    have hσ : σ = ∅ := Finset.eq_empty_of_forall_not_mem fun e _ => hE ⟨e⟩
+    have hσ : σ = ∅ := Finset.eq_empty_of_forall_notMem fun e _ => hE ⟨e⟩
     rw [hσ, Finset.card_empty]
     omega
   rw [Finset.sum_congr rfl fun σ _ => hzero σ, Finset.sum_const_zero] at hsum
@@ -186,7 +187,7 @@ theorem sum_ite_superset_card (n : ℕ) {τ : Finset E} (hτ : τ.card ≤ n) (c
     constructor
     · rintro ⟨hsub, hcard⟩
       refine ⟨σ \ τ, ⟨fun x hx => Finset.mem_compl.mpr (Finset.mem_sdiff.mp hx).2, ?_⟩, ?_⟩
-      · rw [Finset.card_sdiff hsub, hcard]
+      · rw [Finset.card_sdiff_of_subset hsub, hcard]
       · exact Finset.sdiff_union_of_subset hsub
     · rintro ⟨ρ, ⟨hρc, hρcard⟩, rfl⟩
       have hdisj : Disjoint ρ τ := by
@@ -305,7 +306,6 @@ noncomputable def pi (w : Finset E → ℝ) (n k : ℕ)
     (hsum : ∑ σ : Finset E, w σ = 1) (hk : k ≤ n) : FinDist (Finset E) where
   p τ := if τ.card = k then mu w τ / (n.choose k : ℝ) else 0
   p_nonneg τ := by
-    dsimp only
     split
     · exact div_nonneg (mu_nonneg hw τ) (Nat.cast_nonneg _)
     · exact le_rfl
@@ -392,7 +392,6 @@ noncomputable def down (k : ℕ) : FinChain (Finset E) where
     if τ.card = k + 1 then (if τ'.card = k ∧ τ' ⊆ τ then (1 : ℝ) / ((k : ℝ) + 1) else 0)
     else (if τ' = τ then 1 else 0)
   P_nonneg τ τ' := by
-    dsimp only
     split
     · split
       · positivity
@@ -432,7 +431,7 @@ theorem sum_ite_insert {k : ℕ} {τ : Finset E} (hτ : τ.card = k) (g : Finset
     constructor
     · rintro ⟨hcard, hsub⟩
       have hd : (η \ τ).card = 1 := by
-        rw [Finset.card_sdiff hsub, hcard, hτ]
+        rw [Finset.card_sdiff_of_subset hsub, hcard, hτ]
         omega
       obtain ⟨e, he⟩ := Finset.card_eq_one.mp hd
       have heη : e ∈ η \ τ := by rw [he]; exact Finset.mem_singleton_self e
@@ -441,7 +440,7 @@ theorem sum_ite_insert {k : ℕ} {τ : Finset E} (hτ : τ.card = k) (g : Finset
         _ = (η \ τ) ∪ τ := by rw [he]
         _ = η := Finset.sdiff_union_of_subset hsub
     · rintro ⟨e, he, rfl⟩
-      exact ⟨by rw [Finset.card_insert_of_not_mem he, hτ], Finset.subset_insert e τ⟩
+      exact ⟨by rw [Finset.card_insert_of_notMem he, hτ], Finset.subset_insert e τ⟩
   have hinj : ∀ a ∈ τᶜ, ∀ b ∈ τᶜ, insert a τ = insert b τ → a = b := by
     intro a ha b _ hab
     rw [Finset.mem_compl] at ha
@@ -472,7 +471,7 @@ theorem sum_insert_mu (w : Finset E → ℝ) (n k : ℕ)
           if_congr (by rw [Finset.insert_subset_iff]; exact and_iff_left hts) rfl rfl
       have hint : τᶜ ∩ σ = σ \ τ := by
         rw [Finset.inter_comm, Finset.sdiff_eq_inter_compl]
-      rw [hcond, Finset.sum_ite_mem, hint, Finset.sum_const, Finset.card_sdiff hts, hσ, hτ,
+      rw [hcond, Finset.sum_ite_mem, hint, Finset.sum_const, Finset.card_sdiff_of_subset hts, hσ, hτ,
         nsmul_eq_mul]
     · rw [if_neg hts, mul_zero]
       refine Finset.sum_eq_zero fun e _ => if_neg fun hc => hts ?_
@@ -505,7 +504,6 @@ noncomputable def up (w : Finset E → ℝ) (n k : ℕ)
       (if η.card = k + 1 ∧ τ ⊆ η then mu w η / (((n - k : ℕ) : ℝ) * mu w τ) else 0)
     else (if η = τ then 1 else 0)
   P_nonneg τ η := by
-    dsimp only
     split
     · split
       · exact div_nonneg (mu_nonneg hw η) (mul_nonneg (Nat.cast_nonneg _) (mu_nonneg hw τ))
@@ -591,7 +589,6 @@ theorem up_down_adjoint (w : Finset E → ℝ) (n k : ℕ)
           have e1 : mu w τ / ((n.choose k : ℕ) : ℝ) * (mu w η / (((n - k : ℕ) : ℝ) * mu w τ))
               = mu w η / (((n.choose k : ℕ) : ℝ) * ((n - k : ℕ) : ℝ)) := by
             field_simp
-            ring
           rw [h1, h2, h3, h4, e1, div_mul_div_comm, mul_one, hchoose]
         · have h2 : up w n k hw hsupp hk τ η = 0 := by
             rw [up_apply, if_pos ⟨hτ, hmu⟩, if_neg fun h => hsub h.2]

@@ -314,7 +314,7 @@ lemma exists_isRun {t : Fin ψ.length} :
       rwa [he])
     refine ⟨(t, (⟨(j : ℕ) + 1, hjlt⟩ : Fin (n + 1))) :: rs, ?_⟩
     rw [NFA.isRun_cons_cons, dnfUFA_step_iff]
-    exact ⟨⟨rfl, rfl, by simpa using hall 0 (by simp)⟩, hrs⟩
+    exact ⟨⟨rfl, rfl, hall 0 (by simp)⟩, hrs⟩
 
 /-! ## Index uniqueness
 

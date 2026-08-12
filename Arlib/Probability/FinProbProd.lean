@@ -62,7 +62,7 @@ open Finset
 /-- The **product of two finite probability spaces**: outcomes are pairs, and the
 mass of a pair is the product of the two masses.  This is the formal content of
 "draw `ω₁ ∼ P`, then draw `ω₂ ∼ Q` independently". -/
-noncomputable def prodFinProb (P Q : FinProb) : FinProb where
+@[reducible] noncomputable def prodFinProb (P Q : FinProb) : FinProb where
   Ω := P.Ω × Q.Ω
   μ :=
     { p := fun ω => P.mass ω.1 * Q.mass ω.2
@@ -193,7 +193,7 @@ theorem dist_prodFinProb_snd {P Q : FinProb} {α : Type} [DecidableEq α] (Y : Q
 /-- The **uniform probability space** on a nonempty finite type: every outcome
 has mass `1 / |α|`.  This is the formal content of "pick `ℓ` uniformly at
 random". -/
-noncomputable def unifFinProb (α : Type) [Fintype α] [DecidableEq α] [Nonempty α] : FinProb where
+@[reducible] noncomputable def unifFinProb (α : Type) [Fintype α] [DecidableEq α] [Nonempty α] : FinProb where
   Ω := α
   μ :=
     { p := fun _ => ((Fintype.card α : ℝ))⁻¹
@@ -336,13 +336,13 @@ theorem kwiseIndep_prodFinProb_sum {ι κ : Type} [Fintype ι] [DecidableEq ι]
         (fun ω => ∏ i ∈ s, Sum.elim (fun i ω => X i ω.1) (fun j ω => Y j ω.2) i ω)
       = (prodFinProb P Q).Ex (fun ω => (∏ i ∈ a, X i ω.1) * ∏ j ∈ b, Y j ω.2) := by
     refine congrArg _ (funext fun ω => ?_)
-    rw [← hsplit, Finset.prod_disj_sum]
+    rw [← hsplit, Finset.prod_disjSum]
     simp only [Sum.elim_inl, Sum.elim_inr]
   have hR : (∏ i ∈ s, (prodFinProb P Q).Ex
         (Sum.elim (fun i ω => X i ω.1) (fun j ω => Y j ω.2) i))
       = (∏ i ∈ a, (prodFinProb P Q).Ex (fun ω => X i ω.1))
         * ∏ j ∈ b, (prodFinProb P Q).Ex (fun ω => Y j ω.2) := by
-    rw [← hsplit, Finset.prod_disj_sum]
+    rw [← hsplit, Finset.prod_disjSum]
     simp only [Sum.elim_inl, Sum.elim_inr]
   calc (prodFinProb P Q).Ex
         (fun ω => ∏ i ∈ s, Sum.elim (fun i ω => X i ω.1) (fun j ω => Y j ω.2) i ω)

@@ -295,7 +295,7 @@ theorem numTerms_copyDNF_le (ψ : DNF ι) (choices : Finset (Lit ι) → List (�
   | cons t rest ih =>
     have hrest : ∀ u ∈ rest, (choices u).length ≤ B :=
       fun u hu => hB u (List.mem_cons_of_mem _ hu)
-    have ht : (choices t).length ≤ B := hB t (List.mem_cons_self _ _)
+    have ht : (choices t).length ≤ B := hB t (List.mem_cons_self)
     simp only [copyDNF, List.flatMap_cons, DNF.numTerms, List.length_append,
       List.length_map] at *
     calc (choices t).length + (rest.flatMap fun u => (choices u).map (copyTerm u)).length

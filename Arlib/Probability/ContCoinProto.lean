@@ -25,8 +25,8 @@ The continuous analogues, without any quantization hypothesis:
   * iterated marginals compose pointwise (tower-rule shape)
   * `Ex` / `Ex_const`            — total-mass-1 expectation over the product
 -/
-import Mathlib.MeasureTheory.Integral.IntervalIntegral
-import Mathlib.MeasureTheory.Integral.SetIntegral
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
@@ -76,7 +76,7 @@ theorem Eu_indicator (τ : ℝ) (h0 : 0 ≤ τ) (h1 : τ ≤ 1) :
   unfold Eu
   rw [hfun, intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1),
     MeasureTheory.setIntegral_indicator measurableSet_Iio,
-    MeasureTheory.setIntegral_const, hset, Real.volume_Ioo,
+    MeasureTheory.setIntegral_const, hset, MeasureTheory.measureReal_def, Real.volume_Ioo,
     ENNReal.toReal_ofReal (by linarith)]
   simp
 
@@ -233,7 +233,7 @@ theorem Ex_const {m k : ℕ} (drawMass : Draw m → ℝ) (hsum : ∑ d, drawMass
   have hint : ∀ d : Draw m,
       (∫ _u : Keep k, (fun _ : Space m k => c) (d, _u) ∂(keepMeasure k)) = c := by
     intro d
-    rw [MeasureTheory.integral_const, measure_univ]; simp
+    rw [MeasureTheory.integral_const, MeasureTheory.measureReal_def, measure_univ]; simp
   rw [Finset.sum_congr rfl (fun d _ => by rw [hint d]), ← Finset.sum_mul, hsum, one_mul]
 
 end Arlib.Probability.ContCoinProto

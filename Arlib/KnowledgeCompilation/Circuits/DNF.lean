@@ -172,9 +172,9 @@ theorem Unambiguous.eq_of_sat {ψ : DNF V} (h : Unambiguous ψ) {α : V → Bool
   have hmem : t ∈ ψ.satTerms α := mem_satTerms.mpr ⟨ht, hs⟩
   have hmem' : t' ∈ ψ.satTerms α := mem_satTerms.mpr ⟨ht', hs'⟩
   rcases Nat.le_one_iff_eq_zero_or_eq_one.mp (h α) with hlen | hlen
-  · rw [List.length_eq_zero] at hlen
+  · rw [List.length_eq_zero_iff] at hlen
     rw [hlen] at hmem; simp at hmem
-  · obtain ⟨a, ha⟩ := List.length_eq_one.mp hlen
+  · obtain ⟨a, ha⟩ := List.length_eq_one_iff.mp hlen
     rw [ha] at hmem hmem'
     simp only [List.mem_singleton] at hmem hmem'
     rw [hmem, hmem']

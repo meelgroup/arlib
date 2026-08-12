@@ -23,7 +23,7 @@ No `sorry`.
 import Arlib.Approximation.LewisWeights.LinAlg
 import Mathlib.Topology.MetricSpace.Contracting
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Real.Sqrt
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
 namespace Arlib.Approximation.LewisWeights
@@ -40,7 +40,7 @@ positive definite. -/
 theorem gram_posDef (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 < w i)
     (hspan : ∀ x : d → ℝ, (∀ i, a i ⬝ᵥ x = 0) → x = 0) :
     (gram w a).PosDef := by
-  refine ⟨gram_isHermitian w a, fun x hx => ?_⟩
+  refine Matrix.PosDef.of_dotProduct_mulVec_pos (gram_isHermitian w a) fun x hx => ?_
   have hstar : (star x : d → ℝ) = x := by funext i; simp
   rw [hstar, dotProduct_gram_mulVec]
   have hterm : ∀ i, (w i)⁻¹ * (a i ⬝ᵥ x) * (a i ⬝ᵥ x)
@@ -248,7 +248,7 @@ theorem lev_approx (w v : ι → ℝ) (a : ι → d → ℝ)
   · -- generic row: both leverages positive, take logs
     have hVpos : 0 < lev v a i := by
       by_contra h
-      push_neg at h
+      push Not at h
       have hV0 : lev v a i = 0 := le_antisymm h hVnn
       rw [hV0, mul_zero] at hlev_wv
       exact absurd (lt_of_lt_of_le hWpos hlev_wv) (lt_irrefl 0)
@@ -314,7 +314,7 @@ theorem exists_isLewis (a : ι → d → ℝ)
   have hlog : Real.log L = 2 * u₀ i := by have := hpt i; rw [← hL] at this; linarith
   -- strict positivity of the leverage from positive definiteness of the inverse
   have hpos : 0 < L := by
-    have h := hPD.inv.2 (a i) (hnz i)
+    have h := Matrix.PosDef.dotProduct_mulVec_pos hPD.inv (hnz i)
     have hstar : (star (a i) : d → ℝ) = a i := by funext k; simp
     rw [hstar] at h
     rw [hL, lev]

@@ -548,7 +548,7 @@ theorem estimateApproxAlg_accuracy {A : Fin ℓ → Finset Ω} {μ : PMF (ℝ ×
       rw [estimateApproxAlg] at hp
       obtain ⟨v, _, rfl⟩ := (PMF.mem_support_map_iff _ _ _).1 hp
       simp [hcard, hN0]
-    rw [outProbR, hone, ENNReal.one_toReal]
+    rw [outProbR, hone, ENNReal.toReal_one]
     linarith [hδ.1]
   have hl : 0 < ℓ := pos_of_totalCard_pos hT
   have hlR : (0 : ℝ) < ℓ := by exact_mod_cast hl
@@ -567,7 +567,7 @@ theorem estimateApproxAlg_accuracy {A : Fin ℓ → Finset Ω} {μ : PMF (ℝ ×
       ⊆ (fun v : Fin h → ℝ => Ntot * ((∑ i, v i) / (h : ℝ))) ⁻¹'
         {y : ℝ | |y - ((unionAll A).card : ℝ)| ≤ ε * ((unionAll A).card : ℝ)} := by
     intro v hv
-    rw [Set.mem_setOf_eq] at hv
+    rw [Set.mem_ofPred_eq] at hv
     have hmean : (∑ i, v i) / (h : ℝ) ∈ relErr (ε₁ + η) (acceptProb A) := by
       rw [mem_relErr_iff_abs]
       have h1 : |q - acceptProb A| ≤ η * acceptProb A := mem_relErr_iff_abs.1 (hq hT)
@@ -761,7 +761,7 @@ Proved at the `tsum` level, so no measurability of `Prod.fst ⁻¹' ↑t` is nee
 theorem outProb_coe_finset (μ : PMF (β × ℕ)) (t : Finset β) :
     outProb μ (↑t : Set β) = ∑ x ∈ t, outProb μ {x} := by
   simp only [outProb, PMF.toOuterMeasure_apply]
-  rw [← tsum_sum fun x _ => ENNReal.summable]
+  rw [← Summable.tsum_finsetSum fun x _ => ENNReal.summable]
   refine tsum_congr fun p => ?_
   have hterm : ∀ x ∈ t, ({q : β × ℕ | q.1 ∈ ({x} : Set β)}).indicator (⇑μ) p
       = if p.1 = x then μ p else 0 := by

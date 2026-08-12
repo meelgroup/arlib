@@ -135,7 +135,6 @@ chain; positivity of `μ` and symmetry of `Q` enter only in
 noncomputable def metropolis (μ : FinDist Ω) (Q : FinChain Ω) : FinChain Ω where
   P x y := if x = y then mhStay μ Q x else mhRate μ Q x y
   P_nonneg x y := by
-    dsimp only
     split
     · exact mhStay_nonneg μ Q x
     · exact mhRate_nonneg μ Q x y

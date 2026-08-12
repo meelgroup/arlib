@@ -8,7 +8,7 @@ import Arlib.Probability.FinProb
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Data.Fin.Tuple.Basic
-import Mathlib.Logic.Equiv.Fin
+import Mathlib.Logic.Equiv.Fin.Basic
 
 /-!
 # Sequential (history-dependent) kernels on finite histories

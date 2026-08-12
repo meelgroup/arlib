@@ -83,7 +83,7 @@ eigenvalue, and no spectral theorem, appears anywhere.
 import Arlib.MarkovChains.Chains.Glauber
 import Arlib.MarkovChains.Chains.IndependentSampler
 import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 namespace Arlib.MarkovChains
@@ -237,7 +237,7 @@ theorem occupied_update_true (v : V) (σ : V → Bool) :
       · simp
       · rwa [update_of_ne hne]
   have hnot : v ∉ (univ.filter fun u => u ≠ v ∧ σ u) := by simp
-  rw [occupied, hins, Finset.card_insert_of_not_mem hnot, occupiedOff]
+  rw [occupied, hins, Finset.card_insert_of_notMem hnot, occupiedOff]
 
 end Counting
 
@@ -328,7 +328,6 @@ theorem siteUpdate_hardCoreWeight_true {lam : ℝ} (hlam : 0 < lam) (v : V) {σ 
     rw [mul_comm ((lam : ℝ) ^ occupiedOff v σ) lam,
       mul_comm ((lam : ℝ) ^ occupiedOff v σ) (1 + lam)]
     field_simp
-    ring
   · rw [if_neg h2, if_neg h2, if_neg fun hh => h2 ((isIndep_update_true_iff v σ).mp hh).2,
       zero_div]
 

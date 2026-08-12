@@ -154,9 +154,9 @@ theorem outProbR_bind_ge (μ : PMF (β × ℕ)) (f : β × ℕ → PMF (ζ × �
             ENNReal.ofReal_le_ofReal (h p ((PMF.mem_support_iff _ _).2 hp0) hpS)
           rwa [outProbR, ENNReal.ofReal_toReal (outProb_ne_top _ _)] at h1
         rw [mul_comm (μ p)]
-        exact mul_le_mul_right' hle _
-    · rw [Set.indicator_of_not_mem (show p ∉ {q : β × ℕ | q.1 ∈ S} from hpS), mul_zero]
-      exact zero_le _
+        exact mul_le_mul_left hle _
+    · rw [Set.indicator_of_notMem (show p ∉ {q : β × ℕ | q.1 ∈ S} from hpS), mul_zero]
+      exact zero_le
   have hmono := ENNReal.toReal_mono (outProb_ne_top (μ.bind f) T) key
   rwa [ENNReal.toReal_mul, ENNReal.toReal_ofReal ht] at hmono
 
@@ -282,7 +282,7 @@ theorem outProb_prodPMF_coord : ∀ (m : ℕ) (μ : Fin m → PMF (β × ℕ)) (
             {v : Fin (n + 1) → β | v 0 ∈ G} = (∅ : Set (Fin n → β)) := by
           ext v; simp [hp]
         rw [hset, outProb_empty, mul_zero,
-          Set.indicator_of_not_mem (show p ∉ {q : β × ℕ | q.1 ∈ G} from hp)]
+          Set.indicator_of_notMem (show p ∉ {q : β × ℕ | q.1 ∈ G} from hp)]
     | succ j =>
       have hterm : ∀ p : β × ℕ,
           outProb ((prodPMF n fun i => μ i.succ).map fun q => (Fin.cons p.1 q.1, p.2 + q.2))
@@ -651,16 +651,16 @@ theorem isFPRAS_unionFprasAlg_satisfiable :
     ⟨0, 0, fun w ε hε => le_rfl⟩
   · have hmem : ((1 : ℝ), (0 : ℕ)).1 ∈
         {y : ℝ | |y - ((({0} : Finset ℕ)).card : ℝ)| ≤ ε * ((({0} : Finset ℕ)).card : ℝ)} := by
-      simp only [Finset.card_singleton, Nat.cast_one, Set.mem_setOf_eq, sub_self, abs_zero,
+      simp only [Finset.card_singleton, Nat.cast_one, Set.mem_ofPred_eq, sub_self, abs_zero,
         mul_one]
       linarith [hε.1]
-    rw [outProbR, outProb_pure_of_mem hmem, ENNReal.one_toReal]
+    rw [outProbR, outProb_pure_of_mem hmem, ENNReal.toReal_one]
     norm_num
   · rw [PMF.mem_support_pure_iff] at hp; simp [hp]
   · rw [Finset.mem_singleton] at hx
     subst hx
     have hmem : ((some 0 : Option ℕ), (0 : ℕ)).1 ∈ ({some 0} : Set (Option ℕ)) := rfl
-    rw [outProbR, outProb_pure_of_mem hmem, ENNReal.one_toReal]
+    rw [outProbR, outProb_pure_of_mem hmem, ENNReal.toReal_one]
     simp only [Finset.card_singleton, Nat.cast_one, div_one, Set.mem_Icc]
     exact ⟨by linarith [hδ.1], by linarith [hδ.1]⟩
   · exact absurd hempty (by simp)

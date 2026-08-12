@@ -287,7 +287,7 @@ imposed at the *other* state, where no nonnegative function can satisfy it. -/
 /-- The two-state chain in which every state is absorbing. -/
 def idChain : FinChain Bool where
   P x y := if y = x then 1 else 0
-  P_nonneg x y := by dsimp only; split <;> norm_num
+  P_nonneg x y := by split <;> norm_num
   P_sum x := by simp
 
 /-- In `idChain` the target `{true}` is hit immediately from `true`. -/

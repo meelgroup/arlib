@@ -716,10 +716,10 @@ private lemma C₁_gate (i : Fin C₁.size) : C₁.gate i = .lit 0 true := rfl
 /-- With no `∧`-node at all, respecting any v-tree is vacuous — and so, for the
 same reason, is determinism. -/
 private lemma C₁_respects (T : VTree (Fin 2)) : C₁.Respects T := by
-  intro i j k _ hg; rw [C₁_gate i] at hg; exact Gate.noConfusion hg
+  intro i j k _ hg; rw [C₁_gate i] at hg; simp at hg
 
 private lemma C₁_deterministic : C₁.Deterministic := by
-  intro i j k _ hg; rw [C₁_gate i] at hg; exact Gate.noConfusion hg
+  intro i j k _ hg; rw [C₁_gate i] at hg; simp at hg
 
 private lemma C₁_vars : C₁.vars = {0} := C₁.varsAt_lit (C₁_gate _)
 

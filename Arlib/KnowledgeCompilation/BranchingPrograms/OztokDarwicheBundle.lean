@@ -190,7 +190,7 @@ theorem idx_val (r : ℕ) (k : Fin (2 ^ (r + 1) - 1)) : (k : ℕ) = heapIdxL (nd
   rfl
 
 /-- Bag of node `k` (the concrete decomposition). -/
-noncomputable def boxBag (r p : ℕ) (k : Fin (2 ^ (r + 1) - 1)) :
+@[reducible] noncomputable def boxBag (r p : ℕ) (k : Fin (2 ^ (r + 1) - 1)) :
     Finset (BinTreeNode r × Fin (2 * p)) :=
   (insert (nd r k) {binTreeParent (nd r k)}) ×ˢ (Finset.univ : Finset (Fin (2 * p)))
 
@@ -272,7 +272,7 @@ theorem boxRootedTD_running (r p : ℕ) (v : BinTreeNode r × Fin (2 * p))
       obtain ⟨pre, hpre⟩ := hac
       have hprelen : pre.length = 1 := by
         rw [← hpre, List.length_append] at hlen1; omega
-      obtain ⟨b, rfl⟩ := List.length_eq_one.mp hprelen
+      obtain ⟨b, rfl⟩ := List.length_eq_one_iff.mp hprelen
       have hct : (nd r c).1.tail = v.1.1 := by rw [← hpre]; rfl
       exact (mem_boxBag' r p c v).mpr (Or.inr (Subtype.ext hct.symm))
     · have heq : v.1.1 = (nd r c).1 := hac.eq_of_length (by omega)
@@ -300,7 +300,9 @@ noncomputable def boxRootedTD (r p : ℕ) :
 theorem boxRootedTD_widthLe (r p : ℕ) : (boxRootedTD r p).WidthLe (4 * p - 1) := by
   intro k
   show (boxBag r p k).card ≤ (4 * p - 1) + 1
-  rw [boxBag, Finset.card_product, Finset.card_univ, Fintype.card_fin]
+  rw [show boxBag r p k
+      = (insert (nd r k) {binTreeParent (nd r k)}) ×ˢ (Finset.univ : Finset (Fin (2 * p)))
+      from rfl, Finset.card_product, Finset.card_univ, Fintype.card_fin]
   have h2 : (insert (nd r k) {binTreeParent (nd r k)} : Finset (BinTreeNode r)).card ≤ 2 := by
     apply le_trans (Finset.card_insert_le _ _); simp
   calc (insert (nd r k) {binTreeParent (nd r k)} : Finset (BinTreeNode r)).card * (2 * p)
@@ -325,7 +327,7 @@ open Arlib.KnowledgeCompilation
 
 /-- **`Nat.clog 2 r ≤ r`** — the ceiling-log never exceeds its argument, from `r ≤ 2^r`. -/
 theorem clog_two_le_self (r : ℕ) : Nat.clog 2 r ≤ r :=
-  (Nat.le_pow_iff_clog_le (by norm_num)).mp (le_of_lt (Nat.lt_two_pow_self))
+  Nat.clog_le_of_le_pow (le_of_lt Nat.lt_two_pow_self)
 
 open SimpleGraph in
 /-- **Theorem `decisionDNNF_robp_separation` for `T_r(P_{2r})`, fully unconditional.**  This is Razgon's separation
@@ -359,7 +361,7 @@ theorem decisionDNNF_robp_separation_quintic_unconditional {r : ℕ} (hr : 1 ≤
   have hmul : (2 ^ (r + 1) - 1) * 2 ≤ n := Nat.mul_le_mul_left _ (by omega)
   have hle : 2 ^ (r + 1) ≤ n := by omega
   have hn0 : n ≠ 0 := by omega
-  have hlog : r + 1 ≤ Nat.log 2 n := (Nat.pow_le_iff_le_log (by norm_num) hn0).mp hle
+  have hlog : r + 1 ≤ Nat.log 2 n := (Nat.le_log_iff_pow_le (by norm_num) hn0).mpr hle
   have ht : 4 * r ≤ 4 * Nat.log 2 n + 4 := by omega
   have hquint : 2 ^ (4 * r) * n ≤ 16 * n ^ 5 := pow_mul_le_of_log_le hn0 ht
   have hcount : 2 ^ (r + 1) - 1 ≤ n := Nat.le_mul_of_pos_right _ (by omega)

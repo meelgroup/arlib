@@ -292,11 +292,12 @@ theorem card_unionAll_eq_sum_mul_hitProb (A : Fin ℓ → Finset Ω) :
   refine Finset.sum_congr rfl fun j _ => ?_
   rcases Nat.eq_zero_or_pos (A j).card with h | h
   · have : firstHits A j = ∅ :=
-      Finset.eq_empty_of_forall_not_mem fun y hy =>
-        absurd (Finset.card_eq_zero.1 h ▸ firstHits_subset A j hy) (Finset.not_mem_empty y)
+      Finset.eq_empty_of_forall_notMem fun y hy =>
+        absurd (Finset.card_eq_zero.1 h ▸ firstHits_subset A j hy) (Finset.notMem_empty y)
     simp [hitProb, this, h]
   · have hne : ((A j).card : ℝ) ≠ 0 := by exact_mod_cast h.ne'
-    field_simp [hitProb]
+    rw [hitProb]
+    field_simp
 
 /-! ## The `1/ℓ` lower bound on the acceptance probability -/
 
@@ -496,7 +497,7 @@ theorem outProbR_trialAlg_one (A : Fin ℓ → Finset Ω) (c : ℕ) :
   rw [outProbR, hstep,
     toOuterMeasure_uniformOn hne {p : (_ : Fin ℓ) × Ω | p.2 ∈ firstHits A p.1} hmem,
     card_sigma_firstHits, card_sigma_eq_totalCard, acceptProb,
-    ENNReal.toReal_div, ENNReal.toReal_nat, ENNReal.toReal_nat]
+    ENNReal.toReal_div, ENNReal.toReal_natCast, ENNReal.toReal_natCast]
 
 end Trial
 
@@ -573,7 +574,7 @@ theorem two_mul_exp_sampleCount_le {ε δ : ℝ} (hl : 0 < ℓ) (hε : 0 < ε)
   have hkey : Real.log (2 / δ) ≤ 2 * (sampleCount ℓ ε δ : ℝ) * (ε / (ℓ : ℝ)) ^ 2 := by
     have hrw : 2 * (sampleCount ℓ ε δ : ℝ) * (ε / (ℓ : ℝ)) ^ 2
         = ((sampleCount ℓ ε δ : ℝ) * (2 * ε ^ 2)) / (ℓ : ℝ) ^ 2 := by
-      rw [div_pow]; field_simp; ring
+      rw [div_pow]; field_simp
     rw [hrw, le_div_iff₀ hl2]
     linarith [hmul]
   have hexp : Real.exp (-2 * (sampleCount ℓ ε δ : ℝ) * (ε / (ℓ : ℝ)) ^ 2)
@@ -615,7 +616,7 @@ theorem estimateAlg_accuracy (H : HoeffdingBound) {A : Fin ℓ → Finset Ω} {�
       rw [estimateAlg] at hp
       obtain ⟨v, _, rfl⟩ := (PMF.mem_support_map_iff _ _ _).1 hp
       simp [hcard, hT0]
-    rw [outProbR, hone, ENNReal.one_toReal]
+    rw [outProbR, hone, ENNReal.toReal_one]
     linarith [hδ.1]
   have hl : 0 < ℓ := pos_of_totalCard_pos hT
   have hlR : (0:ℝ) < ℓ := by exact_mod_cast hl
@@ -631,7 +632,7 @@ theorem estimateAlg_accuracy (H : HoeffdingBound) {A : Fin ℓ → Finset Ω} {�
       ⊆ (fun v : Fin h → ℝ => (totalCard A : ℝ) * ((∑ i, v i) / (h : ℝ))) ⁻¹'
         {y : ℝ | |y - ((unionAll A).card : ℝ)| ≤ ε * ((unionAll A).card : ℝ)} := by
     intro v hv
-    rw [Set.mem_setOf_eq] at hv
+    rw [Set.mem_ofPred_eq] at hv
     show |(totalCard A : ℝ) * ((∑ i, v i) / (h : ℝ)) - ((unionAll A).card : ℝ)|
       ≤ ε * ((unionAll A).card : ℝ)
     have hrw : (totalCard A : ℝ) * ((∑ i, v i) / (h : ℝ)) - ((unionAll A).card : ℝ)
@@ -641,7 +642,7 @@ theorem estimateAlg_accuracy (H : HoeffdingBound) {A : Fin ℓ → Finset Ω} {�
     calc (totalCard A : ℝ) * |(∑ i, v i) / (h : ℝ) - acceptProb A|
         ≤ (totalCard A : ℝ) * t := by
           exact mul_le_mul_of_nonneg_left hv hTR.le
-      _ = ε * ((totalCard A : ℝ) / (ℓ : ℝ)) := by rw [ht]; field_simp; ring
+      _ = ε * ((totalCard A : ℝ) / (ℓ : ℝ)) := by rw [ht]; field_simp
       _ ≤ ε * ((unionAll A).card : ℝ) :=
           mul_le_mul_of_nonneg_left (totalCard_div_le_card_unionAll A hl) hε.le
   -- Hoeffding, then monotonicity.

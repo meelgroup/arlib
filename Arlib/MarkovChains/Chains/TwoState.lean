@@ -92,7 +92,7 @@ noncomputable def twoStateDist (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : 
   p_nonneg x := by
     cases x <;> simp <;> [exact div_nonneg hb hab.le; exact div_nonneg ha hab.le]
   p_sum := by
-    simp only [Fintype.sum_bool]
+    simp only [Fintype.sum_bool, Bool.false_eq_true, if_true, if_false, reduceIte]
     field_simp
 
 variable (hab : 0 < a + b)

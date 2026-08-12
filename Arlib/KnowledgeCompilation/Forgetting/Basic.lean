@@ -189,8 +189,13 @@ The node set, the child relation and the root are literally the input's, so this
 is a linear-time pass over the structure and the size relation is an equality
 (`size_forgetNNF`).  It computes `∃Y. g` **only** when the input is decomposable;
 see the module docstring for exactly where that is used and for the
-counterexample without it. -/
-def forgetNNF (C : NNF V) (Y : Finset V) : NNF V where
+counterexample without it.
+
+Marked `@[reducible]` so that `(forgetNNF C Y).size` and `C.size` — equal by
+`rfl`, since the node set is literally the input's — are also interchangeable at
+`simp`/`rw` transparency; otherwise every lemma indexed by `Fin C.size` fails to
+apply to a node of the forgotten circuit. -/
+@[reducible] def forgetNNF (C : NNF V) (Y : Finset V) : NNF V where
   size := C.size
   gate := fun i => forgetGate Y (C.gate i)
   child_lt := fun i j hj => C.child_lt i j (by rwa [children_forgetGate] at hj)
@@ -546,11 +551,11 @@ theorem equivModForget_empty {f g : (V → Bool) → Bool} : EquivModForget ∅ 
   · intro h
     funext α
     rw [Bool.eq_iff_iff, h α]
-    exact ⟨fun ⟨β, hβ, hv⟩ => by rwa [funext fun x => hβ x (Finset.not_mem_empty x)] at hv,
+    exact ⟨fun ⟨β, hβ, hv⟩ => by rwa [funext fun x => hβ x (Finset.notMem_empty x)] at hv,
       fun hv => ⟨α, fun _ _ => rfl, hv⟩⟩
   · rintro rfl α
     exact ⟨fun hv => ⟨α, fun _ _ => rfl, hv⟩,
-      fun ⟨β, hβ, hv⟩ => by rwa [funext fun x => hβ x (Finset.not_mem_empty x)] at hv⟩
+      fun ⟨β, hβ, hv⟩ => by rwa [funext fun x => hβ x (Finset.notMem_empty x)] at hv⟩
 
 omit [DecidableEq V] in
 /-- **`EquivModForget` pins its first argument down exactly**: `f` is equivalent

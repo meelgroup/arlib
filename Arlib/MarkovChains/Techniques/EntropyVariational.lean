@@ -114,7 +114,6 @@ theorem mul_le_mul_log_sub_mul_log_add_mul_exp {m x : ℝ} (hm : 0 < m) (hx : 0 
   have e2 : m * (x / m * Real.log (x / m) - x / m + Real.exp y)
       = x * Real.log (x / m) - x + m * Real.exp y := by
     field_simp
-    ring
   rw [e1, e2] at h2
   have e3 : x * Real.log (x / m) = x * Real.log x - Real.log m * x := by
     rcases hx.eq_or_lt with h0 | hpos
@@ -299,7 +298,6 @@ theorem Ent_le_Var_div {μ : FinDist Ω} {f : Ω → ℝ} (hf : ∀ x, 0 ≤ f x
   rw [hcomp, hsq] at hmono
   have hdiv : m⁻¹ * (Var μ f + m ^ 2) = Var μ f / m + m := by
     field_simp
-    ring
   rw [hdiv] at hmono
   rw [Ent_apply, ← hmdef]
   linarith

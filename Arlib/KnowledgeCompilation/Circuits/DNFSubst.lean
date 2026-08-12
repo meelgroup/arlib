@@ -153,7 +153,7 @@ private theorem length_filter_flatMap_le {A B : Type*} (L : List A) (g : A → L
     rw [List.flatMap_cons, List.filter_append, List.length_append, List.filter_cons]
     by_cases hq : q a = true
     · rw [if_pos hq]
-      have := h1 a (List.mem_cons_self _ _)
+      have := h1 a (List.mem_cons_self)
       simp only [List.length_cons]
       omega
     · rw [if_neg hq]
@@ -161,7 +161,7 @@ private theorem length_filter_flatMap_le {A B : Type*} (L : List A) (g : A → L
         have : (g a).filter p = [] := by
           rw [List.filter_eq_nil_iff]
           intro b hb hpb
-          exact hq (h2 a (List.mem_cons_self _ _) ⟨b, hb, hpb⟩)
+          exact hq (h2 a (List.mem_cons_self) ⟨b, hb, hpb⟩)
         rw [this]; rfl
       omega
 
@@ -172,7 +172,7 @@ private theorem length_flatMap_le {A B : Type*} {L : List A} {g : A → List B} 
   induction L with
   | nil => simp
   | cons a L ih =>
-    have h1 := h a (List.mem_cons_self _ _)
+    have h1 := h a (List.mem_cons_self)
     have h2 := ih (fun x hx => h x (List.mem_cons_of_mem _ hx))
     rw [List.flatMap_cons, List.length_append, List.length_cons]
     calc (g a).length + (L.flatMap g).length ≤ c + L.length * c := Nat.add_le_add h1 h2
@@ -380,7 +380,7 @@ theorem exists_sat_listSubst {α : W → Bool} (L : List (Lit ι)) :
       · exact ⟨s, hs, hsat.1⟩
       · exact ih.mp ⟨u', hu', hsat.2⟩ q hq
     · intro h
-      obtain ⟨s, hs, hsat⟩ := h p (List.mem_cons_self _ _)
+      obtain ⟨s, hs, hsat⟩ := h p (List.mem_cons_self)
       obtain ⟨u', hu', hsat'⟩ := ih.mpr (fun q hq => h q (List.mem_cons_of_mem _ hq))
       refine ⟨s ∪ u', ?_, Term.sat_union.mpr ⟨hsat, hsat'⟩⟩
       rw [listSubst_cons, List.mem_flatMap]

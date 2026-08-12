@@ -30,7 +30,7 @@ deviation `lam` in the sub-Gaussian regime `b · lam ≤ V`,
 
   `Pr[lam ≤ |∑ₖ ξ k|] ≤ 2 · exp (-3 · lam² / (8 · V))`.
 
-Nothing comparable exists in Mathlib v4.15; the closest tool in this library,
+Nothing comparable exists in Mathlib; the closest tool in this library,
 `Arlib.Chernoff`, handles only `{0,1}`-indicators.  Everything below is
 `sorry`-free.
 
@@ -50,7 +50,7 @@ Nothing comparable exists in Mathlib v4.15; the closest tool in this library,
 -/
 import Arlib.Probability.IIDProduct
 import Arlib.Probability.Chernoff
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 
 namespace Arlib.Probability
 

@@ -76,7 +76,7 @@ along the identification, and it is the statement the TPA analysis actually uses
 import Arlib.Algorithms.TPA.Count
 import Arlib.Probability.Poisson
 import Mathlib.MeasureTheory.Constructions.Pi
-import Mathlib.MeasureTheory.Integral.SetIntegral
+import Mathlib.MeasureTheory.Integral.Bochner.Set
 
 namespace Arlib.Algorithms.TPA
 
@@ -183,7 +183,7 @@ theorem measure_setOf_mul_prod_gt_eq_zero (m : ℕ) {c t : ℝ} (ht0 : 0 ≤ t) 
     Measure.pi (fun _ : Fin m => unifUnit) {v : Fin m → ℝ | c < t * ∏ i, v i} = 0 := by
   refine measure_mono_null ?_ (measure_compl_unitBox m)
   intro v hv
-  simp only [Set.mem_setOf_eq] at hv
+  simp only [Set.mem_ofPred_eq] at hv
   simp only [Set.mem_compl_iff]
   intro hbox
   have hp := prod_mem_Icc_of_mem_unitBox hbox
@@ -256,7 +256,7 @@ the same shape, with `c` replaced by `c/t`. -/
 theorem setOf_mul_prod_gt_eq_prodGt (m : ℕ) {c t : ℝ} (ht : 0 < t) :
     {v : Fin m → ℝ | c < t * ∏ i, v i} = prodGt m (c / t) := by
   ext v
-  simp only [Set.mem_setOf_eq, prodGt, div_lt_iff₀ ht, mul_comm]
+  simp only [Set.mem_ofPred_eq, prodGt, div_lt_iff₀ ht, mul_comm]
 
 /-- **The inductive step, as a computation of the conditional integral.**  Split
 `[0,1]` at `c`: below `c` the conditional event is null
@@ -286,8 +286,8 @@ theorem lintegral_cond_measure (m : ℕ) {c : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
     have ht0 : 0 < t := lt_trans hc ht.1
     rw [setOf_mul_prod_gt_eq_prodGt m ht0]
     exact ih (c / t) (div_pos hc ht0) ((div_lt_one ht0).mpr ht.1)
-  rw [setLIntegral_congr_fun measurableSet_Icc hlow, lintegral_zero, zero_add,
-    setLIntegral_congr_fun measurableSet_Ioc hhigh]
+  rw [setLIntegral_congr_fun_ae measurableSet_Icc hlow, lintegral_zero, zero_add,
+    setLIntegral_congr_fun_ae measurableSet_Ioc hhigh]
 
 /-! ## The identification -/
 

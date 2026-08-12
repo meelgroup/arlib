@@ -92,15 +92,15 @@ theorem Eexact_lipschitz (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y y' : d → 
     rw [E_exact_dotProduct, E_exact_dotProduct, E_exact_dotProduct, ← Finset.sum_add_distrib]
     refine Finset.sum_le_sum fun j _ => ?_
     have : a j ⬝ᵥ u = a j ⬝ᵥ v + a j ⬝ᵥ (u - v) := by
-      rw [← Matrix.dotProduct_add]; congr 1; funext i; simp [Pi.sub_apply]
-    rw [this]; exact abs_add _ _
+      rw [← dotProduct_add]; congr 1; funext i; simp [Pi.sub_apply]
+    rw [this]; exact abs_add_le _ _
   have h1 := hsub y y'
   have h2 := hsub y' y
   have hyx : (WPS.exact ι a).E (y' - y) = (WPS.exact ι a).E (y - y') := by
     rw [E_exact_dotProduct, E_exact_dotProduct]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [show a j ⬝ᵥ (y' - y) = -(a j ⬝ᵥ (y - y')) by
-      rw [← Matrix.dotProduct_neg]; congr 1; funext i; simp [Pi.sub_apply], abs_neg]
+      rw [← dotProduct_neg]; congr 1; funext i; simp [Pi.sub_apply], abs_neg]
   rw [hyx] at h2
   have hub := Eexact_le_card_sqrt_Mq hL hw (y - y')
   rw [abs_sub_le_iff]
@@ -120,7 +120,6 @@ theorem sum_sampled_mass_mul_weight [Nonempty ι] (hw : ∀ i, 0 < w i)
     intro k
     have hwk : w (ω k) ≠ 0 := (hw (ω k)).ne'
     field_simp
-    ring
   rw [Finset.sum_congr rfl fun k _ => hterm k, Finset.sum_const, Finset.card_univ,
     Fintype.card_fin, nsmul_eq_mul]
   field_simp
@@ -163,17 +162,17 @@ theorem sampledWPS_lipschitz [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w
     rw [sampledWPS_E, sampledWPS_E, sampledWPS_E, ← Finset.sum_add_distrib]
     refine Finset.sum_le_sum fun k _ => ?_
     have hdvu : dot u (a (ω k)) = dot v (a (ω k)) + dot (u - v) (a (ω k)) := by
-      rw [dot_eq_dotProduct, dot_eq_dotProduct, dot_eq_dotProduct, ← Matrix.dotProduct_add]
+      rw [dot_eq_dotProduct, dot_eq_dotProduct, dot_eq_dotProduct, ← dotProduct_add]
       congr 1; funext i; simp [Pi.sub_apply]
     rw [hdvu, ← mul_add]
-    exact mul_le_mul_of_nonneg_left (abs_add _ _) (hcnn k)
+    exact mul_le_mul_of_nonneg_left (abs_add_le _ _) (hcnn k)
   have h1 := hsub y y'
   have h2 := hsub y' y
   have hyx : (sampledWPS w hw a m ω).E (y' - y) = (sampledWPS w hw a m ω).E (y - y') := by
     rw [sampledWPS_E, sampledWPS_E]
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [show dot (y' - y) (a (ω k)) = -(dot (y - y') (a (ω k))) by
-      rw [dot_eq_dotProduct, dot_eq_dotProduct, ← Matrix.dotProduct_neg]
+      rw [dot_eq_dotProduct, dot_eq_dotProduct, ← dotProduct_neg]
       congr 1; funext i; simp [Pi.sub_apply], abs_neg]
   rw [hyx] at h2
   have hub := sampledWPS_le_card_sqrt_Mq hL hw hm ω (y - y')

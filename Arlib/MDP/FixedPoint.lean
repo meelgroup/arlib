@@ -118,7 +118,7 @@ theorem tendsto_wnorm_iterQ_sub_Qstar :
     have h : Tendsto (fun n => ∑ p ∈ M.SAnt,
         |M.iterQ n p.1 p.2 - M.Qstar p.1 p.2| / hw.w p.1 p.2) atTop
         (𝓝 (∑ _p ∈ M.SAnt, (0 : ℝ))) := by
-      refine tendsto_finset_sum _ fun p _ => ?_
+      refine tendsto_finsetSum _ fun p _ => ?_
       have h1 : Tendsto (fun n => M.iterQ n p.1 p.2 - M.Qstar p.1 p.2) atTop (𝓝 0) := by
         simpa using (M.tendsto_iterQ hw p.1 p.2).sub
           (tendsto_const_nhds (x := M.Qstar p.1 p.2) (f := (atTop : Filter ℕ)))

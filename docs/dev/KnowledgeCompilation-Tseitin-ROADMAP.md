@@ -118,7 +118,7 @@ every component implies satisfiability. The honest proof is a spanning-forest
 construction — pick a spanning tree of each component, set the non-tree edges to
 `0`, and propagate the tree edges inward from the leaves; the root constraint
 then closes exactly because the component's total charge is even. That needs a
-"finite tree has a leaf" induction which Mathlib v4.15 does not support cheaply
+"finite tree has a leaf" induction which Mathlib does not support cheaply
 (the same wall `Forgetting`'s `thm: bva` clause (i) hit, area ROADMAP §9.3). It
 belongs in `Splitting`, where the edge-deletion recursion that a from-scratch
 proof would use is developed anyway. Inhabited at `c = 0` on any graph (the

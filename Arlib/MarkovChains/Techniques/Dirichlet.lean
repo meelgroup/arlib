@@ -199,7 +199,7 @@ theorem isBilin_dirichlet (μ : FinDist Ω) (P : FinChain Ω) : IsBilin (dirichl
     have hact : P.act (c • v) = c • P.act v := by
       funext x
       have := congrFun (P.act_smul c v) x
-      simpa [Pi.smul_apply, smul_eq_mul] using this
+      simpa [Pi.smul_apply, smul_eq_mul, FinKernel.act] using this
     rw [hb.smul_right c u v, hact, hb.smul_right c u (P.act v)]; ring
 
 /-- The Dirichlet form only sees differences: adding a constant to `f` changes

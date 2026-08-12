@@ -41,6 +41,7 @@ acquire the same denominator and reduce to the symmetric numerator `w σ · w τ
 
 Everything here is proved from first principles with no `sorry`.
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.Probability.FinDist
 
 namespace Arlib.MarkovChains

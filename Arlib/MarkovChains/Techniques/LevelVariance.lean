@@ -366,7 +366,7 @@ theorem act_up_eq_Ex_linkDist (w : Finset E → ℝ) (n k : ℕ)
     intro e
     rw [linkDist_apply, hτ]
     by_cases he : e ∈ τ
-    · rw [if_pos he, if_neg (Finset.not_mem_compl.mpr he), zero_mul]
+    · rw [if_pos he, if_neg (Finset.notMem_compl.mpr he), zero_mul]
     · rw [if_neg he, if_pos (Finset.mem_compl.mpr he)]
   rw [FinKernel.act_apply, Finset.sum_congr rfl fun η _ => hstep η,
     sum_ite_insert hτ (fun η => mu w η / (((n - k : ℕ) : ℝ) * mu w τ) * h η),

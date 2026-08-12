@@ -61,7 +61,7 @@ theorem measurable_at_index {Ω γ β : Type*} {m : MeasurableSpace Ω} [Countab
       exact Set.mem_iUnion.2 ⟨g ω, rfl, h⟩
     · intro h
       obtain ⟨c, hc, h'⟩ := Set.mem_iUnion.1 h
-      simp only [Set.mem_setOf_eq] at hc
+      simp only [Set.mem_ofPred_eq] at hc
       subst hc
       exact h'
   rw [hset]
@@ -82,7 +82,7 @@ theorem measurableSet_at_index {Ω γ β : Type*} {m : MeasurableSpace Ω} [Coun
       exact Set.mem_iUnion.2 ⟨g ω, rfl, h⟩
     · intro h
       obtain ⟨c, hc, h'⟩ := Set.mem_iUnion.1 h
-      simp only [Set.mem_setOf_eq] at hc
+      simp only [Set.mem_ofPred_eq] at hc
       subst hc
       exact h'
   rw [hset]

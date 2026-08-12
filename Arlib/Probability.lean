@@ -30,7 +30,7 @@ finite surrogate:
 | `RobbinsMonro` | The deterministic half of stochastic approximation: `∏(1 − aₙ) → 0` under `∑ aₙ = ∞`, the recursion `Y_{n+1} = (1−aₙ)Yₙ + aₙc`, and criteria for establishing `∑ α = ∞` from a sparse set of active times. No measure theory. |
 | `StochasticApproximation` | **Robbins–Siegmund**, and `tendsto_zero_of_sa`: `W_{t+1} = (1−α_t)W_t + α_t ε_t → 0` a.s. Also `ae_exists_tendsto_of_nonneg_supermartingale`, which Mathlib states only in the `L¹`-bounded submartingale form. |
 | `CondExpFreshDraw` | A centred fresh draw independent of the history has conditional mean zero — *unbiasedness of a sampled target* — over an arbitrary space and sub-σ-algebra. |
-| `TorusProduct` | A **countably-indexed mutually independent uniform family**, as Haar measure on `ι → AddCircle 1`, with its time filtration. Mathlib v4.15 has no infinite product measure and no Kolmogorov extension, so there is no other route to this object. |
+| `TorusProduct` | A **countably-indexed mutually independent uniform family**, as Haar measure on `ι → AddCircle 1`, with its time filtration. Mathlib had no infinite product measure and no Kolmogorov extension when this was written; it has since gained `Mathlib/Probability/ProductMeasure.lean`, so this module could be rebuilt on that. |
 | `InverseCDF` | An arbitrary finite law from one uniform coin, with `measure_drawOf_eq` proving the law exactly. |
 | `LevyBorelCantelli` | Lévy's conditional Borel–Cantelli re-indexed for events adapted one step late. |
 | `MeasurableIndex` | Measurability of `f (X ω) ω` — a quantity read at a random, countably-valued index. |

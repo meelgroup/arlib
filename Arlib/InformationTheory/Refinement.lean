@@ -3,6 +3,7 @@ Copyright (c) 2026 Kuldeep S. Meel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
+import Mathlib.Algebra.BigOperators.Field
 import Arlib.InformationTheory.Basic
 
 /-!
@@ -95,11 +96,10 @@ theorem dist_pair_comp_eq_sum_fiber (Z : P.Ω → β) (W : P.Ω → ι) (g : ι 
       by_cases hw : W ω = u
       · rw [if_pos (by rw [hw, hz]), if_pos hw]
       · rw [if_neg (by simp [Prod.ext_iff, hw]), if_neg hw]
-    rw [Finset.sum_congr rfl hcongr,
-      Finset.sum_ite_eq (Finset.univ.filter (fun u => g u = a)) (W ω) (fun _ => P.mass ω)]
+    refine Eq.trans ?_ (Finset.sum_congr rfl hcongr).symm
+    rw [Finset.sum_ite_eq (Finset.univ.filter (fun u => g u = a)) (W ω) (fun _ => P.mass ω)]
     simp [Finset.mem_filter, hz, Prod.ext_iff]
-  · rw [if_neg (by simp [Prod.ext_iff, hz])]
-    exact (Finset.sum_eq_zero fun u _ => if_neg (by simp [Prod.ext_iff, hz])).symm
+  · simp [Prod.ext_iff, hz]
 
 /-- **The mixture identity.** The coarse joint law is a nonnegative combination of the fine
 conditional laws, with weights the fine marginal masses. Everything else in this file is a
@@ -230,7 +230,7 @@ theorem condDist_comp_le_of_exceptional (Z : P.Ω → β) (W : P.Ω → ι) (g :
           exact mul_le_mul_of_nonneg_left (h u hg hw hbad) (dist_nonneg _ _)
     refine le_trans (Finset.sum_le_sum hsplit) ?_
     rw [Finset.sum_add_distrib]
-    refine add_le_add_left ?_ _
+    apply add_le_add_right
     calc ∑ u ∈ Finset.univ.filter (fun u => g u = a), (if u ∈ Bad then dist P W u else 0)
         ≤ ∑ u : ι, (if u ∈ Bad then dist P W u else 0) := by
           refine Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) fun u _ _ => ?_

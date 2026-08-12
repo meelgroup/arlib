@@ -288,7 +288,7 @@ theorem lang_eq_iUnion_langOfLength : N.lang = ⋃ k, N.langOfLength k := by
 theorem langOfLength_zero_of_init_eq_final (h : N.init = N.final) :
     N.langOfLength 0 = {([] : List Γ)} := by
   ext w
-  simp only [mem_langOfLength, mem_lang, Set.mem_singleton_iff, List.length_eq_zero]
+  simp only [mem_langOfLength, mem_lang, Set.mem_singleton_iff, List.length_eq_zero_iff]
   constructor
   · rintro ⟨-, rfl⟩; rfl
   · rintro rfl; exact ⟨reaches_nil_iff.2 h, rfl⟩
@@ -297,7 +297,7 @@ theorem langOfLength_zero_of_init_eq_final (h : N.init = N.final) :
 theorem langOfLength_zero_of_ne (h : N.init ≠ N.final) : N.langOfLength 0 = ∅ := by
   ext w
   simp only [mem_langOfLength, mem_lang, Set.mem_empty_iff_false, iff_false, not_and,
-    List.length_eq_zero]
+    List.length_eq_zero_iff]
   rintro hw rfl
   exact h (reaches_nil_iff.1 hw)
 
@@ -351,7 +351,7 @@ theorem W_eq (s : S) :
     N.W s = {w : List Γ | w = [] ∧ N.init = s} ∪
       ⋃ (v : S) (A : L) (_ : N.step v A s), snocLang (N.W v) (N.decode A) := by
   ext w
-  simp only [mem_W, Set.mem_union, Set.mem_setOf_eq, Set.mem_iUnion, mem_snocLang]
+  simp only [mem_W, Set.mem_union, Set.mem_ofPred_eq, Set.mem_iUnion, mem_snocLang]
   constructor
   · intro h
     rcases List.eq_nil_or_concat w with rfl | ⟨u, a, rfl⟩
@@ -370,7 +370,7 @@ theorem W_eq_iUnion {s : S} (hs : N.init ≠ s) :
     N.W s = ⋃ (v : S) (A : L) (_ : N.step v A s), snocLang (N.W v) (N.decode A) := by
   rw [W_eq]
   ext w
-  simp only [Set.mem_union, Set.mem_setOf_eq, or_iff_right_iff_imp]
+  simp only [Set.mem_union, Set.mem_ofPred_eq, or_iff_right_iff_imp]
   rintro ⟨-, rfl⟩
   exact absurd rfl hs
 
@@ -698,7 +698,7 @@ theorem W_init (h : N.IsUnrolled lvl) : N.W N.init = {([] : List Γ)} := by
   constructor
   · intro hw
     have := h.reaches_length hw
-    exact List.length_eq_zero.1 (by omega)
+    exact List.length_eq_zero_iff.1 (by omega)
   · rintro rfl; exact .nil _
 
 /-- `N(s_init) = 1` for an unrolled automaton, correcting the source's

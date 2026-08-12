@@ -674,7 +674,7 @@ theorem origIdx_ne_slotIdx (m : ℕ) (u u' : Fin size) (q : Fin m) :
     origIdx m u ≠ slotIdx u' q := fun h => by
   have h1 := decodeSlot_origIdx m u
   rw [h, decodeSlot_slotIdx] at h1
-  exact Option.noConfusion h1
+  exact absurd h1 (by simp)
 
 /-- An original node is never the `false` leaf. -/
 theorem origIdx_ne_falseIdx (m : ℕ) (u : Fin size) : origIdx m u ≠ falseIdx size m := fun h => by
@@ -687,7 +687,7 @@ theorem slotIdx_ne_falseIdx (u : Fin size) (q : Fin m) : slotIdx u q ≠ falseId
   fun h => by
   have h1 := decodeSlot_slotIdx u q
   rw [h, decodeSlot_falseIdx] at h1
-  exact Option.noConfusion h1
+  exact absurd h1 (by simp)
 
 /-- The layout is monotone in the original node index. -/
 theorem origIdx_lt_origIdx {u v : Fin size} (m : ℕ) (h : u < v) :

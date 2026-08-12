@@ -85,7 +85,7 @@ theorem Pr_prodSpace_cylinder (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ μ j 
   have hzero : ∀ ω : ι → X,
       ¬ (∀ j ∈ C, ω j = z j) → (∏ j ∈ C, f j (ω j)) = 0 := by
     intro ω hω
-    push_neg at hω
+    push Not at hω
     obtain ⟨j, hj, hne⟩ := hω
     refine Finset.prod_eq_zero hj ?_
     simp only [hf, if_neg hne]
@@ -154,7 +154,6 @@ theorem sum_mass_mul_cylinder_pair (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ 
         ∀ j ∈ C, σ j = ω j), (prodSpace μ h0 h1).toFinProb.mass σ)
       = ∏ j ∈ C, μ j (ω j) := Pr_prodSpace_cylinder μ h0 h1 C ω
   rw [hC', mul_comm, Finset.prod_sdiff (Finset.subset_univ C)]
-  rfl
 
 /-! ## Two events on disjoint blocks -/
 
@@ -291,7 +290,7 @@ theorem Pr_prodSpace_iInter_of_disjoint (μ : ι → X → ℝ) (h0 : ∀ j x, 0
             ∀ a ∈ (∅ : Finset κ), P a ω) = Finset.univ := by
         refine Finset.filter_true_of_mem ?_
         intro ω _ a ha
-        exact absurd ha (Finset.not_mem_empty a)
+        exact absurd ha (Finset.notMem_empty a)
       rw [hev, Finset.prod_empty, FinProb.Pr_univ]
   | @insert a T ha ih =>
       have hev : (Finset.univ.filter fun ω : (prodSpace μ h0 h1).toFinProb.Ω =>

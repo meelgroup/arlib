@@ -6,7 +6,7 @@ Authors: Suguman Bansal
 /-
 # Lévy–Borel–Cantelli for events adapted one step late
 
-Mathlib v4.15 has, in `Mathlib/Probability/Martingale/BorelCantelli.lean`:
+Mathlib has, in `Mathlib/Probability/Martingale/BorelCantelli.lean`:
 
 * `MeasureTheory.ae_mem_limsup_atTop_iff` — **Lévy's generalised Borel–Cantelli**:
   for a filtration `ℱ` and sets `s n` with `s n` measurable w.r.t. `ℱ n`,

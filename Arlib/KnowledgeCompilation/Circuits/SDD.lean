@@ -145,9 +145,9 @@ structure XDecomposition {ι : Type*} (X Y : Finset V) (f : (V → Bool) → Boo
   /-- The two sides of the decomposition are over disjoint variables. -/
   vars_disjoint : Disjoint X Y
   /-- The paper's `pᵢ(X)`. -/
-  p_dependsOn : ∀ i, DependsOn (p i) X
+  p_dependsOn : ∀ i, Communication.DependsOn (p i) X
   /-- The paper's `sᵢ(Y)`. -/
-  s_dependsOn : ∀ i, DependsOn (s i) Y
+  s_dependsOn : ∀ i, Communication.DependsOn (s i) Y
   /-- `f = ⋁ᵢ pᵢ ∧ sᵢ`. -/
   eval : ∀ α, f α = true ↔ ∃ i, p i α = true ∧ s i α = true
   /-- The `pᵢ` partition the `X`-cube: every assignment satisfies exactly one.
@@ -302,14 +302,14 @@ theorem IsTerminal.varsAt_subset {C : NNF V} {i : Fin C.size} {t : VTree V}
 theorem IsTerminal.not_conj {C : NNF V} {i : Fin C.size} {t : VTree V}
     {a b : Fin C.size} (h : C.IsTerminal i t) : C.gate i ≠ .conj a b := by
   obtain ⟨c, hc⟩ | ⟨x, p, hp, _⟩ := h
-  · rw [hc]; exact fun hh => Gate.noConfusion hh
-  · rw [hp]; exact fun hh => Gate.noConfusion hh
+  · rw [hc]; simp
+  · rw [hp]; simp
 
 theorem IsTerminal.not_disj {C : NNF V} {i : Fin C.size} {t : VTree V}
     {a b : Fin C.size} (h : C.IsTerminal i t) : C.gate i ≠ .disj a b := by
   obtain ⟨c, hc⟩ | ⟨x, p, hp, _⟩ := h
-  · rw [hc]; exact fun hh => Gate.noConfusion hh
-  · rw [hp]; exact fun hh => Gate.noConfusion hh
+  · rw [hc]; simp
+  · rw [hp]; simp
 
 /-- **Node `i` of `C` is an SDD respecting the v-tree node `t`** (paper
 `def: SDD`, [VS24]).
@@ -648,23 +648,25 @@ theorem xnor_isSDD : xnorCircuit.IsSDD := by
     intro α
     obtain ⟨h0, h1, _, _⟩ := xnor_val α
     cases hα : α 0
-    · exact ⟨((1 : Fin 7), (3 : Fin 7)), by simp, by simp [h1, hα]⟩
-    · exact ⟨((0 : Fin 7), (2 : Fin 7)), by simp, by simp [h0, hα]⟩
+    · exact ⟨((1 : Fin 7), (3 : Fin 7)), by simp, by show xnorCircuit.valAt α 1 = true; rw [h1, hα]; rfl⟩
+    · exact ⟨((0 : Fin 7), (2 : Fin 7)), by simp, by show xnorCircuit.valAt α 0 = true; rw [h0, hα]⟩
   · -- `x ∧ ¬x ≡ 0`
     refine List.Pairwise.cons ?_ (List.Pairwise.cons (by simp) List.Pairwise.nil)
     rintro q hq α ⟨hp, hq'⟩
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
     obtain ⟨h0, h1, _, _⟩ := xnor_val α
     subst hq
-    rw [h0] at hp
-    rw [h1] at hq'
-    simp [hp] at hq'
+    have hp' : xnorCircuit.valAt α 0 = true := hp
+    have hq'' : xnorCircuit.valAt α 1 = true := hq'
+    rw [h0] at hp'
+    rw [h1] at hq''
+    simp [hp'] at hq''
   · -- neither `x` nor `¬x` is identically `0`
     intro q hq
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
     rcases hq with rfl | rfl
-    · exact ⟨fun _ => true, by simpa using (xnor_val (fun _ => true)).1⟩
-    · exact ⟨fun _ => false, by simpa using (xnor_val (fun _ => false)).2.1⟩
+    · exact ⟨fun _ => true, (xnor_val (fun _ => true)).1⟩
+    · exact ⟨fun _ => false, (xnor_val (fun _ => false)).2.1⟩
 
 /-- Every node of the XNOR circuit is reachable from its source: the circuit
 carries no garbage, so its `Deterministic` and `Respects` say the same thing

@@ -60,7 +60,7 @@ theorem median_mem_Icc_of_lt_half_outside
   refine ⟨?_, ?_⟩
   · -- lower bound `lo ≤ m`
     by_contra hlt
-    push_neg at hlt  -- `m < lo`
+    push Not at hlt  -- `m < lo`
     -- every entry `≤ m` is `< lo`, hence outside `[lo,hi]`
     have hsub : (Finset.univ.filter (fun b => v b ≤ m)) ⊆ Out := by
       intro b hb
@@ -72,7 +72,7 @@ theorem median_mem_Icc_of_lt_half_outside
     omega
   · -- upper bound `m ≤ hi`
     by_contra hlt
-    push_neg at hlt  -- `hi < m`
+    push Not at hlt  -- `hi < m`
     have hsub : (Finset.univ.filter (fun b => m ≤ v b)) ⊆ Out := by
       intro b hb
       rw [Finset.mem_filter] at hb ⊢
@@ -89,7 +89,7 @@ theorem half_outside_of_median_not_mem
     (hbad : m ∉ Set.Icc lo hi) :
     γ ≤ 2 * (Finset.univ.filter (fun b => v b ∉ Set.Icc lo hi)).card := by
   by_contra h
-  push_neg at h
+  push Not at h
   exact hbad (median_mem_Icc_of_lt_half_outside hmed h)
 
 /-- **Order-statistic median witness.**  Given any permutation `σ` with `v ∘ σ`
@@ -107,8 +107,8 @@ theorem isMedian_of_monotone_sort
         (Finset.Iic k).card ≤
           (Finset.univ.filter (fun b => v b ≤ v (σ k))).card := by
       refine Finset.card_le_card_of_injOn σ (fun i hi => ?_) (σ.injective.injOn)
-      rw [Finset.mem_Iic] at hi
-      rw [Finset.mem_filter]
+      rw [Finset.mem_coe, Finset.mem_Iic] at hi
+      rw [Finset.mem_coe, Finset.mem_filter]
       exact ⟨Finset.mem_univ _, hmono hi⟩
     rw [Fin.card_Iic] at hcard
     omega
@@ -117,8 +117,8 @@ theorem isMedian_of_monotone_sort
         (Finset.Ici k).card ≤
           (Finset.univ.filter (fun b => v (σ k) ≤ v b)).card := by
       refine Finset.card_le_card_of_injOn σ (fun i hi => ?_) (σ.injective.injOn)
-      rw [Finset.mem_Ici] at hi
-      rw [Finset.mem_filter]
+      rw [Finset.mem_coe, Finset.mem_Ici] at hi
+      rw [Finset.mem_coe, Finset.mem_filter]
       exact ⟨Finset.mem_univ _, hmono hi⟩
     rw [Fin.card_Ici] at hcard
     omega

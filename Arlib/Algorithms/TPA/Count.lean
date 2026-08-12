@@ -67,8 +67,8 @@ one-dimensional.  No product measure appears anywhere in this file.
 -/
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 import Mathlib.Analysis.SpecialFunctions.Exponential
-import Mathlib.MeasureTheory.Integral.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.IntervalIntegral
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 
 namespace Arlib.Algorithms.TPA
 
@@ -103,7 +103,7 @@ theorem tendsto_tpaTail_atTop {c : ℝ} (hc : 0 < c) :
     Filter.Tendsto (fun m => tpaTail m c) Filter.atTop (nhds 0) := by
   have hser : HasSum (fun j : ℕ => (-Real.log c) ^ j / (Nat.factorial j))
       (Real.exp (-Real.log c)) := by
-    have := NormedSpace.expSeries_div_hasSum_exp ℝ (-Real.log c)
+    have := NormedSpace.expSeries_div_hasSum_exp (-Real.log c)
     rwa [← Real.exp_eq_exp_ℝ] at this
   have hpart := hser.tendsto_sum_nat
   have hexp : Real.exp (-Real.log c) = c⁻¹ := by
@@ -132,23 +132,29 @@ theorem hasDerivAt_tpaAntideriv (m : ℕ) {c u : ℝ} (hc : 0 < c) (hu : 0 < u) 
       (fun x => ∑ j ∈ Finset.range m,
         (Real.log x - Real.log c) ^ (j + 1) / (Nat.factorial (j + 1)))
       (∑ j ∈ Finset.range m, (Real.log u - Real.log c) ^ j / (u * Nat.factorial j)) u := by
+    rw [show (fun x => ∑ j ∈ Finset.range m,
+        (Real.log x - Real.log c) ^ (j + 1) / (Nat.factorial (j + 1)))
+        = ∑ j ∈ Finset.range m,
+          (fun x => (Real.log x - Real.log c) ^ (j + 1) / (Nat.factorial (j + 1))) from by
+      funext x; simp]
     apply HasDerivAt.sum
     intro j _
     have hlog : HasDerivAt (fun x => Real.log x - Real.log c) u⁻¹ u :=
       (Real.hasDerivAt_log hu0).sub_const _
-    have hd := (hlog.pow (j + 1)).div_const ((Nat.factorial (j + 1) : ℝ))
-    convert hd using 1
     have hfac : ((Nat.factorial (j + 1) : ℕ) : ℝ) = ((j : ℝ) + 1) * (Nat.factorial j : ℕ) := by
       rw [Nat.factorial_succ]; push_cast; ring
     have hfacpos : (0 : ℝ) < (Nat.factorial j : ℕ) := by
       exact_mod_cast Nat.factorial_pos j
+    refine ((hlog.pow (j + 1)).div_const ((Nat.factorial (j + 1) : ℝ))).congr_deriv ?_
     rw [hfac]
     field_simp
+    rw [Nat.add_sub_cancel]
+    push_cast
     ring
   have hmain : HasDerivAt (tpaAntideriv m c)
       (1 - c * ∑ j ∈ Finset.range m,
         (Real.log u - Real.log c) ^ j / (u * Nat.factorial j)) u := by
-    simpa [tpaAntideriv] using (hasDerivAt_id u).sub (hsum.const_mul c)
+    exact (hasDerivAt_id u).sub (hsum.const_mul c)
   convert hmain using 1
   rw [tpaTail, Real.log_div (ne_of_gt hc) hu0, Finset.mul_sum, Finset.mul_sum]
   congr 1
@@ -180,7 +186,7 @@ theorem continuousOn_tpaTail_div (m : ℕ) {c : ℝ} (hc : 0 < c) :
   unfold tpaTail
   apply ContinuousOn.sub continuousOn_const
   apply ContinuousOn.mul hdiv
-  apply continuousOn_finset_sum
+  apply continuousOn_finsetSum
   intro j _
   exact ((hlog.neg).pow j).div_const _
 
