@@ -43,12 +43,14 @@ variable {w : ι → ℝ} {a : ι → d → ℝ}
 
 /-! ## The bridge between `dot` and `⬝ᵥ` -/
 
+omit [DecidableEq d] in
 /-- `WPS.E` is phrased with `dot y v = ∑ y·v`; the Lewis lemmas with `v ⬝ᵥ y`.
 They agree. -/
 theorem dot_eq_dotProduct (y v : d → ℝ) : dot y v = v ⬝ᵥ y := by
   rw [dot_apply, dotProduct]
   exact Finset.sum_congr rfl fun i _ => mul_comm _ _
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- The exact functional as a sum of `⬝ᵥ` tests. -/
 theorem E_exact_dotProduct (y : d → ℝ) :
     (WPS.exact ι a).E y = ∑ j, |a j ⬝ᵥ y| := by
@@ -57,18 +59,21 @@ theorem E_exact_dotProduct (y : d → ℝ) :
 
 /-! ## `Q` abbreviation -/
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- The Lewis quadratic form `Q y = yᵀ M y`, `M = gram w a`; definitionally
 `Mq (gram w a) y`. -/
 theorem Mq_gram (y : d → ℝ) : Mq (gram w a) y = y ⬝ᵥ (gram w a *ᵥ y) := rfl
 
 /-! ## Bounds on the exact functional `g` -/
 
+omit [DecidableEq ι] in
 /-- **Lower bound.** `√(Q y) ≤ g y`.  This is `sqrt_quad_le_L1`. -/
 theorem sqrt_Mq_le_Eexact (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d → ℝ) :
     Real.sqrt (Mq (gram w a) y) ≤ (WPS.exact ι a).E y := by
   rw [E_exact_dotProduct, Mq_gram]
   exact sqrt_quad_le_L1 hL hw y
 
+omit [DecidableEq ι] in
 /-- **Upper bound.** `g y ≤ d · √(Q y)`.  Sum the sensitivity bound
 `|aⱼ ⬝ᵥ y| ≤ wⱼ √(Q y)`; the total weight is `∑ wⱼ = d`. -/
 theorem Eexact_le_card_sqrt_Mq (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d → ℝ) :
@@ -81,6 +86,7 @@ theorem Eexact_le_card_sqrt_Mq (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d �
     _ = (Fintype.card d : ℝ) * Real.sqrt (y ⬝ᵥ (gram w a *ᵥ y)) := by
         rw [sum_lewis_eq_card hL hw]
 
+omit [DecidableEq ι] in
 /-- **Lipschitz.** `|g y − g y'| ≤ d · √(Q (y − y'))`.  A seminorm is
 `1`-Lipschitz for itself; then apply the upper bound to `y − y'`. -/
 theorem Eexact_lipschitz (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y y' : d → ℝ) :
@@ -108,6 +114,7 @@ theorem Eexact_lipschitz (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y y' : d → 
 
 /-! ## Bounds on the sampled functional `f` -/
 
+omit [DecidableEq ι] in
 /-- The reweighted sampled mass sums to `∑ wᵢ = d`.  `cₖ · w_{ωₖ} = W/m`, and
 there are `m` coordinates. -/
 theorem sum_sampled_mass_mul_weight [Nonempty ι] (hw : ∀ i, 0 < w i)
@@ -124,6 +131,7 @@ theorem sum_sampled_mass_mul_weight [Nonempty ι] (hw : ∀ i, 0 < w i)
     Fintype.card_fin, nsmul_eq_mul]
   field_simp
 
+omit [DecidableEq ι] in
 /-- **Upper bound on the sampled functional.** `f z ≤ d · √(Q z)`.  Sum the
 sensitivity bound over the drawn rows; the reweighted mass collapses to
 `∑ wᵢ = d`. -/
@@ -147,6 +155,7 @@ theorem sampledWPS_le_card_sqrt_Mq [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i,
     _ = (Fintype.card d : ℝ) * Real.sqrt (z ⬝ᵥ (gram w a *ᵥ z)) := by
         rw [sum_sampled_mass_mul_weight hw hm ω, sum_lewis_eq_card hL hw]
 
+omit [DecidableEq ι] in
 /-- **Lipschitz.** `|f y − f y'| ≤ d · √(Q (y − y'))`. -/
 theorem sampledWPS_lipschitz [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w i)
     {m : ℕ} (hm : 0 < m) (ω : Fin m → ι) (y y' : d → ℝ) :

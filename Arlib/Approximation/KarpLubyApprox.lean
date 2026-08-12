@@ -800,10 +800,10 @@ theorem optHitTestPMF_support (ν : PMF (Option Ω × ℕ)) (s : Finset Ω) :
   rw [optHitTestPMF] at hy
   obtain ⟨p, _, rfl⟩ := (PMF.mem_support_map_iff _ _ _).1 hy
   rcases hp : p.1 with _ | x
-  · exact Or.inl (by simp [hp])
+  · exact Or.inl (by simp)
   · by_cases hx : x ∈ s
-    · exact Or.inr (by simp [hp, hx])
-    · exact Or.inl (by simp [hp, hx])
+    · exact Or.inr (by simp [hx])
+    · exact Or.inl (by simp [hx])
 
 /-- The test accepts exactly when the sampler returns an element of `s`. -/
 theorem optHitTestPMF_apply_one (ν : PMF (Option Ω × ℕ)) (s : Finset Ω) :

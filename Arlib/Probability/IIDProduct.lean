@@ -109,7 +109,6 @@ theorem kwiseIndep_coord (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ μ j x) (h
     (f : ι → X → ℝ) (k : ℕ) :
     KWiseIndep (prodSpace μ h0 h1).toFinProb k (fun j ω => f j (ω j)) := by
   intro s _
-  simp only [FinProb.toProbSpace_Ex]
   refine (Ex_prod_apply μ h0 h1 s f).trans ?_
   refine Finset.prod_congr rfl ?_
   intro j _

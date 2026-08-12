@@ -129,7 +129,7 @@ private theorem filter_map_comm {A B : Type*} (f : A → B) (p : B → Bool) (L 
   | nil => simp
   | cons a L ih =>
     by_cases h : p (f a) = true <;>
-      simp [List.filter_cons, h, ih]
+      simp [h, ih]
 
 /-- **The counting bound for a `flatMap`.**  If every inner list contributes at
 most one element passing `p`, and only the outer elements passing `q` contribute
@@ -265,7 +265,7 @@ theorem numTerms_minterms_le (f : (W → Bool) → Bool) :
       ≤ (Finset.univ : Finset (W → Bool)).card :=
         Finset.card_le_card (Finset.filter_subset _ _)
     _ = Fintype.card (W → Bool) := Finset.card_univ
-    _ = 2 ^ Fintype.card W := by simp [Fintype.card_fun]
+    _ = 2 ^ Fintype.card W := by simp
 
 end Minterms
 

@@ -304,14 +304,14 @@ end Imported
 /-- **`Imported.IndepSplitModelCount` is inhabited** (at `k = 0`): on the
 single-vertex graph with zero charge and no sub-constraints, the count is
 Proposition 4 for a connected graph, `2^{0+1} = 1 · 2^{1+0}`. -/
-def indepSplitModelCount_zero :
+theorem indepSplitModelCount_zero :
     Imported.IndepSplitModelCount (⊥ : SimpleGraph (Fin 1)) 0 0 Fin.elim0 Fin.elim0
       Fin.elim0 True where
   count _ _ _ _ _ := by
     simp only [IsEmpty.forall_iff, and_true]
-    haveI hemp : IsEmpty {e // e ∈ (⊥ : SimpleGraph (Fin 1)).edgeSet} :=
+    have hemp : IsEmpty {e // e ∈ (⊥ : SimpleGraph (Fin 1)).edgeSet} :=
       ⟨fun e => Set.notMem_empty e.1 (SimpleGraph.edgeSet_bot ▸ e.2)⟩
-    haveI : Subsingleton (Assignment (⊥ : SimpleGraph (Fin 1))) :=
+    have : Subsingleton (Assignment (⊥ : SimpleGraph (Fin 1))) :=
       ⟨fun f g => funext fun e => isEmptyElim e⟩
     have hcard : Nat.card {α : Assignment (⊥ : SimpleGraph (Fin 1)) //
         Formula (⊥ : SimpleGraph (Fin 1)) 0 α} = 1 := by
@@ -319,11 +319,11 @@ def indepSplitModelCount_zero :
       exact ⟨⟨fun a b => Subtype.ext (Subsingleton.elim a.1 b.1)⟩,
         ⟨⟨fun _ => 0, fun v => by simp [chi]⟩⟩⟩
     rw [hcard]
-    simp [SimpleGraph.edgeFinset, Set.toFinset_card]
+    simp [SimpleGraph.edgeFinset]
 
 /-- **`Imported.ThreeConnectedSplitChoice` is inhabited** (at `k = 0`): the empty
 subset has size `0 ≥ 0/3` and splits nothing. -/
-def threeConnectedSplitChoice_zero :
+theorem threeConnectedSplitChoice_zero :
     Imported.ThreeConnectedSplitChoice (⊥ : SimpleGraph (Fin 1)) 0 Fin.elim0
       (fun _ => True) where
   choose _ _ := ⟨∅, Nat.zero_le _, trivial⟩

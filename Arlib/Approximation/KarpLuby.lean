@@ -319,7 +319,7 @@ theorem totalCard_le_mul_card_unionAll (A : Fin ℓ → Finset Ω) :
     totalCard A ≤ ℓ * (unionAll A).card := by
   calc totalCard A ≤ ∑ _j : Fin ℓ, (unionAll A).card :=
         Finset.sum_le_sum fun j _ => card_le_card_unionAll A j
-    _ = ℓ * (unionAll A).card := by simp [mul_comm]
+    _ = ℓ * (unionAll A).card := by simp
 
 /-- The acceptance probability of one Karp–Luby trial: the fraction of the
 disjoint union `Σ_j A j` that is accepted.  Junk value `0` on the empty
@@ -390,7 +390,7 @@ theorem support_uniformOn {s : Finset α} (hs : s.Nonempty) :
   ext a
   rw [PMF.mem_support_iff, uniformOn_apply hs]
   by_cases h : a ∈ s
-  · simp [h, ENNReal.inv_ne_zero]
+  · simp [h]
   · simp [h]
 
 /-- **The probability of an event under the uniform distribution.**  If the
@@ -486,7 +486,7 @@ theorem outProbR_trialAlg_one (A : Fin ℓ → Finset Ω) (c : ℕ) :
       PMF.toOuterMeasure_map_apply]
     congr 1
     ext p
-    by_cases hp : p.2 ∈ firstHits A p.1 <;> simp [hp]
+    by_cases hp : p.2 ∈ firstHits A p.1 <;> simp
   have hmem : ∀ p : (_ : Fin ℓ) × Ω,
       (p ∈ {p : (_ : Fin ℓ) × Ω | p.2 ∈ firstHits A p.1} ∧ p ∈ Finset.univ.sigma A)
         ↔ p ∈ Finset.univ.sigma (firstHits A) := by

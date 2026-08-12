@@ -107,6 +107,7 @@ theorem sqrt_Mq_sub_le (M : Matrix d d ℝ) (hM : M.PosDef) (u v : d → ℝ) :
       ≤ Real.sqrt (Mq M u) + Real.sqrt (Mq M (-v)) := sqrt_Mq_add_le M hM u (-v)
     _ = Real.sqrt (Mq M u) + Real.sqrt (Mq M v) := by rw [Mq_neg]
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- **The exact functional vanishes ⟹ the sampled one does, deterministically.**
 If `‖A s‖₁ = 0` then every `aⱼ ⬝ᵥ s = 0`, so in particular the drawn rows'
 contributions all vanish. -/
@@ -123,6 +124,7 @@ theorem Eexact_eq_zero_imp_sampled_eq_zero [Nonempty ι] (hw : ∀ i, 0 < w i)
 
 /-! ## The card-zero degenerate case -/
 
+omit [DecidableEq ι] in
 /-- When the feature space is trivial (`Fintype.card d = 0`) both functionals are
 identically zero, so the embedding holds vacuously. -/
 theorem embeds_of_card_zero [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w i)
@@ -143,6 +145,7 @@ theorem embeds_of_card_zero [Nonempty ι] (hL : IsLewis w a) (hw : ∀ i, 0 < w 
 
 /-! ## Main theorem 1: the deterministic net/Lipschitz geometry -/
 
+omit [DecidableEq ι] in
 /-- **Sup-bridge.**  Fix an outcome `ω`.  If `S` is an `M`-net of the unit ball at
 radius `δ/(4d)` and the sampled functional is relatively `δ/(4d)`-accurate at
 *every* net point, then it is `(1 ± δ)`-accurate at *every* query. -/

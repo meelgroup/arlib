@@ -40,9 +40,9 @@ read the sample point at all. -/
 theorem measurableSet_const_eq {Ω β : Type*} {m : MeasurableSpace Ω} (c y : β) :
     MeasurableSet[m] {_ω : Ω | c = y} := by
   by_cases h : c = y
-  · simp only [h, eq_self_iff_true, Set.setOf_true]
+  · simp only [h, Set.ofPred_true]
     exact MeasurableSet.univ
-  · simp only [h, Set.setOf_false]
+  · simp only [h, Set.ofPred_false]
     exact MeasurableSet.empty
 
 /-- **Evaluation at a measurably-varying index is measurable.**  If the index

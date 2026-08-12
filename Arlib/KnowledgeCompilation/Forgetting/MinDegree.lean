@@ -109,7 +109,7 @@ theorem two_adj_of_mem_interior {a b : ι} {P : G.Walk a b} (hP : P.IsPath)
 /-- In an acyclic graph any two paths with the same endpoints are equal. -/
 theorem eq_of_isPath (hac : G.IsAcyclic) {u v : ι} {p q : G.Walk u v}
     (hp : p.IsPath) (hq : q.IsPath) : p = q :=
-  congrArg Subtype.val (hac.path_unique ⟨p, hp⟩ ⟨q, hq⟩)
+  congrArg Subtype.val (hac.subsingleton_path u v |>.elim ⟨p, hp⟩ ⟨q, hq⟩)
 
 /-! ## A subtree with at least two nodes has a leaf -/
 
@@ -134,7 +134,7 @@ theorem exists_leaf_of_subtree [DecidableEq ι] (hac : G.IsAcyclic)
     fun a ha => (hconn a₀ ha0 a ha).choose.bypass_isPath
   have Psub : ∀ a (ha : a ∈ A), ∀ z ∈ ((hconn a₀ ha0 a ha).choose.bypass).support, z ∈ A := by
     intro a ha z hz
-    exact (hconn a₀ ha0 a ha).choose_spec z (Walk.support_bypass_subset _ hz)
+    exact (hconn a₀ ha0 a ha).choose_spec z (Walk.support_bypass_subset_support _ hz)
   set f : ι → ℕ := fun a => if ha : a ∈ A then ((hconn a₀ ha0 a ha).choose.bypass).length else 0
     with hf_def
   have hval : ∀ a (ha : a ∈ A), f a = ((hconn a₀ ha0 a ha).choose.bypass).length := by
@@ -263,13 +263,13 @@ theorem central_aux [Fintype ι] [DecidableEq ι] (hac : G.IsAcyclic) {Δ : CNF 
         obtain ⟨W2, hW2⟩ := hconn ℓ hℓ c hc
         -- the unique path `ℓ → c` both stays in `A` and carries `v`
         have hPsub : ∀ z ∈ W2.bypass.support, z ∈ A :=
-          fun z hz => hW2 z (Walk.support_bypass_subset _ hz)
+          fun z hz => hW2 z (Walk.support_bypass_subset_support _ hz)
         have hPeq : W2.bypass = W.bypass :=
           eq_of_isPath hac W2.bypass_isPath W.bypass_isPath
         have hPcar : ∀ z ∈ W2.bypass.support, v ∈ cluster z := by
           intro z hz
           rw [hPeq] at hz
-          exact hW z (Walk.support_bypass_subset _ hz)
+          exact hW z (Walk.support_bypass_subset_support _ hz)
         have hPnil : ¬ W2.bypass.Nil := Walk.not_nil_of_ne (Ne.symm hcne)
         have hLlt : 1 ≤ W2.bypass.length := Walk.not_nil_iff_lt_length.mp hPnil
         have hadj : G.Adj ℓ (W2.bypass.getVert 1) := Walk.adj_snd hPnil
@@ -300,13 +300,13 @@ theorem central_aux [Fintype ι] [DecidableEq ι] (hac : G.IsAcyclic) {Δ : CNF 
         obtain ⟨hb', hbA⟩ := Finset.mem_erase.mp hb
         obtain ⟨W, hW⟩ := hconn a haA b hbA
         refine ⟨W.bypass, fun z hz => ?_⟩
-        have hzA : z ∈ A := hW z (Walk.support_bypass_subset _ hz)
+        have hzA : z ∈ A := hW z (Walk.support_bypass_subset_support _ hz)
         have hzℓ : z ≠ ℓ := by
           rintro rfl
           obtain ⟨u, w, huw, hℓu, hℓw, humem, hwmem⟩ :=
             two_adj_of_mem_interior W.bypass_isPath hz (Ne.symm ha') (Ne.symm hb')
-          have huA : u ∈ A := hW u (Walk.support_bypass_subset _ humem)
-          have hwA : w ∈ A := hW w (Walk.support_bypass_subset _ hwmem)
+          have huA : u ∈ A := hW u (Walk.support_bypass_subset_support _ humem)
+          have hwA : w ∈ A := hW w (Walk.support_bypass_subset_support _ hwmem)
           exact huw ((hleaf u huA hℓu).trans (hleaf w hwA hℓw).symm)
         exact Finset.mem_erase.mpr ⟨hzℓ, hzA⟩
       have hcov' : ∀ γ ∈ Δ, ∃ i ∈ A.erase ℓ, γ ⊆ cluster i := by
@@ -326,12 +326,12 @@ cluster `i` with `v` and every primal-neighbour of `v` inside `cluster i`. -/
 theorem exists_confined_var {Δ : CNF V} (J : Jointree Δ) (hne0 : ∃ γ₀ ∈ Δ, γ₀.Nonempty) :
     ∃ (v : V) (i : J.ι), v ∈ cnfVars Δ ∧ v ∈ J.cluster i ∧
       ∀ u, (∃ γ ∈ Δ, u ∈ γ ∧ v ∈ γ) → u ∈ J.cluster i := by
-  haveI := J.isTree.isConnected.nonempty
+  have := J.isTree.connected.nonempty
   obtain ⟨v, i, -, hvcnf, hvi, hconf⟩ :=
-    central_aux J.isTree.IsAcyclic J.cluster J.running hne0 Finset.univ
+    central_aux J.isTree.isAcyclic J.cluster J.running hne0 Finset.univ
       Finset.univ_nonempty
       (fun a _ b _ => by
-        obtain ⟨w⟩ := J.isTree.isConnected.preconnected a b
+        obtain ⟨w⟩ := J.isTree.connected.preconnected a b
         exact ⟨w, fun z _ => Finset.mem_univ z⟩)
       (fun γ hγ => by obtain ⟨i, hi⟩ := J.covers γ hγ; exact ⟨i, Finset.mem_univ i, hi⟩)
   exact ⟨v, i, hvcnf, hvi, hconf⟩

@@ -86,7 +86,7 @@ theorem exists_Mnet {d : Type*} [Fintype d] [DecidableEq d]
   classical
   rcases Nat.eq_zero_or_pos (Fintype.card d) with h0 | hpos
   · -- `d` is empty: the quadratic form is identically `0`.
-    haveI : IsEmpty d := Fintype.card_eq_zero_iff.mp h0
+    have : IsEmpty d := Fintype.card_eq_zero_iff.mp h0
     refine ⟨{0}, ?_, ?_⟩
     · rw [Finset.card_singleton]
       simp only [h0, pow_zero]; norm_num

@@ -331,7 +331,7 @@ theorem mem_support_mixPMF_left {β : Type u} {q : ℝ≥0∞} {ν μ : PMF β} 
     rcases le_total q 1 with h | h
     · rwa [min_eq_left h]
     · rw [min_eq_right h]; exact one_ne_zero
-  simpa [PMF.bernoulli_apply] using hmin
+  simpa using hmin
 
 /-- **`IsFPAUS.Charges` is refutable for `thm:samplemain`'s assembly.**
 

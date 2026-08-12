@@ -32,6 +32,7 @@ open Finset
 variable {ι d : Type*} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 variable {w : ι → ℝ} {a : ι → d → ℝ}
 
+omit [DecidableEq ι] in
 /-- `|aᵢ·y| ≤ wᵢ · √(yᵀ M y)`, Cauchy–Schwarz against the Lewis Gram form with
 `u = M⁻¹aᵢ` (so `⟨u,y⟩_M = aᵢ·y` and `⟨u,u⟩_M = levᵢ = wᵢ²`). -/
 theorem abs_dot_le_lewis_sqrt_quad (hL : IsLewis w a) (hw : ∀ i, 0 < w i)
@@ -52,6 +53,7 @@ theorem abs_dot_le_lewis_sqrt_quad (hL : IsLewis w a) (hw : ∀ i, 0 < w i)
     _ = w i * Real.sqrt (y ⬝ᵥ (gram w a *ᵥ y)) := by
         rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (hw i).le]
 
+omit [DecidableEq ι] in
 /-- The self-bounding step: `√(yᵀ M y) ≤ ‖Ay‖₁ = ∑ⱼ |aⱼ·y|`. -/
 theorem sqrt_quad_le_L1 (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d → ℝ) :
     Real.sqrt (y ⬝ᵥ (gram w a *ᵥ y)) ≤ ∑ j, |a j ⬝ᵥ y| := by
@@ -83,6 +85,7 @@ theorem sqrt_quad_le_L1 (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d → ℝ)
       rw [Real.mul_self_sqrt hQnn]; exact hkey
     exact le_of_mul_le_mul_left hmul hsqpos
 
+omit [DecidableEq ι] in
 /-- **The ℓ₁ sensitivity bound.**  `|aᵢ·y| ≤ wᵢ · ∑ⱼ |aⱼ·y|`: the Lewis weight
 `wᵢ` bounds row `i`'s ℓ₁ sensitivity. -/
 theorem abs_dot_le_lewis_L1 (hL : IsLewis w a) (hw : ∀ i, 0 < w i) (y : d → ℝ) (i : ι) :

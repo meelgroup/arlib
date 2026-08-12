@@ -82,12 +82,12 @@ theorem Ainf_succ (A : ℕ → Finset P.Ω) (l : ℕ) :
 /-- `Ainf A` is antitone: a longer conjunction is a smaller event. -/
 theorem Ainf_mono (A : ℕ → Finset P.Ω) {l l' : ℕ} (h : l ≤ l') :
     Ainf A l' ⊆ Ainf A l :=
-  Finset.le_iff_subset.1 (Finset.inf_mono (f := A) (Finset.range_subset_range.2 h))
+  Finset.inf_mono (f := A) (Finset.range_subset_range.2 h)
 
 /-- Each individual event of the conjunction contains it. -/
 theorem Ainf_subset (A : ℕ → Finset P.Ω) {j l : ℕ} (h : j < l) :
     Ainf A l ⊆ A j :=
-  Finset.le_iff_subset.1 (Finset.inf_le (f := A) (Finset.mem_range.2 h))
+  Finset.inf_le (f := A) (Finset.mem_range.2 h)
 
 /-- Membership in `Ainf A ℓ` is exactly membership in every `A j` with `j < ℓ`. -/
 theorem mem_Ainf_iff (A : ℕ → Finset P.Ω) (l : ℕ) (ω : P.Ω) :

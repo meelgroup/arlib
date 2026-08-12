@@ -53,18 +53,21 @@ noncomputable def dist (K : FinChain Ω) (T : Finset Ω) (x : Ω) : ℕ :=
   if h : Reaches K T x then Nat.find h else 0
 
 open scoped Classical in
+omit [DecidableEq Ω] in
 theorem reachIn_dist (K : FinChain Ω) (T : Finset Ω) {x : Ω} (h : Reaches K T x) :
     ReachIn K T (dist K T x) x := by
   rw [dist, dif_pos h]
   exact Nat.find_spec h
 
 open scoped Classical in
+omit [DecidableEq Ω] in
 theorem dist_le (K : FinChain Ω) (T : Finset Ω) {x : Ω} {n : ℕ} (h : ReachIn K T n x) :
     dist K T x ≤ n := by
   have hR : Reaches K T x := ⟨n, h⟩
   rw [dist, dif_pos hR]
   exact Nat.find_min' hR h
 
+omit [DecidableEq Ω] in
 theorem dist_eq_zero_iff (K : FinChain Ω) (T : Finset Ω) {x : Ω} (h : Reaches K T x) :
     dist K T x = 0 ↔ x ∈ T := by
   constructor
@@ -75,6 +78,7 @@ theorem dist_eq_zero_iff (K : FinChain Ω) (T : Finset Ω) {x : Ω} (h : Reaches
   · intro hx
     exact Nat.le_zero.1 (dist_le K T (n := 0) hx)
 
+omit [DecidableEq Ω] in
 /-- One extra step of budget never hurts. -/
 theorem reachIn_succ (K : FinChain Ω) (T : Finset Ω) :
     ∀ (n : ℕ) (x : Ω), ReachIn K T n x → ReachIn K T (n + 1) x := by
@@ -87,17 +91,20 @@ theorem reachIn_succ (K : FinChain Ω) (T : Finset Ω) :
     · exact Or.inl hx
     · exact Or.inr ⟨y, hy, ih y hry⟩
 
+omit [DecidableEq Ω] in
 theorem reachIn_mono (K : FinChain Ω) (T : Finset Ω) {m n : ℕ} (h : m ≤ n) {x : Ω}
     (hx : ReachIn K T m x) : ReachIn K T n x := by
   induction n, h using Nat.le_induction with
   | base => exact hx
   | succ n _ ih => exact reachIn_succ K T n x ih
 
+omit [DecidableEq Ω] in
 /-- Any horizon at least the distance suffices. -/
 theorem reachIn_of_reaches (K : FinChain Ω) (T : Finset Ω) {x : Ω} (h : Reaches K T x)
     {n : ℕ} (hn : dist K T x ≤ n) : ReachIn K T n x :=
   reachIn_mono K T hn (reachIn_dist K T h)
 
+omit [DecidableEq Ω] in
 /-- A positive-probability path is a `p_min`-path when every nonzero transition
 probability is at least `p_min`. -/
 theorem reachInWith_of_reachIn (K : FinChain Ω) (T : Finset Ω) {p : ℝ}
@@ -117,6 +124,7 @@ under the hypothesis that every state reaches `T`.) -/
 noncomputable def ecc (K : FinChain Ω) (T : Finset Ω) : ℕ :=
   Finset.univ.sup fun x => dist K T x
 
+omit [DecidableEq Ω] in
 theorem dist_le_ecc (K : FinChain Ω) (T : Finset Ω) (x : Ω) :
     dist K T x ≤ ecc K T :=
   Finset.le_sup (f := fun x => dist K T x) (Finset.mem_univ x)
@@ -209,6 +217,7 @@ theorem ecc_lt_card (K : FinChain Ω) (T : Finset Ω) [Nonempty Ω]
   have hecc : ecc K T ≤ k := Finset.sup_le fun x _ => hdist x
   exact lt_of_le_of_lt hecc hkN
 
+omit [DecidableEq Ω] in
 /-- **The `p_min` hypothesis gives progress paths.**  If every nonzero
 transition probability is at least `p_min` and every state can reach `T`, then
 every state has a `p_min`-path to `T` of length at most the eccentricity. -/

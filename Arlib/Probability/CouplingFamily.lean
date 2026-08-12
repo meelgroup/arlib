@@ -210,8 +210,7 @@ theorem inter_fiber_famX (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) 
       = ({w} : Finset κ) ×ˢ (univ.filter fun q : α × α => q.1 = a) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and,
-    Finset.mem_product, Finset.mem_singleton]
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and]
   exact ⟨fun h => ⟨mem_fiber.mp h.2, h.1⟩, fun h => ⟨h.2, mem_fiber.mpr h.1⟩⟩
 
 /-- The event "`Y = a` and the label is `w`" is the rectangle `{w} × {q.2 = a}`. -/
@@ -220,8 +219,7 @@ theorem inter_fiber_famY (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ) 
       = ({w} : Finset κ) ×ˢ (univ.filter fun q : α × α => q.2 = a) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and,
-    Finset.mem_product, Finset.mem_singleton]
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and]
   exact ⟨fun h => ⟨mem_fiber.mp h.2, h.1⟩, fun h => ⟨h.2, mem_fiber.mpr h.1⟩⟩
 
 /-- The event "`X ≠ Y` and the label is `w`" is the rectangle `{w} × {q.1 ≠ q.2}`. -/
@@ -230,8 +228,7 @@ theorem inter_fiber_famNe (π : FinDist κ) (μ ν : κ → FinDist α) (w : κ)
       = ({w} : Finset κ) ×ˢ (univ.filter fun q : α × α => q.1 ≠ q.2) := by
   refine Finset.ext fun ω : κ × (α × α) => ?_
   rw [Finset.mem_product, Finset.mem_singleton]
-  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and,
-    Finset.mem_product, Finset.mem_singleton]
+  simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and]
   exact ⟨fun h => ⟨mem_fiber.mp h.2, h.1⟩, fun h => ⟨h.2, mem_fiber.mpr h.1⟩⟩
 
 /-- **The first conditional law.**  On the fiber `{W = w}` — which requires the
@@ -549,7 +546,7 @@ theorem inter_fiber_seqHist (μ ν : (i : Fin q) → (Fin i.val → α × α) �
   ext c
   simp only [Finset.mem_inter, Finset.mem_filter, Finset.mem_univ, true_and]
   rw [mem_fiber]
-  simp [seqHist, histPrefix]
+  simp [seqHist]
 
 /-- **The slice computation at level `i`.**  The mass of "the joint history is
 `w` and the level-`i` letter lies in `S`" factors as the prefix weight of `w`

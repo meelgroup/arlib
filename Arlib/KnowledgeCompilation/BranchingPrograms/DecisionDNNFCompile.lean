@@ -375,10 +375,10 @@ theorem dependsOn_cofactor {f : (V → Bool) → Bool} {x : V} {xs : List V}
     (h : DependsOnList f (x :: xs)) (b : Bool) : DependsOnList (cofactor f x b) xs := by
   refine dependsOnList_of_forall fun α β hab => h.apply _ _ fun y hy => ?_
   rcases List.mem_cons.mp hy with rfl | hy'
-  · simp [cofactor]
+  · simp
   · rcases eq_or_ne y x with rfl | hyx
-    · simp [cofactor]
-    · simp only [cofactor, Function.update_of_ne hyx]; exact hab y hy'
+    · simp
+    · simp only [Function.update_of_ne hyx]; exact hab y hy'
 
 /-- **The straight-line decision tree for `f` branching on `xs`.**  Extends the program `l`
 and returns the extended program together with the root position.  At `[]` the function is
@@ -489,17 +489,17 @@ theorem dtCore_valid (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGat
       refine ((((hhi.append_singleton (by simp)).append_singleton (by simp)).append_singleton
         ?_).append_singleton ?_).append_singleton ?_
       · intro c hc
-        simp only [RawGate.children_conj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+        simp only [RawGate.children_conj, List.mem_cons, List.not_mem_nil,
           or_false] at hc
         simp only [List.length_append, List.length_cons, List.length_nil]
         rcases hc with rfl | rfl <;> omega
       · intro c hc
-        simp only [RawGate.children_conj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+        simp only [RawGate.children_conj, List.mem_cons, List.not_mem_nil,
           or_false] at hc
         simp only [List.length_append, List.length_cons, List.length_nil]
         rcases hc with rfl | rfl <;> omega
       · intro c hc
-        simp only [RawGate.children_disj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+        simp only [RawGate.children_disj, List.mem_cons, List.not_mem_nil,
           or_false] at hc
         simp only [List.length_append, List.length_cons, List.length_nil]
         rcases hc with rfl | rfl <;> omega
@@ -508,6 +508,7 @@ theorem dtCore_valid (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGat
 theorem getElem_eq_of_eq {α : Type*} (L : List α) {i j : ℕ} (hi : i < L.length)
     (hj : j < L.length) (h : i = j) : L[i]'hi = L[j]'hj := by subst h; rfl
 
+omit [DecidableEq V] in
 /-- **`valAt` is stable under appending later gates.**  Evaluating node `a < L1.length` of the
 circuit `L1 ++ L2` gives the same value as in `L1`, because `valAt` only ever reads children
 with *smaller* index (`RawValid`), all still inside `L1`, so `L2` is never consulted.  This is
@@ -664,7 +665,7 @@ theorem dtCore_valAt (f : (V → Bool) → Bool) (xs : List V) (l : List (RawGat
       (if false then α x else !α x) && (hL.toNNF rt).valAt α ⟨lo2, hlo2L⟩) = f α
     rw [vhi, vlo]
     conv_rhs => rw [← Function.update_eq_self x α]
-    cases hax : α x <;> simp [hax, cofactor]
+    cases hax : α x <;> simp [cofactor]
 
 /-- **The variables below the root are among `xs`.**  Every literal in the tree tests a
 variable of `xs`; the invariant that makes the decision `∧`-nodes decomposable. -/
@@ -1135,17 +1136,17 @@ theorem dtCoreL_valid (leaf : (V → Bool) → ℕ) (xs : List V) (l : List (Raw
       refine ((((hhi.append_singleton (by simp)).append_singleton (by simp)).append_singleton
         ?_).append_singleton ?_).append_singleton ?_
       · intro c hc
-        simp only [RawGate.children_conj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+        simp only [RawGate.children_conj, List.mem_cons, List.not_mem_nil,
           or_false] at hc
         simp only [List.length_append, List.length_cons, List.length_nil]
         rcases hc with rfl | rfl <;> omega
       · intro c hc
-        simp only [RawGate.children_conj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+        simp only [RawGate.children_conj, List.mem_cons, List.not_mem_nil,
           or_false] at hc
         simp only [List.length_append, List.length_cons, List.length_nil]
         rcases hc with rfl | rfl <;> omega
       · intro c hc
-        simp only [RawGate.children_disj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+        simp only [RawGate.children_disj, List.mem_cons, List.not_mem_nil,
           or_false] at hc
         simp only [List.length_append, List.length_cons, List.length_nil]
         rcases hc with rfl | rfl <;> omega
@@ -1291,9 +1292,9 @@ theorem dtCoreL_valAt (leaf : (V → Bool) → ℕ) (xs : List V) (l : List (Raw
           lt_of_lt_of_le (hlb _) hll⟩ = (hL.toNNF rt).valAt α ⟨leaf α, hlα⟩ := by
       intro b hb; congr 1; refine Fin.ext ?_; rw [← hb, Function.update_eq_self]
     cases hax : α x
-    · simp only [hax, Bool.false_and, Bool.not_false, Bool.true_and, Bool.false_or]
+    · simp only [Bool.false_and, Bool.not_false, Bool.true_and, Bool.false_or]
       exact hself false hax
-    · simp only [hax, Bool.true_and, Bool.not_true, Bool.false_and, Bool.or_false]
+    · simp only [Bool.true_and, Bool.not_true, Bool.false_and, Bool.or_false]
       exact hself true hax
 
 /-- **Every `∨`-node of a leaf-address cascade is a decision node.**  Mirrors
@@ -1666,17 +1667,21 @@ def andChainCore : List ℕ → List (RawGate V) → List (RawGate V) × ℕ
       let r := andChainCore (b :: rest) l
       (r.1 ++ [RawGate.conj a r.2], r.1.length)
 
+omit [DecidableEq V] in
 theorem andChainCore_nil (l : List (RawGate V)) :
     andChainCore ([] : List ℕ) l = (l ++ [RawGate.const true], l.length) := rfl
 
+omit [DecidableEq V] in
 theorem andChainCore_single (a : ℕ) (l : List (RawGate V)) :
     andChainCore [a] l = (l, a) := rfl
 
+omit [DecidableEq V] in
 theorem andChainCore_cons (a b : ℕ) (rest : List ℕ) (l : List (RawGate V)) :
     andChainCore (a :: b :: rest) l =
       ((andChainCore (b :: rest) l).1 ++ [RawGate.conj a (andChainCore (b :: rest) l).2],
        (andChainCore (b :: rest) l).1.length) := rfl
 
+omit [DecidableEq V] in
 /-- The chain only grows. -/
 theorem andChainCore_prefix : ∀ (addrs : List ℕ) (l : List (RawGate V)),
     l <+: (andChainCore addrs l).1
@@ -1686,10 +1691,12 @@ theorem andChainCore_prefix : ∀ (addrs : List ℕ) (l : List (RawGate V)),
       rw [andChainCore_cons]
       exact (andChainCore_prefix (b :: rest) l).trans (List.prefix_append _ _)
 
+omit [DecidableEq V] in
 theorem andChainCore_length_le (addrs : List ℕ) (l : List (RawGate V)) :
     l.length ≤ (andChainCore addrs l).1.length :=
   (andChainCore_prefix addrs l).length_le
 
+omit [DecidableEq V] in
 /-- The chain adds at most `addrs.length + 1` nodes (`d − 1` `∧`-nodes for `d ≥ 1` children,
 one `⊤`-node for `d = 0`). -/
 theorem andChainCore_length : ∀ (addrs : List ℕ) (l : List (RawGate V)),
@@ -1704,6 +1711,7 @@ theorem andChainCore_length : ∀ (addrs : List ℕ) (l : List (RawGate V)),
       simp only [List.length_append, List.length_cons, List.length_nil] at this ⊢
       omega
 
+omit [DecidableEq V] in
 /-- **The chain root is a legal node** (given the addresses point earlier): for a nonempty
 list it is the last `∧`-node, for the empty list the `⊤`-node, for a singleton the address
 itself. -/
@@ -1719,6 +1727,7 @@ theorem andChainCore_root_lt : ∀ (addrs : List ℕ) (l : List (RawGate V)),
       simp only [List.length_append, List.length_cons, List.length_nil]
       omega
 
+omit [DecidableEq V] in
 /-- **Validity is preserved**: the `∧`-nodes reference the earlier addresses `addrs` (by
 `hlb`) and the earlier sub-chain root. -/
 theorem andChainCore_valid : ∀ (addrs : List ℕ) (l : List (RawGate V)), RawValid l →
@@ -1735,12 +1744,13 @@ theorem andChainCore_valid : ∀ (addrs : List ℕ) (l : List (RawGate V)), RawV
         lt_of_lt_of_le (hlb a (by simp)) hlen
       refine hrest.append_singleton ?_
       intro c hc
-      simp only [RawGate.children_conj, List.mem_cons, List.mem_singleton, List.not_mem_nil,
+      simp only [RawGate.children_conj, List.mem_cons, List.not_mem_nil,
         or_false] at hc
       rcases hc with rfl | rfl
       · exact ha
       · exact hroot
 
+omit [DecidableEq V] in
 /-- **The chain computes the boolean `∧` of the addressed nodes' values.**  `g a` is the value
 of the node at address `a`; the chain evaluates to `⋀ₐ g a`. -/
 theorem andChainCore_valAt {L : List (RawGate V)} (hL : RawValid L) (rt : Fin L.length)
@@ -2308,7 +2318,7 @@ theorem mergeAt_consistent (D : RootedTD G) (i c : Fin D.n) (σ : Finset V) (α 
       · intro hα; exact Or.inr ⟨⟨hwc, hwi⟩, hα⟩
     rw [show decide (w ∈ (σ ∩ D.bag c) ∪ (D.bag c \ D.bag i).filter (fun v => α v = true))
         = decide (α w = true) from decide_eq_decide.mpr hτ]
-    cases hw2 : α w <;> simp [hw2]
+    cases hw2 : α w <;> simp
   · rw [if_neg hwi, if_neg hwc]
 
 /-- **The DP predicate is exactly subtree coverage** ([OD14] §3.3, semantically): `fDP i σ`
@@ -2351,7 +2361,7 @@ theorem fDP_iff_covers (D : RootedTD G) (α : V → Bool) :
   decreasing_by
     all_goals
       have h := childrenList_lt D i c hc
-      have hcn : (c : ℕ) < D.n := c.isLt
+      have _hcn : (c : ℕ) < D.n := c.isLt
       omega
 
 /-- **Every node has a root ancestor** (`parent = none`): follow `parent` up; it terminates by
@@ -2390,7 +2400,7 @@ theorem mergeAt_filter (D : RootedTD G) (r : Fin D.n) (α : V → Bool) :
       simp [Finset.mem_filter, hv]
     rw [show decide (v ∈ (D.bag r).filter (fun v => α v = true)) = decide (α v = true) from
       decide_eq_decide.mpr hmem]
-    cases hαv : α v <;> simp [hαv]
+    cases hαv : α v <;> simp
   · rw [if_neg hv]
 
 /-- The root DP node computes coverage of the root's subtree. -/
@@ -3207,7 +3217,7 @@ theorem emitNodeSigma_length_le (D : RootedTD G) {w : ℕ} (hw : D.WidthLe w)
         (childCascades D table i σ (childrenList D i) prog).2)
       ((childCascades D table i σ (childrenList D i) prog).1 ++
         [RawGate.const (locallyValidBool D i σ)])
-  simp only [List.length_append, List.length_cons, List.length_singleton, List.length_nil] at hand
+  simp only [List.length_append, List.length_cons, List.length_nil] at hand
   have hcc1 := childCascades_length_le D hw table i σ (childrenList D i) prog
   have hcc2 := childCascades_roots_length D table i σ (childrenList D i) prog
   have hchild_n := childrenList_length_le D i
@@ -3324,6 +3334,7 @@ def DisjGood {L : List (RawGate V)} (hL : RawValid L) (rt : Fin L.length) (m : �
   ∀ (i : ℕ) (hiL : i < L.length), i < m → ∀ a b, L[i]'hiL = RawGate.disj a b →
     DecisionDNNF.IsDecisionNode (hL.toNNF rt) ⟨i, hiL⟩
 
+omit [DecidableEq V] in
 /-- The `andChainCore` block introduces no `∨`-gate — every new gate is a `∧` (or the trailing
 `const true`). -/
 theorem andChainCore_not_disj : ∀ (addrs : List ℕ) (l : List (RawGate V))
@@ -4044,7 +4055,7 @@ leaf `D[c,τ]` (`belowVars_disjoint_bag`), so the two children have disjoint var
 theorem childCascade_conjGood (D : RootedTD G) (table : Table D) (i c : Fin D.n) (σ : Finset V)
     (prog : List (RawGate V)) {L : List (RawGate V)} (hL : RawValid L) (rt : Fin L.length)
     (hpre : (childCascade D table i σ c prog).1 <+: L)
-    (hlb : LeafBounded (childLeaf D table i c σ) prog) (hc : D.parent c = some i)
+    (hlb : LeafBounded (childLeaf D table i c σ) prog) (_hc : D.parent c = some i)
     (hleafvar : ∀ τ ∈ (D.bag c).powerset, ∀ (h : table c τ < L.length),
        (hL.toNNF rt).varsAt ⟨table c τ, h⟩ ⊆ belowVars D c)
     (h : ConjGood hL rt prog.length) :
@@ -4806,7 +4817,7 @@ theorem emitNodeSharp_prefix (D : RootedTD G) (i : Fin D.n) (st : List (RawGate 
 
 /-- The looked-up shared cascade roots are legal nodes of the phase-A program. -/
 theorem emitNodeSharp_casc_lt (D : RootedTD G) (i : Fin D.n) (st : List (RawGate V) × Table D)
-    (hp : RawValid st.1)
+    (_hp : RawValid st.1)
     (hchild : ∀ c ∈ childrenList D i, ∀ τ ∈ (D.bag c).powerset, st.2 c τ < st.1.length) :
     ∀ c ∈ childrenList D i, ∀ σ ∈ (D.bag i).powerset.toList,
       (emitNodeSharpCasc D i st).2 c (σ ∩ sep D i c) < (emitNodeSharpCasc D i st).1.length := by
@@ -6461,7 +6472,7 @@ theorem emitNodeSigmaSharp_length_le (D : RootedTD G) (casc : Table D) (i : Fin 
   unfold emitNodeSigmaSharp chainAddrsSharp
   have h := andChainCore_length (prog.length :: (childrenList D i).map (fun c => casc c (σ ∩ sep D i c)))
     (prog ++ [RawGate.const (locallyValidBool D i σ)])
-  simp only [List.length_cons, List.length_append, List.length_singleton, List.length_map,
+  simp only [List.length_cons, List.length_append, List.length_map,
     List.length_nil] at h
   omega
 

@@ -73,6 +73,7 @@ def survive (K : FinChain Ω) (T : Finset Ω) : ℕ → Ω → ℝ
   | 0 => offTarget T
   | (n + 1) => killed K T (survive K T n)
 
+omit [Fintype Ω] in
 @[simp] theorem offTarget_apply (T : Finset Ω) (x : Ω) :
     offTarget T x = if x ∈ T then 0 else 1 := rfl
 
@@ -90,9 +91,11 @@ theorem survive_succ_apply (K : FinChain Ω) (T : Finset Ω) (n : ℕ) (x : Ω) 
 
 /-! ### Basic shape -/
 
+omit [Fintype Ω] in
 theorem offTarget_nonneg (T : Finset Ω) (x : Ω) : 0 ≤ offTarget T x := by
   simp only [offTarget]; split <;> norm_num
 
+omit [Fintype Ω] in
 theorem offTarget_le_one (T : Finset Ω) (x : Ω) : offTarget T x ≤ 1 := by
   simp only [offTarget]; split <;> norm_num
 

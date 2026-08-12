@@ -143,15 +143,15 @@ end Imported
 
 /-- **`Imported.ReduceToZeroCharge` is inhabited** at `c = 0` (the reduction's
 fixed point): `DNNFSizeLe G 0 s ↔ DNNFSizeLe G 0 s`. -/
-def reduceToZeroCharge_zero : Imported.ReduceToZeroCharge G 0 where
+theorem reduceToZeroCharge_zero : Imported.ReduceToZeroCharge G 0 where
   size_iff _ := Iff.rfl
 
 /-- **`Imported.SafeSeparators` is inhabited** (provenance marker). -/
-def safeSeparators : Imported.SafeSeparators := ⟨trivial⟩
+theorem safeSeparators : Imported.SafeSeparators := ⟨trivial⟩
 
 /-- **`Imported.TopMinorDNNF` is inhabited** at the identity minor `H = G`: the
 DNNF for `T(G,0)` is a DNNF for `T(G,0)`. -/
-def topMinorDNNF_id : Imported.TopMinorDNNF G G where
+theorem topMinorDNNF_id : Imported.TopMinorDNNF G G where
   minor := IsTopMinor.refl G
   transfer _ := id
 

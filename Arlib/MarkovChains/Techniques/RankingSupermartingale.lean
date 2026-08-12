@@ -306,7 +306,7 @@ theorem not_exists_isRSM_idChain :
   have hf : (false : Bool) ∉ ({true} : Finset Bool) := by simp
   have h1 := h.decrease false hf
   have h2 : act idChain V false = V false := by
-    simp [FinKernel.act, idChain, Fintype.sum_bool]
+    simp [FinKernel.act, idChain]
   rw [h2] at h1
   have h3 := h.eps_pos
   linarith

@@ -701,7 +701,7 @@ omit [DecidableEq V] in
 theorem uVlt_succ (j : Fin (Fintype.card V)) :
     uVlt V j.succ = insert (uVar V j) (uVlt V j.castSucc) := by
   ext x
-  simp only [mem_uVlt, Finset.mem_insert, Fin.val_succ, Fin.coe_castSucc]
+  simp only [mem_uVlt, Finset.mem_insert, Fin.val_succ, Fin.val_castSucc]
   constructor
   · intro h
     rcases Nat.lt_succ_iff_lt_or_eq.mp h with h' | h'
@@ -963,7 +963,7 @@ theorem uChainPath {Z : NROBP V m} {W : Fin m → Finset V} (α : V → Bool) {a
       ⟨⟨(j : ℕ), hjlt⟩, Fin.ext rfl⟩
     have hsucc : ((j'.succ : Fin (Fintype.card V + 1)) : ℕ) + k = Fintype.card V := by
       simp only [Fin.val_succ]
-      simp only [Fin.coe_castSucc] at hj
+      simp only [Fin.val_castSucc] at hj
       omega
     obtain ⟨ls, hls, hag⟩ := ih j'.succ hsucc
     by_cases hin : uVar V j' ∈ uGad W a b l

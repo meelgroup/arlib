@@ -325,35 +325,35 @@ theorem crossMatching_of_two_copies {T : SimpleGraph α} {H : SimpleGraph β}
             adj := ?_, left_mem := ?_, right_not_mem := ?_
             left_inj := ?_, right_inj := ?_ }, ?_, ?_⟩
   · intro i
-    by_cases h : (t₁, u i) ∈ S <;> simp only [h, if_true, if_false, ite_true, ite_false]
+    by_cases h : (t₁, u i) ∈ S <;> simp only [h, if_true, if_false]
     · exact Or.inl ⟨hadj i, rfl⟩
     · exact Or.inl ⟨(hadj i).symm, rfl⟩
   · intro i
-    by_cases h : (t₁, u i) ∈ S <;> simp only [h, if_true, if_false, ite_true, ite_false]
+    by_cases h : (t₁, u i) ∈ S <;> simp only [h, if_true, if_false]
     · exact (hqS₁ i).mpr h
     · exact (hqS₂ i).mpr ((hdiff i).not_left.mp h)
   · intro i
-    by_cases h : (t₁, u i) ∈ S <;> simp only [h, if_true, if_false, ite_true, ite_false]
+    by_cases h : (t₁, u i) ∈ S <;> simp only [h, if_true, if_false]
     · exact fun hc => ((hdiff i).mp h) ((hqS₂ i).mp hc)
     · exact fun hc => h ((hqS₁ i).mp hc)
   · intro i j hij
     apply hu
     by_cases h₁ : (t₁, u i) ∈ S <;> by_cases h₂ : (t₁, u j) ∈ S <;>
-      simp only [h₁, h₂, if_true, if_false, ite_true, ite_false, Prod.mk.injEq] at hij <;>
+      simp only [h₁, h₂, if_true, if_false, Prod.mk.injEq] at hij <;>
       exact hij.2
   · intro i j hij
     apply hu
     by_cases h₁ : (t₁, u i) ∈ S <;> by_cases h₂ : (t₁, u j) ∈ S <;>
-      simp only [h₁, h₂, if_true, if_false, ite_true, ite_false, Prod.mk.injEq] at hij <;>
+      simp only [h₁, h₂, if_true, if_false, Prod.mk.injEq] at hij <;>
       exact hij.2
   · intro i
     by_cases h : (t₁, u i) ∈ S <;>
-      simp only [h, if_true, if_false, ite_true, ite_false, mem_region]
+      simp only [h, if_true, if_false, mem_region]
     · exact hq₁ i
     · exact hq₂ i
   · intro i
     by_cases h : (t₁, u i) ∈ S <;>
-      simp only [h, if_true, if_false, ite_true, ite_false, mem_region]
+      simp only [h, if_true, if_false, mem_region]
     · exact hq₂ i
     · exact hq₁ i
 
@@ -611,13 +611,13 @@ theorem exists_crossMatching_append [Fintype γ] [DecidableEq γ] {G : SimpleGra
             adj := ?_, left_mem := ?_, right_not_mem := ?_
             left_inj := ?_, right_inj := ?_ }, ?_, ?_⟩
   · intro x
-    rcases hx : finSumFinEquiv.symm x with j | j <;> simp only [hx, Sum.elim_inl, Sum.elim_inr]
+    rcases hx : finSumFinEquiv.symm x with j | j <;> simp only [Sum.elim_inl, Sum.elim_inr]
     exacts [M.adj j, M'.adj j]
   · intro x
-    rcases hx : finSumFinEquiv.symm x with j | j <;> simp only [hx, Sum.elim_inl, Sum.elim_inr]
+    rcases hx : finSumFinEquiv.symm x with j | j <;> simp only [Sum.elim_inl, Sum.elim_inr]
     exacts [M.left_mem j, M'.left_mem j]
   · intro x
-    rcases hx : finSumFinEquiv.symm x with j | j <;> simp only [hx, Sum.elim_inl, Sum.elim_inr]
+    rcases hx : finSumFinEquiv.symm x with j | j <;> simp only [Sum.elim_inl, Sum.elim_inr]
     exacts [M.right_not_mem j, M'.right_not_mem j]
   · exact (sumElim_injective M.left_inj M'.left_inj hlne).comp finSumFinEquiv.symm.injective
   · exact (sumElim_injective M.right_inj M'.right_inj hrne).comp finSumFinEquiv.symm.injective
@@ -1021,7 +1021,7 @@ theorem pow_le_card_subtreeAt {r : ℕ} (w : List Bool) (h : ℕ) (hwh : w.lengt
     (fun f _ g _ hfg => by
       have : List.ofFn f ++ w = List.ofFn g ++ w := congrArg Subtype.val hfg
       exact List.ofFn_injective (List.append_cancel_right this))
-  calc 2 ^ h = Fintype.card (Fin h → Bool) := by simp [Fintype.card_fun]
+  calc 2 ^ h = Fintype.card (Fin h → Bool) := by simp
     _ ≤ (subtreeAt r w).card := by simpa using this
 
 /-- Two subtrees whose roots sit at the same depth but at different nodes are
@@ -1047,7 +1047,7 @@ def binTreeGrandchild (w : List Bool) (k : Fin 3) : List Bool :=
 
 theorem binTreeGrandchild_eq (w : List Bool) (k : Fin 3) :
     ∃ z : List Bool, z.length = 2 ∧ binTreeGrandchild w k = z ++ w := by
-  fin_cases k <;> simp only [binTreeGrandchild, if_pos, if_neg] <;>
+  fin_cases k <;> simp only [binTreeGrandchild] <;>
     first
       | exact ⟨[false, false], rfl, rfl⟩
       | exact ⟨[false, true], rfl, rfl⟩

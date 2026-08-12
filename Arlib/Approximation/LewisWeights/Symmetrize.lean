@@ -110,6 +110,7 @@ private theorem sub_pow_even_le (A B : ℝ) (k : ℕ) :
     add_pow_le (abs_nonneg A) (abs_nonneg B) (2 * k)
   rw [h1]; exact h3.trans (h4.trans (by rw [hev.pow_abs, hev.pow_abs]))
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- Per-coordinate action of `swapPair` on the difference of draw values. -/
 private theorem sval_swapPair_diff (m : ℕ) (y : d → ℝ) (σ : Fin m → Bool)
     (p : (Fin m → ι) × (Fin m → ι)) (r : Fin m) :
@@ -122,6 +123,7 @@ private theorem sval_swapPair_diff (m : ℕ) (y : d → ℝ) (σ : Fin m → Boo
 
 /-! ## The reduced functional as a sum of per-draw values -/
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- `(sampledWPS … ω).E y = ∑ᵣ sval (ωᵣ)`. -/
 theorem sampledWPS_E_sval [Nonempty ι] (hw : ∀ i, 0 < w i)
     (m : ℕ) (y : d → ℝ) (ω : Fin m → ι) :
@@ -130,6 +132,7 @@ theorem sampledWPS_E_sval [Nonempty ι] (hw : ∀ i, 0 < w i)
 
 /-! ## The symmetrization inequality (L5) -/
 
+omit [DecidableEq d] in
 /-- **Symmetrization to the sign process** (the probabilistic core of Cohen–Peng's
 `lem:momentreduct`).  The `2k`-th central moment of the Lewis importance-sampling
 estimator is bounded by `2^{2k}` times the `2k`-th moment of the corresponding

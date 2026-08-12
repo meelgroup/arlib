@@ -151,7 +151,7 @@ private theorem filter_map_comm {A B : Type*} (f : A → B) (p : B → Bool) (L 
   | nil => simp
   | cons a L ih =>
     by_cases h : p (f a) = true <;>
-      simp [List.filter_cons, h, ih]
+      simp [h, ih]
 
 /-! ## A canonical enumeration of the choice functions of Step 1
 

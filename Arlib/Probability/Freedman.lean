@@ -362,7 +362,7 @@ theorem Ex_snoc (n : ℕ) (ν : ℕ → X → ℝ) (hν0 : ∀ m x, 0 ≤ ν m x
         = (∏ k : Fin n, ν (k : ℕ) (ω' k)) * ν n y := by
     intro ω' y
     rw [Fin.prod_univ_castSucc]
-    simp only [Fin.snoc_castSucc, Fin.snoc_last, Fin.coe_castSucc, Fin.val_last]
+    simp only [Fin.snoc_castSucc, Fin.snoc_last, Fin.val_castSucc, Fin.val_last]
   have key : (∑ ω : Fin (n + 1) → X, (∏ k : Fin (n + 1), ν (k : ℕ) (ω k)) * F ω)
       = ∑ ω' : Fin n → X,
           (∏ k : Fin n, ν (k : ℕ) (ω' k)) * (∑ y, ν n y * F (Fin.snoc ω' y)) := by
@@ -407,7 +407,7 @@ theorem sumMGF_prev_exact (ν : ℕ → X → ℝ) (hν0 : ∀ m x, 0 ≤ ν m x
     set Pn := (prodSpace (fun k : Fin n => ν k.val) (fun k => hν0 k.val)
       (fun k => hν1 k.val)).toFinProb with hPn
     have hsum : (∑ k : Fin (n + 1), vf k.val) = (∑ k : Fin n, vf k.val) + vf n := by
-      rw [Fin.sum_univ_castSucc]; simp only [Fin.coe_castSucc, Fin.val_last]
+      rw [Fin.sum_univ_castSucc]; simp only [Fin.val_castSucc, Fin.val_last]
     rw [hsum]
     have inner : ∀ ω' : Fin n → X,
         (∑ y, ν n y * Real.exp (θ * previsibleSum Φ (Fin.snoc ω' y)))
@@ -731,7 +731,7 @@ theorem freedman_tail_upper_prev_pathwise (ν : ℕ → X → ℝ) (hν0 : ∀ m
     (vfun : ∀ m, (Fin m → X) → ℝ)
     (hΦb : ∀ m p x, |Φ m p x| ≤ b) (hΦmz : ∀ m p, ∑ x, ν m x * Φ m p x = 0)
     (hΦvar : ∀ m p, ∑ x, ν m x * (Φ m p x) ^ 2 ≤ vfun m p)
-    (hvfun0 : ∀ m p, 0 ≤ vfun m p) (n : ℕ) (hVpos : 0 < V) (lam : ℝ)
+    (_hvfun0 : ∀ m p, 0 ≤ vfun m p) (n : ℕ) (hVpos : 0 < V) (lam : ℝ)
     (hbl : b * lam ≤ V) (hlam : 0 ≤ lam) :
     (prodSpace (fun k : Fin n => ν k.val) (fun k => hν0 k.val)
         (fun k => hν1 k.val)).toFinProb.Pr

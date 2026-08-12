@@ -65,11 +65,11 @@ theorem heapIdxL_injective : Function.Injective heapIdxL := by
       intro l₂ h
       rcases l₂ with _ | ⟨b, l⟩
       · rfl
-      · rw [heapIdxL_nil, heapIdxL_cons] at h; rcases b <;> simp at h <;> omega
+      · rw [heapIdxL_nil, heapIdxL_cons] at h; rcases b <;> simp at h
   | cons b₁ l₁ ih =>
       intro l₂ h
       rcases l₂ with _ | ⟨b₂, l₂⟩
-      · rw [heapIdxL_nil, heapIdxL_cons] at h; rcases b₁ <;> simp at h <;> omega
+      · rw [heapIdxL_nil, heapIdxL_cons] at h; rcases b₁ <;> simp at h
       · rw [heapIdxL_cons, heapIdxL_cons] at h
         have hb : b₁ = b₂ := by
           rcases b₁ <;> rcases b₂ <;> simp at h ⊢ <;> omega
@@ -197,7 +197,7 @@ theorem idx_val (r : ℕ) (k : Fin (2 ^ (r + 1) - 1)) : (k : ℕ) = heapIdxL (nd
 theorem mem_boxBag' (r p : ℕ) (k : Fin (2 ^ (r + 1) - 1)) (v : BinTreeNode r × Fin (2 * p)) :
     v ∈ boxBag r p k ↔ (v.1 = nd r k ∨ v.1 = binTreeParent (nd r k)) := mem_boxBag r p k v
 
-theorem boxRootedTD_parent_lt (r p : ℕ) (k m : Fin (2 ^ (r + 1) - 1))
+theorem boxRootedTD_parent_lt (r _p : ℕ) (k m : Fin (2 ^ (r + 1) - 1))
     (h : boxParent r k = some m) : m < k := by
   obtain ⟨hne, hm⟩ := (boxParent_some_iff r k m).mp h
   have hmv : (m : ℕ) = heapIdxL (nd r k).1.tail := by rw [idx_val r m, hm]; rfl
@@ -209,7 +209,7 @@ theorem boxRootedTD_mem_bag (r p : ℕ) (v : BinTreeNode r × Fin (2 * p)) :
     ∃ k, v ∈ boxBag r p k :=
   ⟨heapEquiv r v.1, (mem_boxBag' r p _ v).mpr (Or.inl (by rw [nd_heapEquiv]))⟩
 
-theorem boxRootedTD_conn_root (r p : ℕ) (rr rr' : Fin (2 ^ (r + 1) - 1))
+theorem boxRootedTD_conn_root (r _p : ℕ) (rr rr' : Fin (2 ^ (r + 1) - 1))
     (hr : boxParent r rr = none) (hr' : boxParent r rr' = none) : rr = rr' := by
   have h1 : (nd r rr).1 = [] := (boxParent_none_iff r rr).mp hr
   have h2 : (nd r rr').1 = [] := (boxParent_none_iff r rr').mp hr'
@@ -348,7 +348,7 @@ theorem decisionDNNF_robp_separation_quintic_unconditional {r : ℕ} (hr : 1 ≤
         Z.ReadOnce → Z.Uniform →
         Z.Realises (binTree r □ SimpleGraph.pathGraph (2 * r)) →
         (2 : ℝ) ^ ((((r + 1 - Nat.clog 2 r) * r / 2 : ℕ) : ℝ) / TCover.f 5) ≤ (s : ℝ) := by
-  haveI : DecidableRel (binTree r □ SimpleGraph.pathGraph (2 * r)).Adj :=
+  have : DecidableRel (binTree r □ SimpleGraph.pathGraph (2 * r)).Adj :=
     fun _ _ => Classical.dec _
   refine ⟨?_, fun s Z hro hu hR =>
     Razgon.two_rpow_le_size_binTree_pathGraph (clog_two_le_self r) Z hro hu hR⟩

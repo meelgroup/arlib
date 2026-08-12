@@ -313,7 +313,7 @@ theorem Pr_prodSpace_countPred_le (μ : ι → X → ℝ) (h0 : ∀ j x, 0 ≤ �
       = Finset.univ.filter fun ω : (prodSpace μ h0 h1).toFinProb.Ω =>
         countPred T p ω ∈ Finset.range (n + 1) := by
     ext ω
-    simp [Nat.lt_succ_iff]
+    simp
   rw [hev]
   exact Pr_prodSpace_countPred_mem μ h0 h1 p T hr _
 

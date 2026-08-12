@@ -538,6 +538,7 @@ theorem IsFinite.restrictAlphabet (h : A.IsFinite k) :
 /-- A `Fintype` on the alphabet of `restrictAlphabet A`.  Noncomputable for the
 same reason as `fintypeRestrictState`: `IsFinite` carries no decidability, and
 none is assumed anywhere in this file. -/
+@[instance_reducible]
 noncomputable def IsFinite.fintypeLabel (h : A.IsFinite k) : Fintype ↥A.usedLabels :=
   h.alphabet.fintype
 

@@ -534,7 +534,7 @@ imported theorem of Oztok and Darwiche.  It is a consistency check on the *shape
 bundle — no field contradicts another, and in particular a decision-DNNF really can compute
 a `φ(G)` — so that `decisionDNNF_robp_separation` is known to be conditional on a hypothesis about something
 rather than about nothing. -/
-def oztokDarwiche_witness : OztokDarwiche (Fin 2) 0 7 where
+theorem oztokDarwiche_witness : OztokDarwiche (Fin 2) 0 7 where
   compile := by
     have hcases : ∀ u v : Fin 2, u ≠ v → (u = 0 ∧ v = 1) ∨ (u = 1 ∧ v = 0) := by decide
     intro G t _

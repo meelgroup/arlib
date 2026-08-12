@@ -45,6 +45,7 @@ def swapPair {m : ℕ} (σ : Fin m → Bool) (p : (Fin m → ι) × (Fin m → �
     (Fin m → ι) × (Fin m → ι) :=
   (fun r => if σ r then p.1 r else p.2 r, fun r => if σ r then p.2 r else p.1 r)
 
+omit [Fintype ι] [DecidableEq ι] in
 /-- `swapPair σ` is an involution (hence a bijection). -/
 theorem swapPair_involutive {m : ℕ} (σ : Fin m → Bool) :
     Function.Involutive (swapPair (ι := ι) σ) := by
@@ -75,7 +76,8 @@ theorem mass_swapPair (w : ι → ℝ) [Nonempty ι] (hw : ∀ i, 0 < w i) (m : 
   rw [← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib]
   refine Finset.prod_congr rfl fun r _ => ?_
   simp only [swapPair]
-  by_cases h : σ r <;> simp [h] <;> ring
+  by_cases h : σ r <;> simp [h]
+  ring
 
 /-- **The product-space expectation is invariant under `swapPair`.**  Because the
 sampler mass factorises over coordinates and `swapPair` only permutes the pair of

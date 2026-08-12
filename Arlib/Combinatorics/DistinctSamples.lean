@@ -172,7 +172,7 @@ theorem card_filter_lt_distinct_le (S : Finset α) (N : ℕ) (hNS : N ≤ S.card
     intro Z hZS hZN
     rcases lt_or_ge Z.card N with hk | hk
     · have hcard : (Fintype.piFinset fun _ : Fin 0 => S).card = 1 := by
-        simp [Fintype.card_piFinset]
+        simp
       have h1 : (((Fintype.piFinset fun _ : Fin 0 => S).filter
           fun ω => (Z ∪ Finset.image ω Finset.univ).card < N).card : ℝ) ≤ 1 := by
         have hle := Finset.card_filter_le (Fintype.piFinset fun _ : Fin 0 => S)

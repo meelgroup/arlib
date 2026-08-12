@@ -89,7 +89,7 @@ theorem levMass_sum (K : ℕ) : ∑ k, levMass K k = 1 := by
     intro i
     unfold levMass
     rw [if_neg (show ¬((Fin.castSucc i : Fin (K + 1)) : ℕ) = K from i.isLt.ne),
-      Fin.coe_castSucc]
+      Fin.val_castSucc]
   rw [Fin.sum_univ_castSucc, hlast, Finset.sum_congr rfl (fun i _ => hcast i),
     Fin.sum_univ_eq_sum_range (fun i => (1 / 2 : ℝ) ^ (i + 1)) K, sum_half_pow_succ]
   ring

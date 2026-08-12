@@ -185,7 +185,7 @@ instance decidableHitsTarget (s : S) {k : ℕ} (ω : Fin k → S) :
 
 theorem hitsTarget_cons (s s' : S) {k : ℕ} (ω : Fin k → S) :
     M.HitsTarget s (Fin.cons s' ω) ↔ (M.isTarget s = true ∨ M.HitsTarget s' ω) := by
-  simp only [HitsTarget, Fin.exists_fin_succ, Fin.cons_zero, Fin.cons_succ, or_assoc]
+  simp only [HitsTarget, Fin.exists_fin_succ, Fin.cons_zero, Fin.cons_succ]
 
 /-- **`reachProbSem M π k s = P^π(τ ⊨ S_T within k steps ∣ s₀ = s)`** — the
 source paper's optimal reachability value at a finite horizon: the

@@ -88,39 +88,48 @@ variable {κ : Type} [Fintype κ] [DecidableEq κ]
 
 variable (g : (Fin b → Bool) → (Fin b → Bool) → Bool)
 
+omit [Fintype κ] in
 @[simp] theorem eval_posDNF (i : κ) (w : Gadget.Var κ b → Bool) :
     DNF.eval (posDNF g i) w = g (fun j => w (0, i, j)) (fun j => w (1, i, j)) := by
   rw [posDNF, DNF.eval_mapDNF, eval_minterms]; rfl
 
+omit [Fintype κ] in
 @[simp] theorem eval_negDNF (i : κ) (w : Gadget.Var κ b → Bool) :
     DNF.eval (negDNF g i) w = !(g (fun j => w (0, i, j)) (fun j => w (1, i, j))) := by
   rw [negDNF, DNF.eval_mapDNF, eval_minterms]; rfl
 
+omit [Fintype κ] in
 /-- The complementarity hypothesis that `substDNF` consumes, discharged. -/
 theorem eval_negDNF_eq (i : κ) (w : Gadget.Var κ b → Bool) :
     DNF.eval (negDNF g i) w = !DNF.eval (posDNF g i) w := by
   rw [eval_negDNF, eval_posDNF]
 
+omit [Fintype κ] in
 theorem isKDNF_posDNF (i : κ) : DNF.IsKDNF (2 * b) (posDNF g i) := by
   have h := DNF.isKDNF_mapDNF (e := place (b := b) i) (isKDNF_minterms (localFn g))
   simpa [Fintype.card_prod] using h
 
+omit [Fintype κ] in
 theorem isKDNF_negDNF (i : κ) : DNF.IsKDNF (2 * b) (negDNF g i) := by
   have h := DNF.isKDNF_mapDNF (e := place (b := b) i)
     (isKDNF_minterms (fun q => !(localFn g q)))
   simpa [Fintype.card_prod] using h
 
+omit [Fintype κ] in
 theorem unambiguous_posDNF (i : κ) : DNF.Unambiguous (posDNF g i) :=
   DNF.unambiguous_mapDNF (unambiguous_minterms _)
 
+omit [Fintype κ] in
 theorem unambiguous_negDNF (i : κ) : DNF.Unambiguous (negDNF g i) :=
   DNF.unambiguous_mapDNF (unambiguous_minterms _)
 
+omit [Fintype κ] in
 theorem numTerms_posDNF_le (i : κ) : (posDNF g i).numTerms ≤ 2 ^ (2 * b) := by
   have h := numTerms_minterms_le (localFn g)
   rw [posDNF, DNF.numTerms_mapDNF]
   simpa [Fintype.card_prod] using h
 
+omit [Fintype κ] in
 theorem numTerms_negDNF_le (i : κ) : (negDNF g i).numTerms ≤ 2 ^ (2 * b) := by
   have h := numTerms_minterms_le (fun q => !(localFn g q))
   rw [negDNF, DNF.numTerms_mapDNF]
@@ -137,6 +146,7 @@ copies `ψ` and `φ`. -/
 noncomputable def gadgetSubst (χ : DNF ι) (emb : ι → κ) : DNF (Gadget.Var κ b) :=
   substDNF χ (fun i => posDNF g (emb i)) (fun i => negDNF g (emb i))
 
+omit [Fintype ι] [DecidableEq ι] [Fintype κ] in
 /-- **The composed DNF computes the composed function.** -/
 theorem eval_gadgetSubst (χ : DNF ι) (emb : ι → κ) (w : Gadget.Var κ b → Bool) :
     DNF.eval (gadgetSubst g χ emb) w
@@ -147,15 +157,18 @@ theorem eval_gadgetSubst (χ : DNF ι) (emb : ι → κ) (w : Gadget.Var κ b �
   rw [gadgetSubst, eval_substDNF (fun i α => eval_negDNF_eq g (emb i) α), hpt]
   rfl
 
+omit [Fintype ι] [DecidableEq ι] [Fintype κ] in
 theorem isKDNF_gadgetSubst {m : ℕ} {χ : DNF ι} (h : DNF.IsKDNF m χ) (emb : ι → κ) :
     DNF.IsKDNF (m * (2 * b)) (gadgetSubst g χ emb) :=
   isKDNF_substDNF h (fun i => isKDNF_posDNF g (emb i)) (fun i => isKDNF_negDNF g (emb i))
 
+omit [Fintype ι] [DecidableEq ι] [Fintype κ] in
 theorem unambiguous_gadgetSubst {χ : DNF ι} (h : DNF.Unambiguous χ) (emb : ι → κ) :
     DNF.Unambiguous (gadgetSubst g χ emb) :=
   unambiguous_substDNF h (fun i => unambiguous_posDNF g (emb i))
     (fun i => unambiguous_negDNF g (emb i)) (fun i α => eval_negDNF_eq g (emb i) α)
 
+omit [Fintype ι] [DecidableEq ι] [Fintype κ] in
 theorem numTerms_gadgetSubst_le {m : ℕ} {χ : DNF ι} (h : DNF.IsKDNF m χ) (emb : ι → κ) :
     (gadgetSubst g χ emb).numTerms ≤ χ.numTerms * (2 ^ (2 * b)) ^ m :=
   numTerms_substDNF_le (Nat.one_le_two_pow) h
@@ -183,6 +196,7 @@ variable {m degBound : ℕ} {δ : ℝ}
 def orFn (χ : DNF ι) : ((ι ⊕ ι) → Bool) → Bool :=
   fun β => DNF.eval χ (fun i => β (Sum.inl i)) || DNF.eval χ (fun i => β (Sum.inr i))
 
+omit [Fintype ι] [DecidableEq ι] in
 /-- The real-valued `orExt` of an indicator is the indicator of the Boolean `∨`.
 This is where `LowerBounds/ConicalJunta.lean`'s arithmetic `∨` meets the
 Boolean one the lifting theorem is stated for. -/
@@ -192,7 +206,7 @@ theorem orExt_indicator (χ : DNF ι) (β : (ι ⊕ ι) → Bool) :
   unfold orExt orFn
   by_cases h1 : DNF.eval χ (fun i => β (Sum.inl i)) <;>
     by_cases h2 : DNF.eval χ (fun i => β (Sum.inr i)) <;>
-    simp [Function.comp_def, h1, h2] <;> norm_num
+    simp [Function.comp_def, h1, h2]
 
 /-- Every function of finitely many variables depends on all of them, vacuously;
 needed to know the set of partition sizes is nonempty and so that `fixedPar` is

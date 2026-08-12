@@ -145,8 +145,7 @@ theorem Pr_prodFinProb_snd_inter_fst (A B : FinProb) (H : Finset B.Ω) (a : A.Ω
   have hslab : (univ.filter fun ω : A.Ω × B.Ω => ω.2 ∈ H)
       = (univ : Finset A.Ω) ×ˢ H := by
     ext ω
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_product,
-      and_iff_right (Finset.mem_univ ω.1)]
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_product]
   have hfst : dist (prodFinProb A B) Prod.fst a = A.mass a := by
     have h : dist (prodFinProb A B) (Prod.fst : A.Ω × B.Ω → A.Ω) = dist A (fun x => x) :=
       dist_prodFinProb_fst (Q := B) (fun x => x)

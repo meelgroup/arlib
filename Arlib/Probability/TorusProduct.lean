@@ -114,8 +114,8 @@ the product of circle Haar measures up to a scalar, which normalisation pins at
 theorem map_proj (F : Finset ι) :
     Measure.map (proj F) (mu ι) = Measure.pi (fun _ : F => (volume : Measure Circ)) := by
   set ν := Measure.map (proj F) (mu ι) with hν
-  haveI : IsProbabilityMeasure ν := isProbabilityMeasure_map (measurable_proj F).aemeasurable
-  haveI : ν.IsAddLeftInvariant := by
+  have : IsProbabilityMeasure ν := isProbabilityMeasure_map (measurable_proj F).aemeasurable
+  have : ν.IsAddLeftInvariant := by
     constructor
     intro g
     classical
@@ -141,8 +141,8 @@ theorem map_coord (i : ι) :
     Measure.map (fun ω : Space ι => ω i) (mu ι) = (volume : Measure Circ) := by
   set ν := Measure.map (fun ω : Space ι => ω i) (mu ι) with hν
   have hmi : Measurable (fun ω : Space ι => ω i) := measurable_pi_apply i
-  haveI : IsProbabilityMeasure ν := isProbabilityMeasure_map hmi.aemeasurable
-  haveI : ν.IsAddLeftInvariant := by
+  have : IsProbabilityMeasure ν := isProbabilityMeasure_map hmi.aemeasurable
+  have : ν.IsAddLeftInvariant := by
     constructor
     intro g
     classical
@@ -288,7 +288,7 @@ theorem comap_le_now (t : ℕ) (s : S) (a : A) :
       ≤ cylinderEvents (X := fun _ : Idx S A => Circ) (↑(now S A t) : Set (Idx S A)) :=
   le_iSup₂ (f := fun (i : Idx S A) (_ : i ∈ (↑(now S A t) : Set (Idx S A))) =>
     MeasurableSpace.comap (fun ω : Space (Idx S A) => ω i) inferInstance)
-    (t, s, a) (by simp [now, Finset.mem_product])
+    (t, s, a) (by simp [now])
 
 /-- Each individual draw at a strictly earlier time is `ℱ t`-measurable. -/
 theorem comap_le_filtration {t u : ℕ} (h : u < t) (s : S) (a : A) :
@@ -296,7 +296,7 @@ theorem comap_le_filtration {t u : ℕ} (h : u < t) (s : S) (a : A) :
       ≤ filtration S A t :=
   le_iSup₂ (f := fun (i : Idx S A) (_ : i ∈ (↑(past S A t) : Set (Idx S A))) =>
     MeasurableSpace.comap (fun ω : Space (Idx S A) => ω i) inferInstance)
-    (u, s, a) (by simp only [Finset.coe_sort_coe, Finset.mem_coe]; exact mem_past.2 h)
+    (u, s, a) (by simp only [Finset.mem_coe]; exact mem_past.2 h)
 
 end Filtration
 
@@ -324,7 +324,7 @@ theorem measurable_toIoc : Measurable toIoc :=
 
 theorem toIoc_coe {x : ℝ} (hx : x ∈ Set.Ioc (0 : ℝ) (0 + 1)) : toIoc (↑x : Circ) = x := by
   have : (AddCircle.equivIoc (1 : ℝ) 0) (↑x : Circ) = ⟨x, hx⟩ := by
-    rw [Equiv.apply_eq_iff_eq_symm_apply]; rfl
+    rw [← Equiv.eq_symm_apply]; rfl
   rw [toIoc, this]
 
 /-- **The circle coordinate, read in `(0,1]`, is uniform.** -/

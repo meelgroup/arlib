@@ -172,7 +172,7 @@ theorem one_sub_card_mul_le_Pr_forall_not {ι : Type*} [DecidableEq ι]
       = Finset.univ.filter (fun ω => ∀ i ∈ s, ¬ p i ω) := by
     apply Finset.filter_congr
     intro ω _
-    simp only [not_exists, eq_iff_iff]
+    simp only [not_exists]
     tauto
   rw [hgood] at hsplit
   linarith
@@ -210,7 +210,7 @@ theorem Pr_count_ne_zero_le_Ex (N : P.Ω → ℕ) :
     apply Finset.filter_congr
     intro ω _
     have : (1 : ℝ) ≤ (N ω : ℝ) ↔ 1 ≤ N ω := by exact_mod_cast Iff.rfl
-    simp only [eq_iff_iff, this]
+    simp only [this]
     omega
   rw [hev]
   exact P.markov_one _ (fun ω => Nat.cast_nonneg _)

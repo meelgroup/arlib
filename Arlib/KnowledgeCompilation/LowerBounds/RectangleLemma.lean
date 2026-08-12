@@ -176,17 +176,17 @@ def descend (C : NNF V) (X : Finset V) (α : V → Bool) (i : Fin C.size) :
     Fin C.size :=
   if C.varsAt i ⊆ X then i
   else
-    match h : C.gate i with
+    match _h : C.gate i with
     | .const _ => i
     | .lit _ _ => i
     | .conj j k => if Disjoint (C.varsAt j) X then descend C X α k else descend C X α j
     | .disj j k => if C.valAt α j = true then descend C X α j else descend C X α k
 termination_by i.val
 decreasing_by
-  · exact (C.conj_lt h).2
-  · exact (C.conj_lt h).1
-  · exact (C.disj_lt h).1
-  · exact (C.disj_lt h).2
+  · exact (C.conj_lt _h).2
+  · exact (C.conj_lt _h).1
+  · exact (C.disj_lt _h).1
+  · exact (C.disj_lt _h).2
 
 variable {C : NNF V} {X : Finset V} {α : V → Bool}
 

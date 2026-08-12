@@ -67,7 +67,7 @@ Everything below stays in `ℕ`.
 -/
 import Arlib.Communication.BooleanFunction
 import Arlib.Communication.Rectangle
-import Mathlib.Data.Nat.Lattice
+import Mathlib.Order.Lattice.Nat
 import Mathlib.Data.Fintype.BigOperators
 
 namespace Arlib.Communication
@@ -337,7 +337,7 @@ theorem hasPartitionOfSize_two_pow (P : VarPartition Z) (hf : DependsOn f Z)
     (b : Bool) : HasPartitionOfSize P f b (2 ^ Z.card) := by
   classical
   have hcard : Fintype.card (Z → Bool) = 2 ^ Z.card := by
-    simp [Fintype.card_fun]
+    simp
   obtain ⟨e⟩ : Nonempty (Fin (2 ^ Z.card) ≃ (Z → Bool)) :=
     ⟨(Fintype.equivFinOfCardEq hcard).symm⟩
   -- Membership in the `i`-th cell forces agreement with `e i` on all of `Z`.

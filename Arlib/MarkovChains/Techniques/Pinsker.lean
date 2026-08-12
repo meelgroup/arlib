@@ -180,7 +180,7 @@ theorem two_mul_sub_le_add_one_mul_log {t : ℝ} (ht : 1 ≤ t) :
     2 * (t - 1) ≤ (t + 1) * Real.log t := by
   have h := monotoneOn_padeAux (Set.mem_Ioi.mpr one_pos)
     (Set.mem_Ioi.mpr (lt_of_lt_of_le one_pos ht)) ht
-  simp only [Real.log_one, mul_zero, sub_self, zero_sub, mul_one] at h
+  simp only [Real.log_one, mul_zero, sub_self] at h
   linarith
 
 /-- **The Padé bound on the logarithm, `t ≤ 1`.**  `(t + 1) log t ≤ 2(t − 1)`:
@@ -189,7 +189,7 @@ sides being negative. -/
 theorem add_one_mul_log_le_two_mul_sub {t : ℝ} (ht0 : 0 < t) (ht1 : t ≤ 1) :
     (t + 1) * Real.log t ≤ 2 * (t - 1) := by
   have h := monotoneOn_padeAux (Set.mem_Ioi.mpr ht0) (Set.mem_Ioi.mpr one_pos) ht1
-  simp only [Real.log_one, mul_zero, sub_self, zero_sub, mul_one] at h
+  simp only [Real.log_one, mul_zero, sub_self] at h
   linarith
 
 /-! ## The scalar Padé estimate for `t log t − t + 1`
@@ -356,7 +356,7 @@ theorem three_div_two_mul_sq_le_klTerm_mul {a b : ℝ} (ha : 0 ≤ a) (hb : 0 �
     rcases ha.eq_or_lt with ha0 | hapos
     · -- `a = 0`: the estimate reads `(3/2)b² ≤ 2b²`
       rw [← ha0]
-      simp only [klTerm, Real.log_zero, zero_mul, zero_sub, zero_add, neg_zero, sub_zero,
+      simp only [klTerm, Real.log_zero, zero_mul, zero_sub, zero_add, sub_zero,
         zero_sub]
       nlinarith [sq_nonneg b]
     · -- the generic case: scale by `b²`

@@ -521,7 +521,7 @@ theorem reaches_of_keptRel_reflTransGen {lvl : S → ℕ} (h : N.IsUnrolled lvl)
     have hlen : (w.take (lvl N.init - lvl b)).length = lvl N.init - lvl b := by
       rw [List.length_take]; omega
     have htake : w.take (lvl N.init - lvl c) = w.take (lvl N.init - lvl b) ++ [a] := by
-      rw [hidx, List.take_succ, hget]
+      rw [hidx, List.take_add_one, hget]
       rfl
     rw [htake, List.drop_append, hlen]
     have hz : lvl N.init - lvl u - (lvl N.init - lvl b) = 0 := by omega

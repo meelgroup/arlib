@@ -144,7 +144,6 @@ noncomputable def metropolis (μ : FinDist Ω) (Q : FinChain Ω) : FinChain Ω w
       intro z hz
       exact if_neg (Ne.symm (Finset.ne_of_mem_erase hz))
     rw [← Finset.add_sum_erase _ _ (Finset.mem_univ x), Finset.sum_congr rfl hoff]
-    beta_reduce
     rw [if_pos rfl, mhStay]
     ring
 

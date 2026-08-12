@@ -82,13 +82,13 @@ omit [Fintype F] [DecidableEq F] in
 /-- Evaluating `polyOfCoeffs c` is the obvious finite sum. -/
 theorem eval_polyOfCoeffs {k : ℕ} (c : Fin k → F) (a : F) :
     Polynomial.eval a (polyOfCoeffs c) = ∑ i : Fin k, c i * a ^ (i : ℕ) := by
-  simp [polyOfCoeffs, Polynomial.eval_finset_sum]
+  simp [polyOfCoeffs, Polynomial.eval_finsetSum]
 
 omit [Fintype F] [DecidableEq F] in
 /-- The coefficients of `polyOfCoeffs c` are the entries of `c`. -/
 theorem coeff_polyOfCoeffs {k : ℕ} (c : Fin k → F) (j : Fin k) :
     (polyOfCoeffs c).coeff (j : ℕ) = c j := by
-  rw [polyOfCoeffs, Polynomial.finset_sum_coeff, Finset.sum_eq_single j]
+  rw [polyOfCoeffs, Polynomial.finsetSum_coeff, Finset.sum_eq_single j]
   · simp
   · intro b _ hb
     have hne : (j : ℕ) ≠ (b : ℕ) := fun h => hb (Fin.val_injective h).symm

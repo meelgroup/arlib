@@ -51,6 +51,7 @@ open Finset Arlib
 variable {ι d : Type} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d]
 variable {w : ι → ℝ} {a : ι → d → ℝ}
 
+omit [DecidableEq ι] in
 /-- The finite sum of squared row processes is nonnegative (each term is an even
 power). -/
 theorem sum_rowProc_pow_nonneg (s : ι → Bool) (k : ℕ) :
@@ -136,7 +137,7 @@ theorem process_uniform_tail_le_delta [Nonempty ι] (hL : IsLewis w a) (hw : ∀
   -- `B^k ≤ e^{-k}`, hence `n·B^k ≤ n·e^{-k} ≤ δ`
   have hBk : B ^ k ≤ Real.exp (-(k : ℝ)) := by
     calc B ^ k ≤ Real.exp (-1) ^ k := pow_le_pow_left₀ hBnn hBe k
-      _ = Real.exp (-(k : ℝ)) := by rw [← Real.exp_nat_mul]; congr 1; push_cast; ring
+      _ = Real.exp (-(k : ℝ)) := by rw [← Real.exp_nat_mul]; congr 1; ring
   have hfin : (Fintype.card ι : ℝ) * Real.exp (-(k : ℝ)) ≤ δ := by
     rw [← Real.exp_log hn, ← Real.exp_add]
     rw [show Real.log ((Fintype.card ι : ℝ) / δ) = Real.log (Fintype.card ι) - Real.log δ from

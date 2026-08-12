@@ -170,7 +170,7 @@ theorem outProb_add_compl (ν : PMF (β × ℕ)) (T : Set β) :
     ← PMF.tsum_coe ν]
   refine tsum_congr fun x => ?_
   by_cases hx : x.1 ∈ T <;>
-    simp [Set.indicator_apply, hx]
+    simp [hx]
 
 /-- The real form of `outProb_add_compl`. -/
 theorem outProbR_compl (ν : PMF (β × ℕ)) (T : Set β) :
@@ -217,7 +217,7 @@ theorem pexp_pow_indicator (μ : PMF (ℝ × ℕ)) (S : Set ℝ) (c : ℝ≥0∞
   rw [pexp, outProb, outProb, PMF.toOuterMeasure_apply, PMF.toOuterMeasure_apply,
     ← ENNReal.tsum_mul_right, ← ENNReal.tsum_add]
   refine tsum_congr fun x => ?_
-  by_cases hx : x.1 ∈ S <;> simp [Set.indicator_apply, hx]
+  by_cases hx : x.1 ∈ S <;> simp [hx]
 
 /-- **The moment generating function of the good count factors.**
 

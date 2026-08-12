@@ -67,9 +67,11 @@ the disjunction `⋁ⱼ y_{i,j}` — the paper's `β(xᵢ) = 1 ⟺ α(⋁ⱼ y_{
 def collapse (α : ι × Fin m → Bool) : ι → Bool :=
   fun i => decide (∃ j : Fin m, α (i, j) = true)
 
+omit [DecidableEq ι] in
 lemma collapse_eq_true {α : ι × Fin m → Bool} {i : ι} :
     collapse α i = true ↔ ∃ j, α (i, j) = true := by simp [collapse]
 
+omit [DecidableEq ι] in
 lemma collapse_eq_false {α : ι × Fin m → Bool} {i : ι} :
     collapse α i = false ↔ ∀ j, α (i, j) = false := by
   simp [collapse]
@@ -301,7 +303,7 @@ theorem numTerms_copyDNF_le (ψ : DNF ι) (choices : Finset (Lit ι) → List (�
     calc (choices t).length + (rest.flatMap fun u => (choices u).map (copyTerm u)).length
         ≤ B + rest.length * B := Nat.add_le_add ht (ih hrest)
       _ = (rest.length + 1) * B := by ring
-      _ = (t :: rest).length * B := by simp [Nat.add_comm]
+      _ = (t :: rest).length * B := by simp
 
 /-! ## Faithfulness of `ψ^∨` -/
 

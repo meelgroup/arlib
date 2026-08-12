@@ -76,13 +76,13 @@ def H (j : ℕ) : ℝ := P.Ex (fun ω => ∏ b ∈ S.blocks, S.X b j ω)
 
 theorem G_eq_H_pred (j : ℕ) (hj : 0 < j) (hjd : j ≤ S.depth) : S.G j = S.H (j - 1) := by
   unfold G H
-  haveI := S.adm_Xhat j
+  have := S.adm_Xhat j
   exact Ex_prod_cond_transport S.ce (S.F j) S.blocks (fun b => S.Xhat b j)
     (fun b => S.X b (j - 1)) (S.fact_Xhat j hj hjd) (fun b hb => S.cond_Xhat j hj hjd b hb)
 
 theorem H_eq_G (j : ℕ) (hj : 0 < j) (hjd : j ≤ S.depth) : S.H j = S.G j := by
   unfold G H
-  haveI := S.adm_X j
+  have := S.adm_X j
   exact Ex_prod_cond_transport S.ce (S.Fhat j) S.blocks (fun b => S.X b j)
     (fun b => S.Xhat b j) (S.fact_X j hj hjd) (fun b hb => S.cond_X j hj hjd b hb)
 
@@ -98,7 +98,7 @@ theorem prod_descent (i : ℕ) (hi : i + 1 ≤ S.depth) : S.G (i + 1) = S.H 0 :=
 theorem base_prod_bound (K : ℝ)
     (hbound : ∀ b ∈ S.blocks, ∀ ω, 0 ≤ S.X b 0 ω ∧ S.X b 0 ω ≤ K) :
     S.H 0 ≤ K ^ S.blocks.card := by
-  haveI := S.adm_X 0
+  have := S.adm_X 0
   unfold H
   calc P.Ex (fun ω => ∏ b ∈ S.blocks, S.X b 0 ω)
       ≤ P.Ex (fun _ => K ^ S.blocks.card) := by

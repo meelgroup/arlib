@@ -222,7 +222,7 @@ theorem jointreeWidthLe_bvaExpansion [DecidableEq V] {Δ Sig : CNF V} {w : ℕ} 
     intro x i j hxi hxj
     by_cases hxaux : x ∈ aux
     · -- `x` is auxiliary: it sits in every cluster, and the tree is connected
-      obtain ⟨w'⟩ := J.isTree.isConnected.preconnected i j
+      obtain ⟨w'⟩ := J.isTree.connected.preconnected i j
       exact ⟨w', fun k _ => Finset.mem_union_right _ hxaux⟩
     · -- `x` is original: reuse the old running intersection
       have hxi' : x ∈ J.cluster i := (Finset.mem_union.mp hxi).resolve_right hxaux

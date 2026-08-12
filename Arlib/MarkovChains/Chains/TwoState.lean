@@ -72,7 +72,7 @@ def twoState (a b : ℝ) (ha : 0 ≤ a) (ha1 : a ≤ 1) (hb : 0 ≤ b) (hb1 : b 
     FinChain Bool where
   P x y := if x then (if y then 1 - b else b) else (if y then a else 1 - a)
   P_nonneg x y := by cases x <;> cases y <;> simp <;> linarith
-  P_sum x := by cases x <;> simp [Fintype.sum_bool]
+  P_sum x := by cases x <;> simp
 
 variable {a b : ℝ} (ha : 0 ≤ a) (ha1 : a ≤ 1) (hb : 0 ≤ b) (hb1 : b ≤ 1)
 
@@ -92,7 +92,7 @@ noncomputable def twoStateDist (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : 
   p_nonneg x := by
     cases x <;> simp <;> [exact div_nonneg hb hab.le; exact div_nonneg ha hab.le]
   p_sum := by
-    simp only [Fintype.sum_bool, Bool.false_eq_true, if_true, if_false, reduceIte]
+    simp only [Fintype.sum_bool, Bool.false_eq_true, if_true, if_false]
     field_simp
 
 variable (hab : 0 < a + b)
@@ -126,7 +126,7 @@ theorem twoState_act_sub (f : Bool → ℝ) :
     (twoState a b ha ha1 hb hb1).act f true - (twoState a b ha ha1 hb hb1).act f false
       = (1 - a - b) * (f true - f false) := by
   simp only [FinKernel.act, Fintype.sum_bool, twoState_ff, twoState_ft, twoState_tf,
-    twoState_tt, FinKernel.coe_eq]
+    twoState_tt]
   ring
 
 /-- The reversed form of `twoState_act_sub`, convenient for variance
@@ -179,7 +179,7 @@ theorem twoState_dirichlet (f : Bool → ℝ) :
       = (a + b) * Var (twoStateDist a b ha hb hab) f := by
   rw [Var_bool]
   simp only [ip, FinKernel.act, Fintype.sum_bool, twoState_ff, twoState_ft, twoState_tf,
-    twoState_tt, twoStateDist_false, twoStateDist_true, FinKernel.coe_eq, FinDist.coe_eq]
+    twoState_tt, twoStateDist_false, twoStateDist_true]
   field_simp
   ring
 

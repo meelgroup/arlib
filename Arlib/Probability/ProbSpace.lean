@@ -218,7 +218,7 @@ theorem Pr_biUnion_le {ι : Type} (s : Finset ι) (E : ι → P.Ω → Prop)
     (hE : ∀ i ∈ s, IsAdm P (indic (E i)))
     [IsAdm P (indic (fun ω => ∃ i ∈ s, E i ω))] :
     P.Pr (fun ω => ∃ i ∈ s, E i ω) ≤ ∑ i ∈ s, P.Pr (E i) := by
-  haveI hSum : IsAdm P (fun ω => ∑ i ∈ s, indic (E i) ω) := IsAdm.sum P s _ hE
+  have hSum : IsAdm P (fun ω => ∑ i ∈ s, indic (E i) ω) := IsAdm.sum P s _ hE
   show P.Ex (indic (fun ω => ∃ i ∈ s, E i ω)) ≤ ∑ i ∈ s, P.Ex (indic (E i))
   rw [← P.Ex_sum s _ hE]
   refine P.Ex_mono (fun ω => ?_)

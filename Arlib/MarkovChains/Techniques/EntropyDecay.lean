@@ -488,7 +488,7 @@ tensorization statement upstream of it — usable at a point mass. -/
 theorem Ent_act_le_extend {μ : FinDist Ω} {P : FinChain Ω} {c : ℝ}
     (h : ∀ g : Ω → ℝ, (∀ x, 0 < g x) → Ent μ (P.act g) ≤ c * Ent μ g)
     {f : Ω → ℝ} (hf : ∀ x, 0 ≤ f x) : Ent μ (P.act f) ≤ c * Ent μ f := by
-  haveI : (nhdsWithin (0 : ℝ) (Set.Ioi 0)).NeBot := nhdsGT_neBot 0
+  have : (nhdsWithin (0 : ℝ) (Set.Ioi 0)).NeBot := nhdsGT_neBot 0
   have hcont : ∀ g : Ω → ℝ, Filter.Tendsto (fun ε : ℝ => Ent μ (fun x => g x + ε))
       (nhdsWithin 0 (Set.Ioi 0)) (nhds (Ent μ g)) := by
     intro g

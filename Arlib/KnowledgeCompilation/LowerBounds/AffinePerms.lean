@@ -46,6 +46,7 @@ variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 /-- The affine map `x ↦ a·x + b`, packaged from its coefficient pair. -/
 def toFun (p : F × F) : F → F := fun x => p.1 * x + p.2
 
+omit [Fintype F] [DecidableEq F] in
 @[simp] lemma toFun_apply (p : F × F) (x : F) : toFun p x = p.1 * x + p.2 := rfl
 
 /-- **The family `𝒫`** (paper `lem: indperm`, [VS24]): the
@@ -56,6 +57,7 @@ def maps (F : Type*) [Field F] [Fintype F] [DecidableEq F] : Finset (F × F) :=
 
 @[simp] lemma mem_maps {p : F × F} : p ∈ maps F ↔ p.1 ≠ 0 := by simp [maps]
 
+omit [Fintype F] [DecidableEq F] in
 /-- Every member of `𝒫` is a permutation.  A nonzero leading coefficient makes
 `x ↦ (y − b)/a` a two-sided inverse. -/
 theorem bijective_toFun {p : F × F} (hp : p.1 ≠ 0) : Function.Bijective (toFun p) := by

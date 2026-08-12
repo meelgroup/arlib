@@ -32,6 +32,7 @@ variable {ι d : Type*} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d
 
 /-! ## Symmetry of the inverse bilinear form -/
 
+omit [DecidableEq d] in
 /-- For a symmetric matrix `S`, the bilinear form `x ⬝ᵥ S y` is symmetric. -/
 theorem dotProduct_mulVec_symm {S : Matrix d d ℝ} (hS : Sᵀ = S) (x y : d → ℝ) :
     x ⬝ᵥ (S *ᵥ y) = y ⬝ᵥ (S *ᵥ x) := by
@@ -39,6 +40,7 @@ theorem dotProduct_mulVec_symm {S : Matrix d d ℝ} (hS : Sᵀ = S) (x y : d →
 
 variable {w : ι → ℝ} {a : ι → d → ℝ}
 
+omit [DecidableEq ι] in
 /-- The inverse Gram matrix is symmetric. -/
 theorem gram_inv_transpose (w : ι → ℝ) (a : ι → d → ℝ) :
     ((gram w a)⁻¹)ᵀ = (gram w a)⁻¹ := by
@@ -48,6 +50,7 @@ theorem gram_inv_transpose (w : ι → ℝ) (a : ι → d → ℝ) :
   simp only [Matrix.conjTranspose_apply, star_trivial] at h
   simpa [Matrix.transpose_apply] using h
 
+omit [DecidableEq ι] in
 /-- `aᵢ ⬝ᵥ M⁻¹ aⱼ = aⱼ ⬝ᵥ M⁻¹ aᵢ`: the leverage bilinear form is symmetric. -/
 theorem inv_bilin_symm (i j : ι) :
     a i ⬝ᵥ ((gram w a)⁻¹ *ᵥ a j) = a j ⬝ᵥ ((gram w a)⁻¹ *ᵥ a i) :=
@@ -55,6 +58,7 @@ theorem inv_bilin_symm (i j : ι) :
 
 /-! ## The energy bound -/
 
+omit [DecidableEq ι] in
 /-- **The per-row energy bound.**  If `w` are the ℓ₁ Lewis weights, all at most
 `U`, then `∑ⱼ (wᵢ⁻¹ aᵢᵀM⁻¹aⱼ)² ≤ U`.  Uses `sum_sq_lev` (`∑ⱼ wⱼ⁻¹(aⱼᵀM⁻¹aᵢ)²
 = aᵢᵀM⁻¹aᵢ = wᵢ²`) and `1 ≤ U wⱼ⁻¹` from `wⱼ ≤ U`. -/

@@ -57,7 +57,7 @@ outside `B` get mass `0`. -/
           rw [Finset.sum_div]
           rw [← Finset.sum_filter]
           congr 1
-          simp [Finset.filter_mem_eq_inter]
+          simp
         rw [this]
         rw [show (∑ ω ∈ B, P.mass ω) = P.Pr B from rfl]
         exact div_self (ne_of_gt hB) }

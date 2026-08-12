@@ -464,7 +464,7 @@ lemma termCore_valid (t : Finset (Lit V)) (s : VTree V) :
       have ha := termCore_root_bounds t sl l a' hpa
       have hb := termCore_root_bounds t sr (termCore t sl l).1 b' hqb
       intro c hc
-      simp only [RawGate.children_conj, List.mem_cons, List.mem_singleton,
+      simp only [RawGate.children_conj, List.mem_cons,
         List.not_mem_nil, or_false] at hc
       rcases hc with rfl | rfl <;> omega
 
@@ -1027,7 +1027,7 @@ lemma dnfExt_valid (T : VTree V) (ψ : DNF V) :
     rw [dnfExt_cons]
     refine hq.append_singleton ?_
     intro c hc
-    simp only [RawGate.children_disj, List.mem_cons, List.mem_singleton,
+    simp only [RawGate.children_disj, List.mem_cons,
       List.not_mem_nil, or_false] at hc
     rcases hc with rfl | rfl <;> omega
 

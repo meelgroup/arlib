@@ -227,17 +227,17 @@ Recursion is on the node index, which is legitimate by `child_lt`.  A negative
 literal `¬x` evaluates to the negation of `α x`; this is the only place negation
 enters an NNF, which is the whole point of the normal form. -/
 def valAt (α : V → Bool) (i : Fin C.size) : Bool :=
-  match h : C.gate i with
+  match _h : C.gate i with
   | .const b => b
   | .lit x p => if p then α x else !α x
   | .conj j k => valAt α j && valAt α k
   | .disj j k => valAt α j || valAt α k
 termination_by i.val
 decreasing_by
-  · exact (C.conj_lt h).1
-  · exact (C.conj_lt h).2
-  · exact (C.disj_lt h).1
-  · exact (C.disj_lt h).2
+  · exact (C.conj_lt _h).1
+  · exact (C.conj_lt _h).2
+  · exact (C.disj_lt _h).1
+  · exact (C.disj_lt _h).2
 
 @[simp] lemma valAt_const {α : V → Bool} {i : Fin C.size} {b : Bool}
     (h : C.gate i = .const b) : C.valAt α i = b := by
@@ -278,17 +278,17 @@ variable [DecidableEq V]
 Constants contribute nothing, and a literal contributes its variable
 irrespective of sign. -/
 def varsAt (i : Fin C.size) : Finset V :=
-  match h : C.gate i with
+  match _h : C.gate i with
   | .const _ => ∅
   | .lit x _ => {x}
   | .conj j k => varsAt j ∪ varsAt k
   | .disj j k => varsAt j ∪ varsAt k
 termination_by i.val
 decreasing_by
-  · exact (C.conj_lt h).1
-  · exact (C.conj_lt h).2
-  · exact (C.disj_lt h).1
-  · exact (C.disj_lt h).2
+  · exact (C.conj_lt _h).1
+  · exact (C.conj_lt _h).2
+  · exact (C.disj_lt _h).1
+  · exact (C.disj_lt _h).2
 
 @[simp] lemma varsAt_const {i : Fin C.size} {b : Bool} (h : C.gate i = .const b) :
     C.varsAt i = ∅ := by rw [varsAt]; split <;> simp_all

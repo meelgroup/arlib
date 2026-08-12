@@ -57,13 +57,16 @@ variable {ι X : Type} [Fintype ι] [DecidableEq ι] [Fintype X] [DecidableEq X]
 def countEq (s : Finset ι) (x : X) (ω : ι → X) : ℕ :=
   (s.filter fun j => ω j = x).card
 
+omit [Fintype ι] [DecidableEq ι] [Fintype X] in
 theorem countEq_eq_sum (s : Finset ι) (x : X) (ω : ι → X) :
     ((countEq s x ω : ℕ) : ℝ) = ∑ j ∈ s, (if ω j = x then (1 : ℝ) else 0) := by
   rw [countEq, Finset.sum_boole]
 
+omit [Fintype ι] [DecidableEq ι] [Fintype X] in
 theorem countEq_le (s : Finset ι) (x : X) (ω : ι → X) : countEq s x ω ≤ s.card :=
   Finset.card_le_card (Finset.filter_subset _ _)
 
+omit [Fintype ι] [DecidableEq ι] in
 /-- **The counts partition the block.**  Summing over all outcomes recovers the
 block size — so the empirical frequencies `countEq s x ω / |s|` really are a
 probability distribution on `X`. -/

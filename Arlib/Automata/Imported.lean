@@ -269,7 +269,7 @@ def unambiguousDNFHardCNF_witness (k : ℕ) :
     -- `χ` is constant; pick the assignment on which `¬x₀` takes the other value
     refine ⟨fun _ => DNF.eval χ (fun _ => false), ?_⟩
     rw [eval_eq_of_isKDNF_zero hχ _ (fun _ => false), eval_projDNF]
-    cases h : DNF.eval χ (fun _ => false) <;> simp [h]
+    cases h : DNF.eval χ (fun _ => false) <;> simp
 
 /-- **`NondetLifting` is satisfiable**, for every variable type and every
 positive gadget width.

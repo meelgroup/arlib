@@ -51,7 +51,7 @@ rank bound consumes: it is what makes the sum of the indicators equal to the
 indicator of `S` pointwise.
 -/
 import Arlib.Prelude
-import Mathlib.Data.Nat.Lattice
+import Mathlib.Order.Lattice.Nat
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.Order.BigOperators.Group.Finset

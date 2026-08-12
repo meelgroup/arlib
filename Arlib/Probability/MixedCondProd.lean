@@ -204,7 +204,7 @@ only the coins in `Tg` with `Tf`, `Tg` **disjoint**, then conditioning `f·g` on
 `forgetSet U` factors into the two conditional expectations.  No integrability
 side-condition is needed; `hf`/`hg` are carried only to match the finite shape. -/
 theorem condCE_forgetSet_mul (U : Finset C.ι) {f g : C.Ω → ℝ} {Tf Tg : Finset C.ι}
-    (hf : C.BddMeas f) (hg : C.BddMeas g)
+    (_hf : C.BddMeas f) (_hg : C.BddMeas g)
     (hfdep : ∀ ω ω', (∀ i ∈ Tf, ω i = ω' i) → f ω = f ω')
     (hgdep : ∀ ω ω', (∀ i ∈ Tg, ω i = ω' i) → g ω = g ω')
     (hdisj : Disjoint Tf Tg) :
@@ -312,7 +312,7 @@ forgotten set `U`* (`Disjoint (Tf ∩ U) (Tg ∩ U)`), then conditioning `f·g` 
 `forgetSet U` factors.  Strictly stronger than `condCE_forgetSet_mul`
 (`Disjoint Tf Tg ⟹ Disjoint (Tf ∩ U) (Tg ∩ U)`). -/
 theorem condCE_forgetSet_mul_forget (U : Finset C.ι) {f g : C.Ω → ℝ}
-    {Tf Tg : Finset C.ι} (hf : C.BddMeas f) (hg : C.BddMeas g)
+    {Tf Tg : Finset C.ι} (_hf : C.BddMeas f) (_hg : C.BddMeas g)
     (hfdep : ∀ ω ω', (∀ i ∈ Tf, ω i = ω' i) → f ω = f ω')
     (hgdep : ∀ ω ω', (∀ i ∈ Tg, ω i = ω' i) → g ω = g ω')
     (hdisj : Disjoint (Tf ∩ U) (Tg ∩ U)) :

@@ -101,12 +101,15 @@ function. -/
 noncomputable def ind (t : Finset (Lit V)) : (V → Bool) → ℝ :=
   fun α => if Term.Sat t α then 1 else 0
 
+omit [Fintype V] [DecidableEq V] in
 @[simp] lemma ind_nonneg (t : Finset (Lit V)) (α : V → Bool) : 0 ≤ ind t α := by
   unfold ind; split <;> norm_num
 
+omit [Fintype V] [DecidableEq V] in
 @[simp] lemma ind_empty (α : V → Bool) : ind (∅ : Finset (Lit V)) α = 1 := by
   simp [ind]
 
+omit [Fintype V] in
 /-- **Conjunctions multiply.**  The union of two terms is satisfied exactly when
 both are, so its indicator is the product.  This is the step `C(x,y) = C₁(x)C₂(y)`
 of the source's Claim 15, and the reason conjunctions rather than juntas are the
@@ -117,9 +120,11 @@ theorem ind_union (s t : Finset (Lit V)) (α : V → Bool) :
   by_cases hs : Term.Sat s α <;> by_cases ht : Term.Sat t α <;>
     simp [Term.sat_union, hs, ht]
 
+omit [Fintype V] in
 lemma width_union_le (s t : Finset (Lit V)) : Term.width (s ∪ t) ≤ Term.width s + Term.width t :=
   Finset.card_union_le s t
 
+omit [Fintype V] [DecidableEq V] in
 /-- **The indicator of a renamed conjunction reads the renamed assignment.**
 Renaming the variables of a term along `e : V → W'` (`DNF.mapTerm`) and then
 evaluating on `γ` is the same as evaluating the original on the restriction
@@ -168,6 +173,7 @@ namespace IsConical
 
 variable {d d' : ℕ} {f g : (V → Bool) → ℝ}
 
+omit [Fintype V] [DecidableEq V] in
 /-- A conical junta is non-negative.  This is what makes the `+`-case of every
 argument below work. -/
 theorem nonneg (h : IsConical d f) (α : V → Bool) : 0 ≤ f α := by
@@ -177,6 +183,7 @@ theorem nonneg (h : IsConical d f) (α : V → Bool) : 0 ≤ f α := by
   | add _ _ ihf ihg => exact add_nonneg ihf ihg
   | congr _ hfg ih => exact (hfg α) ▸ ih
 
+omit [Fintype V] [DecidableEq V] in
 /-- Raising the degree bound. -/
 theorem mono (h : IsConical d f) (hd : d ≤ d') : IsConical d' f := by
   induction h with
@@ -185,13 +192,16 @@ theorem mono (h : IsConical d f) (hd : d ≤ d') : IsConical d' f := by
   | add _ _ ihf ihg => exact ihf.add ihg
   | congr _ hfg ih => exact ih.congr hfg
 
+omit [Fintype V] [DecidableEq V] in
 /-- A non-negative constant is a conical `0`-junta: it is `c` times the empty
 conjunction. -/
 theorem const (c : ℝ) (hc : 0 ≤ c) : IsConical (V := V) 0 (fun _ => c) :=
   (IsConical.term c hc ∅ (by simp [Term.width])).congr (fun α => by simp)
 
+omit [Fintype V] [DecidableEq V] in
 theorem one : IsConical (V := V) 0 (fun _ => (1 : ℝ)) := const 1 zero_le_one
 
+omit [Fintype V] [DecidableEq V] in
 /-- **The converse of `const`: a conical `0`-junta *is* a constant.**
 
 Width `0` forces a conjunction to be empty (`Term.width` is the literal count),
@@ -221,10 +231,12 @@ theorem isConst_of_eq_zero (h : IsConical d f) : d = 0 → ∀ α β, f α = f �
     rw [ihf hd α β, ihg hd α β]
   | congr _ hfg ih => intro hd α β; rw [← hfg α, ← hfg β]; exact ih hd α β
 
+omit [Fintype V] [DecidableEq V] in
 /-- A conical `0`-junta is constant.  See `isConst_of_eq_zero`. -/
 theorem isConst_of_zero (h : IsConical (V := V) 0 f) (α β : V → Bool) : f α = f β :=
   isConst_of_eq_zero h rfl α β
 
+omit [Fintype V] [DecidableEq V] in
 theorem smul {c : ℝ} (hc : 0 ≤ c) (hf : IsConical d f) :
     IsConical d (fun α => c * f α) := by
   induction hf with
@@ -234,6 +246,7 @@ theorem smul {c : ℝ} (hc : 0 ≤ c) (hf : IsConical d f) :
   | add _ _ ihf ihg => exact (ihf.add ihg).congr (fun α => by ring)
   | congr _ hfg ih => exact ih.congr (fun α => by rw [hfg α])
 
+omit [Fintype V] in
 /-- **Conical juntas multiply, and their degrees add.**
 
 The source states this in passing — "by multiplying out the terms in this
@@ -257,6 +270,7 @@ theorem mul (hf : IsConical d f) (hg : IsConical d' g) :
   | add _ _ ihf ihg => exact (ihf.add ihg).congr (fun α => by ring)
   | congr _ hfg ih => exact ih.congr (fun α => by rw [hfg α])
 
+omit [Fintype V] in
 /-- Powers, with the degree multiplying. -/
 theorem pow (hf : IsConical d f) (k : ℕ) : IsConical (k * d) (fun α => f α ^ k) := by
   induction k with
@@ -267,6 +281,7 @@ theorem pow (hf : IsConical d f) (k : ℕ) : IsConical (k * d) (fun α => f α ^
     refine ((ih.mul hf).congr (fun α => by ring)).mono ?_
     rw [Nat.succ_mul]
 
+omit [Fintype V] [DecidableEq V] in
 /-- **Pullback along a variable renaming.**  Precomposing a conical `d`-junta's
 assignments with a map `e : V → W'` — reading `f` on the restriction
 `fun x => γ (e x)` — is again a conical `d`-junta, now over `W'`.  The width does
@@ -296,12 +311,14 @@ end IsConical
 def HasConicalApprox (d : ℕ) (ε : ℝ) (f : (V → Bool) → ℝ) : Prop :=
   ∃ g, IsConical d g ∧ ∀ α, |f α - g α| ≤ ε
 
+omit [Fintype V] [DecidableEq V] in
 theorem HasConicalApprox.mono {d d' : ℕ} {ε ε' : ℝ} {f : (V → Bool) → ℝ}
     (h : HasConicalApprox d ε f) (hd : d ≤ d') (hε : ε ≤ ε') :
     HasConicalApprox d' ε' f := by
   obtain ⟨g, hg, happ⟩ := h
   exact ⟨g, hg.mono hd, fun α => (happ α).trans hε⟩
 
+omit [Fintype V] [DecidableEq V] in
 /-- An *exact* conical representation is in particular an approximation. -/
 theorem HasConicalApprox.of_isConical {d : ℕ} {ε : ℝ} (hε : 0 ≤ ε)
     {f : (V → Bool) → ℝ} (h : IsConical d f) : HasConicalApprox d ε f :=
@@ -490,13 +507,14 @@ noncomputable def orExt (f : (V → Bool) → ℝ) : (V ⊕ V → Bool) → ℝ 
 noncomputable def tensorNeg (Φ : (V → Bool) → ℝ) : (V ⊕ V → Bool) → ℝ :=
   fun β => -(Φ (β ∘ Sum.inl) * Φ (β ∘ Sum.inr))
 
+omit [Fintype V] [DecidableEq V] in
 /-- On `{0,1}`-valued functions the arithmetic `∨` is the Boolean one. -/
 theorem orExt_eq_or {f : (V → Bool) → ℝ} (hf : ∀ α, f α = 0 ∨ f α = 1)
     (β : V ⊕ V → Bool) :
     orExt f β = if f (β ∘ Sum.inl) = 1 ∨ f (β ∘ Sum.inr) = 1 then 1 else 0 := by
   unfold orExt
   rcases hf (β ∘ Sum.inl) with h1 | h1 <;> rcases hf (β ∘ Sum.inr) with h2 | h2 <;>
-    simp [h1, h2] <;> norm_num
+    simp [h1, h2]
 
 /-- **`cl: or`, the easy half** ([GKY22, `cl:or`]): the
 doubled disjunction `f^∨` of a `{0,1}`-valued `f` is `1/4`-approximated by a
@@ -633,6 +651,7 @@ proof uses only the three inequalities `ε ≤ 1/4`, `(3/4)^k ≤ δ` and
 paper's asymptotics elsewhere.  `exists_powering_params` supplies a valid
 triple. -/
 
+omit [Fintype V] in
 /-- **Claim 16 of the source.**  `deg⁺_ε(1+f) ≥ Ω(deg⁺_δ(f))`, in the primal,
 contrapositive-ready form: an `ε`-approximation of `1 + f` of degree `d` yields a
 `δ`-approximation of `f` of degree `k·d`. -/
@@ -719,6 +738,7 @@ with `0/1` coefficients".  This is the link between the hardness proved above an
 the objects `Circuits/DNF.lean` supplies, and unambiguity is exactly what makes
 the sum of indicators `{0,1}`-valued rather than a count. -/
 
+omit [Fintype V] [DecidableEq V] in
 /-- The sum of the term indicators counts the satisfied terms. -/
 private theorem sum_ind_eq_card (ψ : DNF V) (α : V → Bool) :
     (ψ.map (fun t => ind t α)).sum = ((ψ.satTerms α).length : ℝ) := by
@@ -728,9 +748,10 @@ private theorem sum_ind_eq_card (ψ : DNF V) (α : V → Bool) :
   | cons t ψ ih =>
     rw [List.map_cons, List.sum_cons, List.filter_cons, ih]
     by_cases h : Term.Sat t α
-    · simp [ind, h]; push_cast; ring
+    · simp [ind, h]; ring
     · simp [ind, h]
 
+omit [Fintype V] [DecidableEq V] in
 /-- The sum of the term indicators of a `k`-DNF is a conical `k`-junta,
 unambiguous or not. -/
 theorem isConical_sum_ind (ψ : DNF V) {k : ℕ} (hk : DNF.IsKDNF k ψ) :
@@ -744,6 +765,7 @@ theorem isConical_sum_ind (ψ : DNF V) {k : ℕ} (hk : DNF.IsKDNF k ψ) :
     have h2 := ih (fun s hs => hk s (List.mem_cons_of_mem t hs))
     exact (h1.add h2).congr (fun α => by simp)
 
+omit [Fintype V] [DecidableEq V] in
 /-- **`deg⁺(f) ≤ UC₁(f)`**: an unambiguous `k`-DNF *is* a conical `k`-junta, with
 `0/1` coefficients and no error at all.
 
@@ -769,6 +791,7 @@ theorem isConical_of_unambiguous {k : ℕ} {ψ : DNF V} (hk : DNF.IsKDNF k ψ)
     rw [hnil]
     simp [he]
 
+omit [Fintype V] [DecidableEq V] in
 /-- The corresponding statement for approximation, at error `0`. -/
 theorem hasConicalApprox_of_unambiguous {k : ℕ} {ψ : DNF V} (hk : DNF.IsKDNF k ψ)
     (hu : DNF.Unambiguous ψ) :
@@ -800,6 +823,7 @@ section Duality
 /-- The conical `d`-juntas as a set, for the convexity argument. -/
 def conicalSet (d : ℕ) : Set ((V → Bool) → ℝ) := {g | IsConical d g}
 
+omit [Fintype V] [DecidableEq V] in
 theorem convex_conicalSet (d : ℕ) : Convex ℝ (conicalSet (V := V) d) := by
   intro g hg h hh a b ha hb _
   exact ((IsConical.smul ha hg).add (IsConical.smul hb hh)).congr (fun α => rfl)
@@ -840,7 +864,7 @@ theorem exists_separates_of_not_hasConicalApprox {d : ℕ} {ε ε' : ℝ}
     refine Finset.sum_congr rfl fun α _ => ?_
     have hsingle : Pi.single α (g α) = g α • (Pi.single α 1 : (V → Bool) → ℝ) := by
       funext β
-      by_cases hb : β = α <;> simp [Pi.single_apply, hb]
+      by_cases hb : β = α <;> simp [hb]
     rw [hsingle, map_smul, smul_eq_mul, hψ]
   -- `u ≤ 0`, since `0` lies in the cone
   have hu : u ≤ 0 := by simpa using hcone 0 (IsConical.zero d)

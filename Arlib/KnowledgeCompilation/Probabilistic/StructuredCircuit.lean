@@ -57,6 +57,7 @@ def Assign : Vtree → Type
   | .node l r => l.Assign × r.Assign
 
 /-- `Vtree.Assign` is finite, by the recursion that defines it. -/
+@[instance_reducible]
 def assignFintype : (V : Vtree) → Fintype V.Assign
   | .leaf m => inferInstanceAs (Fintype (Fin m))
   | .node l r => @instFintypeProd _ _ (assignFintype l) (assignFintype r)

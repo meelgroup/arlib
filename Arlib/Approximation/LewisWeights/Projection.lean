@@ -49,7 +49,7 @@ theorem mulVec_sum_vec (M : Matrix d d ℝ) (s : Finset ι) (v : ι → d → �
 
 /-! ## (T1) `gram *ᵥ x` as the weighted outer-product sum -/
 
-omit [DecidableEq ι] in
+omit [DecidableEq ι] [DecidableEq d] in
 /-- `gram w a *ᵥ x = ∑ⱼ (wⱼ⁻¹ (aⱼ·x)) • aⱼ`.  (The natural parenthesisation:
 `•` binds tighter than `*`, so the scalar `(w j)⁻¹ * (a j ⬝ᵥ x)` must be grouped
 before the `• a j`.) -/

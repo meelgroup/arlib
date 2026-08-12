@@ -65,6 +65,7 @@ private theorem finEx_swap (A B : FinProb) (G : A.Ω → B.Ω → ℝ) :
   rw [Finset.sum_comm]
   exact Finset.sum_congr rfl fun z _ => Finset.sum_congr rfl fun x _ => by ring
 
+omit [DecidableEq d] in
 /-- **`momentreduct`: the sampling moment reduced to the empirical energy.**  The
 `2k`-th central moment of the ℓ₁ Lewis importance-sampling estimator `Ê(y)` is at
 most `2^{2k}` times the `k`-th moment of the empirical energy `2 e k · ∑ᵣ sval(ωᵣ)²`:

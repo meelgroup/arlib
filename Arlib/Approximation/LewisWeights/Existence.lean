@@ -35,6 +35,7 @@ variable {ι d : Type*} [Fintype ι] [DecidableEq ι] [Fintype d] [DecidableEq d
 
 /-! ## L1 — positive definiteness of the Gram matrix from spanning rows -/
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- With strictly positive weights and spanning rows the Gram matrix is
 positive definite. -/
 theorem gram_posDef (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 < w i)
@@ -64,6 +65,7 @@ theorem gram_posDef (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 < w i
 
 /-! ## L2 — monotonicity of the quadratic form in the reciprocal weights -/
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- If `(w i)⁻¹ ≤ (v i)⁻¹` pointwise then the Gram quadratic form of `w` is
 dominated by that of `v`. -/
 theorem gram_quadForm_mono (v w : ι → ℝ) (a : ι → d → ℝ)
@@ -76,6 +78,7 @@ theorem gram_quadForm_mono (v w : ι → ℝ) (a : ι → d → ℝ)
 
 /-! ## The symmetry of the Gram bilinear form -/
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- The Gram bilinear form is symmetric. -/
 theorem gram_symm (w : ι → ℝ) (a : ι → d → ℝ) (x y : d → ℝ) :
     x ⬝ᵥ (gram w a *ᵥ y) = y ⬝ᵥ (gram w a *ᵥ x) := by
@@ -84,6 +87,7 @@ theorem gram_symm (w : ι → ℝ) (a : ι → d → ℝ) (x y : d → ℝ) :
 
 /-! ## L3 — Cauchy–Schwarz for the Gram bilinear form -/
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- Cauchy–Schwarz for the (positive-semidefinite) Gram bilinear form. -/
 theorem gram_form_cs (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 ≤ (w i)⁻¹)
     (u v : d → ℝ) :
@@ -114,6 +118,7 @@ theorem gram_form_cs (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 ≤ 
   rw [s1, s2, s3] at key
   exact key
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- The Gram quadratic form is nonnegative when the reciprocal weights are. -/
 theorem gram_quad_nonneg (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 ≤ (w i)⁻¹)
     (x : d → ℝ) : 0 ≤ x ⬝ᵥ (gram w a *ᵥ x) := by
@@ -123,6 +128,7 @@ theorem gram_quad_nonneg (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 
 
 /-! ## L4 — the leverage-ratio bound -/
 
+omit [DecidableEq ι] in
 /-- If the Gram quadratic form of `w` is bounded by `α` times that of `v`, then
 each leverage of `v` is bounded by `α` times the corresponding leverage of `w`.
 This is the key one-sided comparison. -/
@@ -168,6 +174,7 @@ theorem lev_ratio (w v : ι → ℝ) (a : ι → d → ℝ)
       rw [← sq]; exact hchain
     exact le_of_mul_le_mul_right this hLpos
 
+omit [DecidableEq ι] [DecidableEq d] in
 /-- Scaled monotonicity: if `(w i)⁻¹ ≤ α (v i)⁻¹` pointwise then the Gram
 quadratic form of `w` is bounded by `α` times that of `v`. -/
 theorem gram_quadForm_mono_scaled (v w : ι → ℝ) (a : ι → d → ℝ) {α : ℝ}
@@ -181,6 +188,7 @@ theorem gram_quadForm_mono_scaled (v w : ι → ℝ) (a : ι → d → ℝ) {α 
     _ ≤ (α * (v i)⁻¹) * ((a i ⬝ᵥ x) * (a i ⬝ᵥ x)) := mul_le_mul_of_nonneg_right (hle i) hnn
     _ = α * ((v i)⁻¹ * (a i ⬝ᵥ x) * (a i ⬝ᵥ x)) := by ring
 
+omit [DecidableEq ι] in
 /-- The leverage is nonnegative. -/
 theorem lev_nonneg (w : ι → ℝ) (a : ι → d → ℝ) (hPD : (gram w a).PosDef)
     (hw : ∀ i, 0 ≤ (w i)⁻¹) (i : ι) : 0 ≤ lev w a i := by
@@ -201,6 +209,7 @@ theorem log_sub_le_of_le_exp_mul {x y t : ℝ} (hx : 0 < x) (hy : 0 < y)
   rw [Real.log_mul (Real.exp_pos t).ne' hy.ne', Real.log_exp] at h
   linarith
 
+omit [DecidableEq ι] in
 /-- **Sharp leverage stability.**  If the log-weights differ by at most `t`
 pointwise, then the log-leverages differ by at most `t` pointwise.  This is the
 Lipschitz-`1` estimate that drives the contraction. -/
@@ -259,6 +268,7 @@ theorem lev_approx (w v : ι → ℝ) (a : ι → d → ℝ)
 
 /-! ## The contraction map and its fixed point -/
 
+omit [DecidableEq ι] in
 /-- The sharp `½`-contraction estimate for the log-leverage map
 `u ↦ ½ log (lev (exp ∘ u) a)` in the sup metric of `ι → ℝ`. -/
 theorem lewisMap_dist (a : ι → d → ℝ)
@@ -287,6 +297,7 @@ row is perfectly compatible with `hspan` (the remaining rows can still span), so
 extra hypothesis `hnz : ∀ i, a i ≠ 0` is included.  (With it, the Gram inverse —
 which is positive definite — makes each leverage strictly positive.) -/
 
+omit [DecidableEq ι] in
 /-- **Existence of ℓ₁ Lewis weights.**  For nonzero rows spanning `d → ℝ`, there
 are strictly positive weights whose leverage equals the square of the weight. -/
 theorem exists_isLewis (a : ι → d → ℝ)

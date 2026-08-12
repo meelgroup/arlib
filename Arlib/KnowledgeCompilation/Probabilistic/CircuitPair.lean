@@ -165,7 +165,7 @@ theorem valP_node {Vl Vr : Vtree} {gPl gQl gPr gQr gP gQ : ℕ}
       = ∑ p, ∑ q, cP j p q * l.valP x.1 p * r.valP x.2 q := by
   show tensorFeat (blockTensor cP cQ) (l.Phi x.1) (r.Phi x.2) (Sum.inl j) = _
   simp only [tensorFeat, Fintype.sum_sum_type, blockTensor, zero_mul,
-    Finset.sum_const_zero, add_zero, zero_add, valP]
+    Finset.sum_const_zero, add_zero, valP]
 
 theorem valQ_node {Vl Vr : Vtree} {gPl gQl gPr gQr gP gQ : ℕ}
     (l : CircuitPair Vl gPl gQl) (r : CircuitPair Vr gPr gQr)
@@ -175,7 +175,7 @@ theorem valQ_node {Vl Vr : Vtree} {gPl gQl gPr gQr gP gQ : ℕ}
       = ∑ p, ∑ q, cQ j p q * l.valQ x.1 p * r.valQ x.2 q := by
   show tensorFeat (blockTensor cP cQ) (l.Phi x.1) (r.Phi x.2) (Sum.inr j) = _
   simp only [tensorFeat, Fintype.sum_sum_type, blockTensor, zero_mul,
-    Finset.sum_const_zero, add_zero, zero_add, valQ]
+    Finset.sum_const_zero, zero_add, valQ]
 
 /-- A **bottom-up coreset construction on a circuit pair**: a `Reduction` over the
 pair's region tree — the exact domain at each leaf region, and at each product

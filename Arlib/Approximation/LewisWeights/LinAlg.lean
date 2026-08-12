@@ -36,6 +36,7 @@ variable {ι d : Type*} [Fintype ι] [Fintype d] [DecidableEq d]
 
 /-! ## Sum-distribution helpers (absent from Mathlib) -/
 
+omit [Fintype ι] [DecidableEq d] in
 /-- `mulVec` distributes over a finite sum of matrices. -/
 theorem sum_mulVec (s : Finset ι) (M : ι → Matrix d d ℝ) (x : d → ℝ) :
     (∑ i ∈ s, M i) *ᵥ x = ∑ i ∈ s, M i *ᵥ x := by
@@ -45,6 +46,7 @@ theorem sum_mulVec (s : Finset ι) (M : ι → Matrix d d ℝ) (x : d → ℝ) :
   | @insert i s hi ih =>
       rw [Finset.sum_insert hi, Finset.sum_insert hi, Matrix.add_mulVec, ih]
 
+omit [Fintype ι] [DecidableEq d] in
 /-- `dotProduct` distributes over a finite sum in its second argument. -/
 theorem dotProduct_sum (s : Finset ι) (y : d → ℝ) (F : ι → d → ℝ) :
     y ⬝ᵥ (∑ i ∈ s, F i) = ∑ i ∈ s, y ⬝ᵥ F i := by
@@ -54,6 +56,7 @@ theorem dotProduct_sum (s : Finset ι) (y : d → ℝ) (F : ι → d → ℝ) :
   | @insert i s hi ih =>
       rw [Finset.sum_insert hi, Finset.sum_insert hi, dotProduct_add, ih]
 
+omit [Fintype ι] [Fintype d] [DecidableEq d] in
 /-- Positive semidefiniteness is closed under finite sums. -/
 theorem posSemidef_sum (s : Finset ι) (f : ι → Matrix d d ℝ)
     (hf : ∀ i ∈ s, (f i).PosSemidef) : (∑ i ∈ s, f i).PosSemidef := by
@@ -65,6 +68,7 @@ theorem posSemidef_sum (s : Finset ι) (f : ι → Matrix d d ℝ)
       exact (hf i (Finset.mem_insert_self _ _)).add
         (ih fun j hj => hf j (Finset.mem_insert_of_mem hj))
 
+omit [DecidableEq d] in
 /-- A nonnegative scalar multiple of a positive-semidefinite matrix is
 positive semidefinite. -/
 theorem posSemidef_smul {M : Matrix d d ℝ} (hM : M.PosSemidef) {c : ℝ} (hc : 0 ≤ c) :
@@ -80,8 +84,10 @@ theorem posSemidef_smul {M : Matrix d d ℝ} (hM : M.PosSemidef) {c : ℝ} (hc :
 /-- The outer product `v vᵀ` as a `d × d` matrix. -/
 def outer (v : d → ℝ) : Matrix d d ℝ := Matrix.vecMulVec v v
 
+omit [Fintype d] [DecidableEq d] in
 @[simp] theorem outer_apply (v : d → ℝ) (i j : d) : outer v i j = v i * v j := rfl
 
+omit [DecidableEq d] in
 /-- `(v vᵀ) x = (v · x) • v`. -/
 theorem outer_mulVec (v x : d → ℝ) : outer v *ᵥ x = (v ⬝ᵥ x) • v := by
   funext i
@@ -90,18 +96,21 @@ theorem outer_mulVec (v x : d → ℝ) : outer v *ᵥ x = (v ⬝ᵥ x) • v := 
   rw [Finset.sum_mul]
   exact Finset.sum_congr rfl fun j _ => by ring
 
+omit [DecidableEq d] in
 /-- The quadratic form of a rank-one outer product: `y ⬝ᵥ (v vᵀ) x = (v·y)(v·x)`. -/
 theorem dotProduct_outer_mulVec (v x y : d → ℝ) :
     y ⬝ᵥ (outer v *ᵥ x) = (v ⬝ᵥ y) * (v ⬝ᵥ x) := by
   rw [outer_mulVec, dotProduct_smul, smul_eq_mul, dotProduct_comm y v]
   ring
 
+omit [Fintype d] [DecidableEq d] in
 /-- The outer product is symmetric. -/
 theorem outer_isHermitian (v : d → ℝ) : (outer v).IsHermitian := by
   show (outer v)ᴴ = outer v
   ext i j
   simp [Matrix.conjTranspose_apply, outer_apply, mul_comm]
 
+omit [DecidableEq d] in
 /-- A rank-one outer product is positive semidefinite. -/
 theorem outer_posSemidef (v : d → ℝ) : (outer v).PosSemidef := by
   refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg (outer_isHermitian v) fun x => ?_
@@ -115,6 +124,7 @@ theorem outer_posSemidef (v : d → ℝ) : (outer v).PosSemidef := by
 noncomputable def gram (w : ι → ℝ) (a : ι → d → ℝ) : Matrix d d ℝ :=
   ∑ i, (w i)⁻¹ • outer (a i)
 
+omit [DecidableEq d] in
 /-- `gram w a *ᵥ x = ∑ᵢ (wᵢ⁻¹ (aᵢ·x)) • aᵢ`. -/
 theorem gram_mulVec (w : ι → ℝ) (a : ι → d → ℝ) (x : d → ℝ) :
     gram w a *ᵥ x = ∑ i, ((w i)⁻¹ * (a i ⬝ᵥ x)) • a i := by
@@ -123,6 +133,7 @@ theorem gram_mulVec (w : ι → ℝ) (a : ι → d → ℝ) (x : d → ℝ) :
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [Matrix.smul_mulVec, outer_mulVec, smul_smul]
 
+omit [DecidableEq d] in
 /-- The quadratic form of the Gram matrix:
 `y ⬝ᵥ gram w a *ᵥ x = ∑ᵢ wᵢ⁻¹ (aᵢ·y)(aᵢ·x)`. -/
 theorem dotProduct_gram_mulVec (w : ι → ℝ) (a : ι → d → ℝ) (x y : d → ℝ) :
@@ -132,6 +143,7 @@ theorem dotProduct_gram_mulVec (w : ι → ℝ) (a : ι → d → ℝ) (x y : d 
   rw [dotProduct_smul, smul_eq_mul, dotProduct_comm y (a i)]
   ring
 
+omit [Fintype d] [DecidableEq d] in
 /-- The Gram matrix is symmetric. -/
 theorem gram_isHermitian (w : ι → ℝ) (a : ι → d → ℝ) : (gram w a).IsHermitian := by
   show (gram w a)ᴴ = gram w a
@@ -140,6 +152,7 @@ theorem gram_isHermitian (w : ι → ℝ) (a : ι → d → ℝ) : (gram w a).Is
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [Matrix.conjTranspose_smul, star_trivial, outer_isHermitian (a i)]
 
+omit [DecidableEq d] in
 /-- With nonnegative reciprocal weights the Gram matrix is positive semidefinite. -/
 theorem gram_posSemidef (w : ι → ℝ) (a : ι → d → ℝ) (hw : ∀ i, 0 ≤ (w i)⁻¹) :
     (gram w a).PosSemidef := by

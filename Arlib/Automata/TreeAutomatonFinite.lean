@@ -501,6 +501,7 @@ theorem finite_restrict_state (h : A.IsFinite k) : Finite ↥A.reachableStates :
 
 /-- A `Fintype` on the state type of `restrict A`, for the same reason.  It is
 noncomputable because `IsFinite` carries no decidability. -/
+@[instance_reducible]
 noncomputable def fintypeRestrictState (h : A.IsFinite k) : Fintype ↥A.reachableStates :=
   h.states.fintype
 

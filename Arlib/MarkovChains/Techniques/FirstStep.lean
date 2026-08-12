@@ -597,7 +597,7 @@ theorem Ex_pi_Var_linkShiftPiOf_one_eq_levelEnergy (w : Finset E → ℝ) (n k :
     Ex (pi w n k hw hsupp hsum hk.le)
         (fun τ => Var (linkShiftPiOf w n 1 τ hw hsupp) (linkLevelFun w n 1 τ hw hsupp f))
       = levelEnergy w n hw hsupp hsum f k := by
-  haveI : Nonempty E := nonempty_of_weight hsupp hsum (by omega)
+  have : Nonempty E := nonempty_of_weight hsupp hsum (by omega)
   rw [levelEnergy_apply w n k hw hsupp hsum f hk,
     dirichlet_downUp_eq_Ex_Var_linkDistOf w n k hw hsupp hsum hk
       (levelFun w n hw hsupp f (k + 1))]

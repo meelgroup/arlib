@@ -88,6 +88,7 @@ def partition : VarPartition (Finset.univ : Finset (Var κ b)) where
     simp only [Finset.mem_union, mem_alice, mem_bob, Finset.mem_univ, iff_true]
     omega
 
+omit [DecidableEq κ] in
 /-- The two sides have the same size: the map flipping the side is a bijection
 between them. -/
 theorem card_alice_eq_card_bob : (alice κ b).card = (bob κ b).card := by

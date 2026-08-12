@@ -156,7 +156,7 @@ theorem condCE_forgetSet_congr_ae (T : Finset C.ι) {X Y : C.Ω → ℝ}
     have hle := hdom ω
     rw [h] at hle
     simp only [Pi.zero_apply]
-    exact abs_nonpos_iff.mp (le_of_le_of_eq hle (by simp [Pi.zero_apply]))
+    exact abs_nonpos_iff.mp (le_of_le_of_eq hle (by simp))
   -- transport `E[X−Y | T] = E[X|T] − E[Y|T]`.
   have hsub : (fun ω => C.condCE_forgetSet T X ω - C.condCE_forgetSet T Y ω)
       = C.condCE_forgetSet T Z := (C.condCE_forgetSet_sub T X Y hX hY).symm

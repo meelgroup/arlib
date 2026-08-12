@@ -27,6 +27,7 @@ open Finset Matrix
 variable {ι d : Type*} [Fintype ι] [Fintype d] [DecidableEq d]
 variable {w : ι → ℝ} {a : ι → d → ℝ}
 
+omit [Fintype d] [DecidableEq d] in
 /-- Entrywise formula for the Gram matrix:
 `gram w a q p = ∑ᵢ wᵢ⁻¹ (aᵢ q)(aᵢ p)`. -/
 theorem gram_apply (w : ι → ℝ) (a : ι → d → ℝ) (q p : d) :

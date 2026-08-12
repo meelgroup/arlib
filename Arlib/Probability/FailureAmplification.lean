@@ -55,7 +55,7 @@ theorem pow_le_of_log_div_le {c δ : ℝ} (hc0 : 0 < c) (hc1 : c < 1) (hδ : 0 <
 /-- **Not enough repetitions.**  The converse: if `c ^ m ≤ δ` for `c ∈ (0,1)` and
 `δ > 0`, then `m ≥ log δ / log c`.  This is the direction a sample-complexity
 *lower* bound uses. -/
-theorem log_div_le_of_pow_le {c δ : ℝ} (hc0 : 0 < c) (hc1 : c < 1) (hδ : 0 < δ)
+theorem log_div_le_of_pow_le {c δ : ℝ} (hc0 : 0 < c) (hc1 : c < 1) (_hδ : 0 < δ)
     {m : ℕ} (hm : c ^ m ≤ δ) : Real.log δ / Real.log c ≤ (m : ℝ) := by
   have hlc : Real.log c < 0 := Real.log_neg hc0 hc1
   have hcm : (0 : ℝ) < c ^ m := pow_pos hc0 m

@@ -178,6 +178,7 @@ private theorem zmod_two_nsmul_even {n : ℕ} (h : Even n) (x : ZMod 2) :
   obtain ⟨m, rfl⟩ := h
   rw [add_nsmul, CharTwo.add_self_eq_zero]
 
+omit [DecidableRel G.Adj] in
 /-- The number of vertices of a fixed connected component lying on a fixed edge is
 even (it is `2` if the edge is inside the component, `0` otherwise): both
 endpoints of an edge are in the same component, so they are counted together or
@@ -322,7 +323,7 @@ on any graph: the all-zero assignment satisfies `T(G, 0)`, so the converse holds
 outright.  A degenerate but genuine witness — it establishes only that the shape
 of the hypothesis is satisfiable, not the general converse, which is the imported
 content. -/
-def tseitinConverse_zero : Imported.TseitinSatisfiabilityConverse G 0 where
+theorem tseitinConverse_zero : Imported.TseitinSatisfiabilityConverse G 0 where
   satisfiable_of_even _ := ⟨fun _ => 0, fun v => by simp [chi]⟩
 
 /-- **`Imported.TseitinModelCount` is inhabited.**  On the empty graph over the
@@ -330,20 +331,20 @@ empty vertex type, `|E| = 0`, `|V| = 0`, `K = 0`, and there is a unique (empty)
 assignment, which satisfies `T`; the count `2^{0+0} = 1 · 2^0` holds.  A
 degenerate but genuine witness (the antecedent `∃ α, Formula` is *true* here, so
 the count clause is not vacuously discharged). -/
-def tseitinModelCount_empty :
+theorem tseitinModelCount_empty :
     Imported.TseitinModelCount (⊥ : SimpleGraph (Fin 0)) 0 where
   card_models _ := by
     have hM : Nat.card
         {α : Assignment (⊥ : SimpleGraph (Fin 0)) // Formula (⊥ : SimpleGraph (Fin 0)) 0 α}
         = 1 := by
-      haveI hemp : IsEmpty {e // e ∈ (⊥ : SimpleGraph (Fin 0)).edgeSet} :=
+      have hemp : IsEmpty {e // e ∈ (⊥ : SimpleGraph (Fin 0)).edgeSet} :=
         ⟨fun e => Set.notMem_empty e.1 (SimpleGraph.edgeSet_bot ▸ e.2)⟩
-      haveI : Subsingleton (Assignment (⊥ : SimpleGraph (Fin 0))) :=
+      have : Subsingleton (Assignment (⊥ : SimpleGraph (Fin 0))) :=
         ⟨fun f g => funext fun e => isEmptyElim e⟩
       rw [Nat.card_eq_one_iff_unique]
       exact ⟨⟨fun a b => Subtype.ext (Subsingleton.elim a.1 b.1)⟩,
         ⟨⟨fun _ => 0, fun v => v.elim0⟩⟩⟩
     rw [hM]
-    simp [SimpleGraph.edgeFinset_bot, Fintype.card_eq_zero]
+    simp [Fintype.card_eq_zero]
 
 end Arlib.KnowledgeCompilation.Tseitin

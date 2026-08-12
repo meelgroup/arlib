@@ -268,7 +268,7 @@ theorem sepFinset_eq_Icc (S T : Finset (Fin n)) :
     Finset.univ.filter (fun Z => Separates Z S T) = Finset.Icc S Tᶜ := by
   ext Z
   simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_Icc, Separates,
-    Finset.le_eq_subset, disjoint_iff_subset_compl]
+    disjoint_iff_subset_compl]
 
 /-- **There are exactly `2^{n−2k}` separators of a disjoint pair of `k`-sets**
 — the paper's probability `2^{-2k}`, cleared of its denominator `2ⁿ`
@@ -473,7 +473,7 @@ consistency check on the *shape* of the bundle and says nothing about the
 interesting content — that the matrix stays nonsingular as `k` grows, which is
 precisely what is imported. -/
 theorem disjFullRank_zero (n : ℕ) : DisjFullRank n 0 := by
-  letI : Unique (DisjIndex n 0) :=
+  let _ : Unique (DisjIndex n 0) :=
     { default := ⟨∅, Finset.card_empty⟩
       uniq := fun S => Subtype.ext (Finset.card_eq_zero.mp S.2) }
   have hdef : (default : DisjIndex n 0).1 = ∅ :=

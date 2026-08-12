@@ -82,7 +82,7 @@ theorem atLeast_subset_biUnion (k : ℕ) :
 probability that at least `k` events hold is at most `C(B,k) · p^k`.
 Fully proved. -/
 theorem intersection_tail_bound_core
-    {p : ℝ} (k : ℕ) (hp : 0 ≤ p)
+    {p : ℝ} (k : ℕ) (_hp : 0 ≤ p)
     [IsAdm P (indic (P.atLeast E k))]
     [IsAdm P (indic (fun ω => ∃ S ∈ Finset.univ.powersetCard k, P.interEvent E S ω))]
     (hadm : ∀ S ∈ Finset.univ.powersetCard k, IsAdm P (indic (P.interEvent E S)))

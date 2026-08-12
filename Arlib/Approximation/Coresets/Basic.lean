@@ -47,7 +47,7 @@ variable {ι κ d : Type*} [Fintype ι] [Fintype κ] [Fintype d]
 
 /-- The linear test `⟨y, v⟩ = ∑ a, y a * v a` of a query `y` against a feature
 vector `v`. -/
-def dot [Fintype d] (y v : d → ℝ) : ℝ := ∑ a, y a * v a
+def dot (y v : d → ℝ) : ℝ := ∑ a, y a * v a
 
 theorem dot_apply (y v : d → ℝ) : dot y v = ∑ a, y a * v a := rfl
 

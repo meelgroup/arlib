@@ -59,7 +59,7 @@ theorem avg_markov (Y : (ι → Bool) → ℝ) (hY : ∀ ω, 0 ≤ Y ω) {c : �
 /-- **The moment method.**  If the `2k`-th moment of a nonnegative `Y` is at most
 `B`, then `Y` exceeds `c > 0` with probability at most `B / c^{2k}`.  The event
 `{Y ≥ c}` is contained in `{Y^{2k} ≥ c^{2k}}`, to which Markov applies. -/
-theorem avg_pow_tail (Y : (ι → Bool) → ℝ) (hY : ∀ ω, 0 ≤ Y ω) {c B : ℝ} (hc : 0 < c)
+theorem avg_pow_tail (Y : (ι → Bool) → ℝ) (_hY : ∀ ω, 0 ≤ Y ω) {c B : ℝ} (hc : 0 < c)
     {k : ℕ} (hB : avg (fun ω => Y ω ^ (2 * k)) ≤ B) :
     (radProb ι).Pr (Finset.univ.filter (fun ω => c ≤ Y ω)) ≤ B / c ^ (2 * k) := by
   have hck : (0 : ℝ) < c ^ (2 * k) := by positivity

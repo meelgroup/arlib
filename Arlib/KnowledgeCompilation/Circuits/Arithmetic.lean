@@ -204,17 +204,17 @@ lemma add_lt {i j k : Fin C.size} (h : C.gate i = .add j k) : j < i ∧ k < i :=
 A positive literal contributes `α x` read as `0`/`1`, a negative one `1 - α x`,
 written in indicator form; see the module docstring. -/
 def valAt (α : V → Bool) (i : Fin C.size) : ℝ :=
-  match h : C.gate i with
+  match _h : C.gate i with
   | .const r => r
   | .lit x p => if (if p then α x else !α x) then 1 else 0
   | .add j k => valAt α j + valAt α k
   | .mul j k => valAt α j * valAt α k
 termination_by i.val
 decreasing_by
-  · exact (C.add_lt h).1
-  · exact (C.add_lt h).2
-  · exact (C.mul_lt h).1
-  · exact (C.mul_lt h).2
+  · exact (C.add_lt _h).1
+  · exact (C.add_lt _h).2
+  · exact (C.mul_lt _h).1
+  · exact (C.mul_lt _h).2
 
 @[simp] lemma valAt_const {α : V → Bool} {i : Fin C.size} {r : ℝ}
     (h : C.gate i = .const r) : C.valAt α i = r := by
@@ -256,17 +256,17 @@ variable [DecidableEq V]
 
 /-- The variables occurring at or below node `i`; the paper's `var(C(g))`. -/
 def varsAt (i : Fin C.size) : Finset V :=
-  match h : C.gate i with
+  match _h : C.gate i with
   | .const _ => ∅
   | .lit x _ => {x}
   | .add j k => varsAt j ∪ varsAt k
   | .mul j k => varsAt j ∪ varsAt k
 termination_by i.val
 decreasing_by
-  · exact (C.add_lt h).1
-  · exact (C.add_lt h).2
-  · exact (C.mul_lt h).1
-  · exact (C.mul_lt h).2
+  · exact (C.add_lt _h).1
+  · exact (C.add_lt _h).2
+  · exact (C.mul_lt _h).1
+  · exact (C.mul_lt _h).2
 
 @[simp] lemma varsAt_const {i : Fin C.size} {r : ℝ} (h : C.gate i = .const r) :
     C.varsAt i = ∅ := by rw [varsAt]; split <;> simp_all
@@ -798,7 +798,7 @@ constants `0`, `1` as the reals `0`, `1`. -/
 /-- `φ ∘ ψ = id` at the level of a single label. -/
 @[simp] lemma toGate_toAGate (g : Gate V n) : g.toAGate.toGate = g := by
   cases g with
-  | const b => cases b <;> simp [toAGate, AGate.toGate]
+  | const b => cases b <;> simp [AGate.toGate]
   | _ => rfl
 
 end Gate

@@ -64,12 +64,14 @@ steps has probability at least `q`. -/
 def HasProgressPaths (K : FinChain Ω) (T : Finset Ω) (q : ℝ) (D : ℕ) : Prop :=
   ∀ x, ReachInWith K T q D x
 
+omit [DecidableEq Ω] in
 theorem reachInWith_of_mem (K : FinChain Ω) (T : Finset Ω) (q : ℝ) (n : ℕ) {x : Ω}
     (hx : x ∈ T) : ReachInWith K T q n x := by
   cases n with
   | zero => exact hx
   | succ n => exact Or.inl hx
 
+omit [DecidableEq Ω] in
 /-- One extra step of budget never hurts. -/
 theorem reachInWith_succ (K : FinChain Ω) (T : Finset Ω) (q : ℝ) :
     ∀ (n : ℕ) (x : Ω), ReachInWith K T q n x → ReachInWith K T q (n + 1) x := by
@@ -82,6 +84,7 @@ theorem reachInWith_succ (K : FinChain Ω) (T : Finset Ω) (q : ℝ) :
     · exact Or.inl hx
     · exact Or.inr ⟨y, hy, ih y hry⟩
 
+omit [DecidableEq Ω] in
 /-- A shorter path is also a path of the allowed length. -/
 theorem reachInWith_mono (K : FinChain Ω) (T : Finset Ω) (q : ℝ) {m n : ℕ} (h : m ≤ n)
     {x : Ω} (hx : ReachInWith K T q m x) : ReachInWith K T q n x := by
@@ -89,6 +92,7 @@ theorem reachInWith_mono (K : FinChain Ω) (T : Finset Ω) (q : ℝ) {m n : ℕ}
   | base => exact hx
   | succ n _ ih => exact reachInWith_succ K T q n x ih
 
+omit [DecidableEq Ω] in
 /-- Lowering the required edge weight only makes paths easier to find. -/
 theorem reachInWith_mono_prob (K : FinChain Ω) (T : Finset Ω) {q q' : ℝ} (h : q' ≤ q)
     (n : ℕ) {x : Ω} (hx : ReachInWith K T q n x) : ReachInWith K T q' n x := by
@@ -99,6 +103,7 @@ theorem reachInWith_mono_prob (K : FinChain Ω) (T : Finset Ω) {q q' : ℝ} (h 
     · exact Or.inl hx
     · exact Or.inr ⟨y, le_trans h hy, ih hry⟩
 
+omit [DecidableEq Ω] in
 /-- **Transfer along a perturbation.**  Any kernel whose entries dominate `K`'s
 progress edges (up to the shift `q - q'`) inherits the progress paths.  This is
 the form used for an *estimated* kernel `K'` with `|K - K'| ≤ q - q'` entrywise:

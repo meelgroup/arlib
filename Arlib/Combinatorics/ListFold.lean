@@ -36,7 +36,7 @@ theorem foldr_min_le_mem : ∀ (l : List α) (a : α) (v : α), v ∈ l → l.fo
 `x` in the list, then `m` bounds the fold-minimum below. -/
 theorem le_foldr_min {m : α} :
     ∀ (l : List α) (a : α), m ≤ a → (∀ x ∈ l, m ≤ x) → m ≤ l.foldr min a
-  | [], a, ha, _ => ha
+  | [], _a, ha, _ => ha
   | b :: s, a, ha, h =>
       le_min (h b (List.mem_cons_self))
         (le_foldr_min s a ha (fun x hx => h x (List.mem_cons_of_mem b hx)))
@@ -46,7 +46,7 @@ theorem le_foldr_min {m : α} :
 fold-minimum of positives. -/
 theorem lt_foldr_min {m : α} :
     ∀ (l : List α) (a : α), m < a → (∀ x ∈ l, m < x) → m < l.foldr min a
-  | [], a, ha, _ => ha
+  | [], _a, ha, _ => ha
   | b :: s, a, ha, h =>
       lt_min (h b (List.mem_cons_self))
         (lt_foldr_min s a ha (fun x hx => h x (List.mem_cons_of_mem b hx)))
