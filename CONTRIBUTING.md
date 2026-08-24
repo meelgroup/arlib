@@ -137,8 +137,14 @@ Pick the area by subject matter, not by which project needed it:
 | `Arlib.InformationTheory` | Entropy, divergence, and the inequalities lower-bound arguments run on |
 | `Arlib.MDP` | Finite Markov decision processes |
 | `Arlib.Combinatorics` | Generic `Finset` / `List` / `BigOperators` helpers with no probabilistic content |
-| `Arlib.Algorithms` | The problem-independent half of a specific algorithm's analysis |
 | `Arlib.GameTheory` | Minimax and related |
+
+Analyses of *specific algorithms* — the law of a counter, the arithmetic of a
+run-count schedule, a termination argument — do not go in any of them. They
+belong in the companion repository
+[arlib-community](https://github.com/meelgroup/arlib-community), which imports
+arlib; arlib never imports it. A general lemma discovered while analysing an
+algorithm still comes here.
 
 Two rules on top of that.
 

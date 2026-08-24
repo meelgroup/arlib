@@ -25,13 +25,13 @@ granularities of import:
 | one area | `import Arlib.Probability` |
 | one piece | `import Arlib.Probability.Chernoff` |
 
-There are **twelve** area roots: `Prelude`, `Combinatorics`, `Communication`,
+There are **eleven** area roots: `Prelude`, `Combinatorics`, `Communication`,
 `Probability`, `InformationTheory`, `MarkovChains`, `Approximation`, `MDP`, `GameTheory`,
-`Algorithms`, `KnowledgeCompilation`, `Automata`. `Prelude` is a single file of shared
-notation rather than a directory; the other eleven each have a directory beside them.
-The library root's docstring documents all twelve, in dependency order.
+`KnowledgeCompilation`, `Automata`. `Prelude` is a single file of shared
+notation rather than a directory; the other ten each have a directory beside them.
+The library root's docstring documents all eleven, in dependency order.
 
-309 `.lean` files live under `Arlib/`: 297 modules, 11 area roots and `Prelude.lean`.
+304 `.lean` files live under `Arlib/`: 293 modules, 10 area roots and `Prelude.lean`.
 
 The table below is the map of the library: what each area contains, how large it is,
 and the file to open first. It is in dependency order, matching the root docstring —
@@ -49,7 +49,6 @@ root itself; line counts include it.
 | Approximation | The algebra of multiplicative error windows; FPRAS and FPAUS as predicates on a randomised algorithm, self-reducibility, parsimonious reductions, amplification; Karp–Luby; and domain reduction for `ℓ¹` linear tests — coresets, subspace embeddings, and Lewis weights with their existence and sampling theorems. | 48 modules, ~15k lines | [Arlib/Approximation.lean](Arlib/Approximation.lean) |
 | MDP | Finite Markov decision processes with reachability objectives: the Bellman optimality operator, end components, the hitting-time weight and the contraction it supplies, `Q*` constructed by value iteration, trajectory semantics, policy values. | 11 modules, ~2.7k lines | [Arlib/MDP.lean](Arlib/MDP.lean) |
 | GameTheory | Yao's minimax principle, in the averaging form that lower-bound arguments use. | 1 module, ~100 lines | [Arlib/GameTheory.lean](Arlib/GameTheory.lean) |
-| Algorithms | Analyses of specific randomised algorithms, each split so that only the problem-independent half lives here. Currently the Tootsie Pop Algorithm: the Poisson law of its contraction counter and almost-sure termination. | 4 modules, ~850 lines | [Arlib/Algorithms.lean](Arlib/Algorithms.lean) |
 | KnowledgeCompilation | Representation languages for Boolean functions (NNF and its decomposable, deterministic and structured fragments, SDD, v-trees) as DAGs; the communication-complexity measures that bound their size; size lower bounds and succinctness separations; non-deterministic read-once branching programs; compilation by forgetting; Tseitin formulas; structured probabilistic circuits. | 54 modules, ~30k lines | [Arlib/KnowledgeCompilation.lean](Arlib/KnowledgeCompilation.lean) |
 | Automata | NFA, DFA and unambiguous finite automata, with runs as first-class objects; lower bounds on the number of states needed to complement, to union and to separate, obtained through communication complexity; succinct NFAs; tree automata. | 18 modules, ~8k lines | [Arlib/Automata.lean](Arlib/Automata.lean) |
 
@@ -72,7 +71,7 @@ Two areas are the exception: `Arlib.GameTheory` (13 lines) and `Arlib.Informatio
 (32 lines) are short — the first because it holds one theorem, the second because the
 area is uniform.
 
-Five places nest the convention one level deeper, with sub-area roots that carry their own
+Four places nest the convention one level deeper, with sub-area roots that carry their own
 documentation:
 
 | Sub-root | Modules |
@@ -81,7 +80,6 @@ documentation:
 | [Arlib/KnowledgeCompilation/Tseitin.lean](Arlib/KnowledgeCompilation/Tseitin.lean) | 10 |
 | [Arlib/KnowledgeCompilation/Forgetting.lean](Arlib/KnowledgeCompilation/Forgetting.lean) | 4 |
 | [Arlib/KnowledgeCompilation/Probabilistic.lean](Arlib/KnowledgeCompilation/Probabilistic.lean) | 2 |
-| [Arlib/Algorithms/TPA.lean](Arlib/Algorithms/TPA.lean) | 3 |
 
 `Arlib/Approximation/Coresets/` (5 modules) is the one subdirectory with no root of its
 own; it is documented from the `Arlib.Approximation` root.
@@ -114,10 +112,6 @@ Type-API sub-namespaces are kept and re-homed under their area (`Arlib.Probabili
 `Arlib.Probability.CoinSpace`, `Arlib.Automata.SuccinctNFA`, …), and topic sub-namespaces
 appear where a paper's development needs one (`Arlib.KnowledgeCompilation.Separation`,
 `…​.DecisionDNNF`, `…​.Tseitin.Imported`, `Arlib.Automata.Complement`, …).
-
-`Arlib.Algorithms` takes this one step further: each algorithm gets its own namespace
-`Arlib.Algorithms.<Name>`, because the entries are independent of one another and their
-short names would collide.
 
 #### The bare `Arlib` namespace has exactly six declarations — and one of them is a trap
 
@@ -212,7 +206,6 @@ back-edges and no cycles**:
 | `MDP → Combinatorics` | 1 |
 | `Approximation → Prelude` | 2 |
 | `Approximation → Probability` | 10 |
-| `Algorithms → Probability` | 1 |
 | `KnowledgeCompilation → Prelude` | 4 |
 | `KnowledgeCompilation → Communication` | 9 |
 | `KnowledgeCompilation → Approximation` | 3 |
@@ -229,7 +222,7 @@ levels:
 | L0 | `Prelude`, `GameTheory` |
 | L1 | `Combinatorics`, `Communication` |
 | L2 | `Probability` |
-| L3 | `InformationTheory`, `MarkovChains`, `Approximation`, `MDP`, `Algorithms` |
+| L3 | `InformationTheory`, `MarkovChains`, `Approximation`, `MDP` |
 | L4 | `KnowledgeCompilation` |
 | L5 | `Automata` |
 
@@ -240,9 +233,9 @@ levels:
                  L1   Combinatorics   Communication
                        |         \        |     \
                  L2   Probability  \      |      \
-                      /  |  |  \  \  \    |       \
+                      /  |  |   \        |       \
                  L3  IT  MC MDP Approximation      \
-                              Algorithms  |         |
+                                          |         |
                                            \        |
                  L4                    KnowledgeCompilation
                                                 |
@@ -264,7 +257,6 @@ graph TD
   Probability --> MarkovChains
   Probability --> MDP
   Probability --> Approximation
-  Probability --> Algorithms
   Communication --> KnowledgeCompilation
   Communication --> Automata
   Approximation --> KnowledgeCompilation
@@ -494,29 +486,7 @@ two subdirectories:
 | `…​.IsFPRAS.comp_parsimonious` / `…​.IsFPAUS.comp_bijection` | [Parsimonious.lean](Arlib/Approximation/Parsimonious.lean):170, :292 | a parsimonious reduction transports both guarantees with no loss in `ε`, `δ` or the `3/4` |
 | `…​.PreprocessedSampler.isFPAUS` | [Sampling.lean](Arlib/Approximation/Sampling.lean):907 | a sampler with an undetectable preprocessing failure and a `3/4` per-call `FAIL` rate is repaired into an FPAUS, given `log \|g w\|` polynomially bounded |
 
-### 3.8 `Arlib.Algorithms`
-
-**What it is for.** Analyses of specific randomised algorithms, split so that only the
-*problem-independent* half lives here — the law of a counter, the arithmetic of a run-count
-schedule, a termination argument. The problem-specific half stays in the project that uses
-it; an entry that cannot be stated without naming a problem is a sign the split has not
-been found.
-
-**Namespace** `Arlib.Algorithms.<Name>` — unlike every other area, each algorithm gets its
-own namespace, because the entries are independent and short names would collide.
-**Directory** `Arlib/Algorithms/`, currently one sub-area `TPA/` (Huber's Tootsie Pop
-Algorithm) with three modules: `Count`, `UniformProduct`, `TwoPhase`.
-
-| Declaration | Location | What it says |
-| --- | --- | --- |
-| `Arlib.Algorithms.TPA.prob_exactly_eq_poissonPMF` | [Algorithms/TPA/UniformProduct.lean](Arlib/Algorithms/TPA/UniformProduct.lean):341 | the headline: the TPA contraction counter is exactly Poisson with parameter `ln(1/c)` |
-| `…​.volume_prod_gt` | :319 | for `m` i.i.d. Uniform(0,1) draws, `Pr[U₁⋯U_m > c] = tpaTail m c` |
-| `…​.tpaTail` / `…​.tpaTail_sub` | [Algorithms/TPA/Count.lean](Arlib/Algorithms/TPA/Count.lean):85, :94 | the closed form `1 − c·∑_{j<m}(ln(1/c))^j/j!`, and that consecutive tails differ by exactly the Poisson mass — the law as pure algebra |
-| `…​.tendsto_tpaTail_atTop` | :102 | almost-sure termination: `tpaTail m c → 0` |
-| `…​.phase2_upper_budget` | [Algorithms/TPA/TwoPhase.lean](Arlib/Algorithms/TPA/TwoPhase.lean):123 | the two-phase run-count schedule: `r ≥ 2A(e²−e³)⁻¹d` suffices |
-| `…​.relative_error_of_log_error` | :188 | additive log accuracy converts to relative accuracy: `\|Â − A\| ≤ log(1+ε)` gives `e^Â/e^A ∈ [(1+ε)⁻¹, 1+ε]` |
-
-### 3.9 `Arlib.Communication`
+### 3.8 `Arlib.Communication`
 
 **What it is for.** Two-party communication complexity as a *measure of combinatorial
 structure* rather than a theory of protocols: rectangles, covers and partitions of a fibre,
@@ -553,7 +523,7 @@ via `partitionable_of_dependsOn`.
 | `…​.nnRank` / `…​.anRank` | [Communication/TwoParty.lean](Arlib/Communication/TwoParty.lean):234, :252 | nonnegative rank and its approximate version on a bare `F : X → Y → Bool` — what a lifting theorem lands in |
 | `…​.tpPar` | [Communication/TwoParty.lean](Arlib/Communication/TwoParty.lean):197 | the partition number in the abstract-domain shape; `Arlib.Automata` bounds automaton states through this |
 
-### 3.10 `Arlib.KnowledgeCompilation`
+### 3.9 `Arlib.KnowledgeCompilation`
 
 **What it is for.** Representation languages for Boolean functions — NNF and its
 decomposable, deterministic and structured fragments, SDD, decision-DNNF, read-once
@@ -597,7 +567,7 @@ namespace component — note in particular that `LowerBounds/Union.lean` and
 | `…​.Forgetting.forgetting_separation` | [Forgetting/Separation.lean](Arlib/KnowledgeCompilation/Forgetting/Separation.lean):357 | the DNNF-vs-d-DNNF separation (ex-`thm_sep`); `exists_dDNNF_gFun_hard_forget` (:374) is its corollary (ex-`cor_forgetting`) |
 | `…​.Tseitin.two_pow_le_refutationLen_mul_card` | [Tseitin/Main.lean](Arlib/KnowledgeCompilation/Tseitin/Main.lean):109 | the Tseitin headline, `2^{2·tw/(9Δ)} ≤ c₀·S·\|V\|` — but see §5: it rests on four bundles, **none** of which is inhabited and three of which cannot be |
 
-### 3.11 `Arlib.Automata`
+### 3.10 `Arlib.Automata`
 
 **What it is for.** Finite automata and the *unambiguous* fragment (at most one accepting
 run per word), and lower bounds on the number of states needed to complement, to union and
@@ -630,7 +600,7 @@ distinct groups: the word-automaton lower bounds (nine modules), the tree-automa
 | `…​.TreeAutomaton.isFPRAS_of_binary` / `…​.isFPAUS_of_binary` | [Automata/TreeAutomatonBinarize.lean](Arlib/Automata/TreeAutomatonBinarize.lean):601, :622 | the unranked-to-binary tree-automaton reduction is parsimonious, so approximate counting and sampling guarantees transfer with no loss; `ncard_langOfSize_binarize` (:488) is the counting identity `\|L_{2n−1}(binarize A)\| = \|L_n(A)\|` the source papers cite without proof |
 | `…​.SuccinctNFA.not_unguarded_sampler_mem_dead` | [Automata/SuccinctNFAWitness.lean](Arlib/Automata/SuccinctNFAWitness.lean):411 | the `Nonempty` guard on `LabelProps.sampler_mem` is load-bearing, not defensive; `labelProps_witness_le_eps` / `_le_g` / `_le_T` (:309, :319, :329) show no smaller parameter triple works |
 
-### 3.12 `Arlib.GameTheory`
+### 3.11 `Arlib.GameTheory`
 
 **What it is for.** Currently one result: Yao's minimax principle in the averaging form that
 lower-bound arguments use. The area imports nothing from `Arlib` — only Mathlib — and
@@ -700,8 +670,7 @@ constants. `Asymptotics.IsBigO` **appears nowhere in the library** — the grep 
 nothing. `Filter.Tendsto` appears only where a genuine limit is meant: value iteration
 converging in `Arlib/MDP/`, almost-sure convergence in
 `Arlib/Probability/StochasticApproximation.lean`, entropy decay in
-`Arlib/MarkovChains/Techniques/EntropyDecay.lean`, `tpaTail m c → 0` in
-`Arlib/Algorithms/TPA/Count.lean` — never as a complexity statement.
+`Arlib/MarkovChains/Techniques/EntropyDecay.lean` — never as a complexity statement.
 
 **The module you would expect to be the exception is not one.**
 [Arlib/KnowledgeCompilation/BranchingPrograms/Asymptotics.lean](Arlib/KnowledgeCompilation/BranchingPrograms/Asymptotics.lean)
@@ -788,7 +757,7 @@ because every draw is uniform, its coupon-collector bound is a pure *counting* s
 | --- | --- |
 | `FinProb` / `FinDist` / `ProbSpace` — the bespoke finite framework | most of `Arlib.Probability`, all of `Arlib.InformationTheory`, all of `Arlib.MarkovChains`, `Arlib.MDP`, `Arlib.Approximation.LewisWeights` |
 | Mathlib measure theory (`MeasureTheory.Measure`, `Filtration`, `condexp`, `Martingale`) | `Probability/{StochasticApproximation, CondExpFreshDraw, TorusProduct, LevyBorelCantelli, MeasurableIndex, ContCoinProto, MixedCoinSpace}.lean`, plus `InverseCDF.lean` transitively through `TorusProduct` |
-| Mathlib's `PMF` | the model of a randomized algorithm throughout `Arlib.Approximation` (`RandAlg α β := α → PMF (β × ℕ)`); also `Probability/{Poisson, PoissonEntropy, PoissonThinning, PoissonSplitting, BinomialCount, TVDistance}.lean` and `Arlib/Algorithms/TPA/` |
+| Mathlib's `PMF` | the model of a randomized algorithm throughout `Arlib.Approximation` (`RandAlg α β := α → PMF (β × ℕ)`); also `Probability/{Poisson, PoissonEntropy, PoissonThinning, PoissonSplitting, BinomialCount, TVDistance}.lean` |
 
 The measure-theoretic group exists because those statements are genuinely about limits,
 conditional expectation and almost-sure convergence and have no finite surrogate — a.s.
@@ -1049,16 +1018,24 @@ The governing rule, from [README.md](README.md):
 > in their own repositories; Arlib holds the **general lemmas underneath them** that are worth
 > sharing.
 
-`Arlib.Algorithms` states the same rule as its organising principle: an algorithm's analysis
-divides into a generic half (the law of a counter, the arithmetic of a schedule, a termination
-argument) and a problem-specific half (exhibiting the structure the algorithm needs for one
-particular counting or sampling problem). Only the generic half is here, and *"an entry that
-cannot be stated without naming a problem is a sign the split has not been found yet."*
-
 You will see the consequence in docstrings: seven files — the `Arlib.Approximation` root,
 `KarpLuby`, `KarpLubyApprox`, `KarpLubyFpras`, `DepSampling`, `CondDraw`, and
 `Automata/SuccinctNFAWitness` — refer to declarations under a `CQCount.*` namespace, the
 sibling project that consumes this library. Those declarations are not in this repository.
+
+### Analyses of specific algorithms
+
+They live in the companion repository
+[arlib-community](https://github.com/meelgroup/arlib-community), which imports arlib; arlib
+imports nothing from it. The rule an entry there must meet is the same one: an algorithm's
+analysis divides into a generic half (the law of a counter, the arithmetic of a schedule, a
+termination argument) and a problem-specific half (exhibiting the structure the algorithm
+needs for one particular counting or sampling problem). Only the generic half is shared at
+all, and *"an entry that cannot be stated without naming a problem is a sign the split has
+not been found yet."*
+
+The `Arlib.Algorithms` area — Huber's Tootsie Pop Algorithm — was moved out in 2026; see
+[MIGRATION.md](MIGRATION.md).
 
 ### No model of computation
 

@@ -18,6 +18,10 @@ Four kinds of change landed:
 3. **Module moves** — files that changed path, so `import` lines change (§4).
 4. **Deletions** — one, with a named replacement (§5).
 
+One later change is recorded here too, because it is the only one since that pass
+that breaks a downstream `import`: the `Arlib.Algorithms` area left arlib for
+[arlib-community](https://github.com/meelgroup/arlib-community) (§8).
+
 ---
 
 ## 1. How to use this document
@@ -68,7 +72,7 @@ repository already stated for itself (`Arlib/Automata/Basic.lean:47`):
 
 * the **area directory** `Arlib/<Area>/` fixes the namespace root `Arlib.<Area>`;
 * subdirectories (`Circuits/`, `LowerBounds/`, `BranchingPrograms/`, `Chains/`,
-  `Techniques/`, `Coresets/`, `TPA/`, …) contribute nothing;
+  `Techniques/`, `Coresets/`, …) contribute nothing;
 * **type-API sub-namespaces are kept and re-homed under their area**: `FinProb`,
   `ProbSpace`, `CoinSpace`, `MixedCoinSpace`, `ContCoinProto`, `SecondMoment`,
   `StochApprox`, `KWiseIndep`, `IsIndicatorFamily`, `HittingWeight`, ….
@@ -106,7 +110,8 @@ Unchanged: `Arlib.Probability.*`, `Arlib.Probability.Torus.*`,
 `Arlib.Probability.InverseCDF.*`, `Arlib.MarkovChains.*` (everything not in the
 `FinDist` core), `Arlib.KnowledgeCompilation.*` (everything not in §2.4),
 `Arlib.Automata.*`, `Arlib.Approximation.*` (other than `Lewis`),
-`Arlib.Algorithms.TPA.*`, `Arlib.InformationTheory.*`, `Arlib.MDP.*`.
+`Arlib.Algorithms.TPA.*` (which has since left the repository — §8),
+`Arlib.InformationTheory.*`, `Arlib.MDP.*`.
 
 ### 2.3 The two deliberate exceptions — bare `Arlib` is not empty
 
@@ -599,3 +604,48 @@ Recorded rather than resolved, because guessing here would be worse than saying 
 | `Arlib.KnowledgeCompilation.LowerBounds.ConicalJunta` | A deviation from the brief the module move was given: the file was asked to stay in `KnowledgeCompilation`, and it did, but not in a directory called `Communication/`. Reverting it is one `git mv` plus three import lines. No declaration name is affected either way. |
 | `Arlib.Communication.BooleanFunction` | A placement of convenience. `DependsOn` mentions no rectangle, party or partition; it lives here because `Arlib.Communication` is the lowest node of the sub-DAG and is already a dependency of both consumers. If a neutral `Arlib.BooleanFunctions` area is ever created, this module lifts verbatim — a `git mv`, a namespace rename, and an `open` in seven files. |
 | Build status | `lake build Arlib` and `lake build ArlibTest` were green after the `Communication` move and after the `FinDist` move. The rename passes in `BranchingPrograms/`, `Tseitin/`, `LowerBounds/`, `Forgetting/`, `Automata/`, `Probability/`, `MDP/` and `Approximation/` were applied without a build; they are textual and type-preserving, but they have not each been independently elaborated. |
+
+---
+
+## 8. Later change: `Arlib.Algorithms` moved to arlib-community
+
+Not part of the `api-overhaul` pass. Recorded here because it is the one change
+since that pass which breaks a downstream `import`.
+
+The `Arlib.Algorithms` area — its only sub-area being `TPA/`, Huber's Tootsie Pop
+Algorithm — left arlib for the companion repository
+[arlib-community](https://github.com/meelgroup/arlib-community). The split it
+expresses: arlib is organised by *subject* and holds results stated without
+reference to any one algorithm; analyses of *named* algorithms live in
+arlib-community, which imports arlib. Nothing in arlib depends on
+arlib-community, so the area's departure removes an area root, four modules and
+the single `Algorithms → Probability` import edge, and changes nothing else.
+
+Nothing about the mathematics changed. The proofs, statements, hypotheses and
+base names are identical; only the module paths and the namespace root moved.
+
+**Add the dependency:**
+
+```toml
+[[require]]
+name = "arlib-community"
+git = "https://github.com/meelgroup/arlib-community.git"
+rev = "main"
+```
+
+**Then substitute**, on both `import` lines and fully-qualified names:
+
+| old | new |
+| --- | --- |
+| `Arlib.Algorithms` | `ArlibCommunity.Algorithms` |
+| `Arlib.Algorithms.TPA` | `ArlibCommunity.Algorithms.TPA` |
+| `Arlib.Algorithms.TPA.Count` | `ArlibCommunity.Algorithms.TPA.Count` |
+| `Arlib.Algorithms.TPA.UniformProduct` | `ArlibCommunity.Algorithms.TPA.UniformProduct` |
+| `Arlib.Algorithms.TPA.TwoPhase` | `ArlibCommunity.Algorithms.TPA.TwoPhase` |
+
+The first row subsumes the rest: `Arlib.Algorithms` → `ArlibCommunity.Algorithms`
+as a prefix substitution is the whole migration. An `open Arlib.Algorithms.TPA`
+becomes `open ArlibCommunity.Algorithms.TPA`, and call sites that never spell the
+prefix need no edit at all. Declarations of that area still referenced from
+arlib's own docstrings: none — `Arlib.Probability.poissonPMF`, which
+`UniformProduct.lean` consumes, stays in arlib and is unaffected.

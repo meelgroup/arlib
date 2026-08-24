@@ -69,9 +69,6 @@ Listed bottom-up, in dependency order.
   policy values.
 * `Arlib.GameTheory` — Yao's minimax principle, in the averaging form that
   lower-bound arguments actually use.
-* `Arlib.Algorithms` — analyses of specific algorithms, each split so that only
-  the problem-independent half lives here. Currently the Tootsie Pop Algorithm:
-  the Poisson law of its contraction counter, and almost-sure termination.
 * `Arlib.KnowledgeCompilation` — representation languages for Boolean functions
   (NNF and its decomposable / deterministic / structured fragments, SDD,
   v-trees), size lower bounds obtained through the rectangle measures of
@@ -103,6 +100,5 @@ import Arlib.MarkovChains
 import Arlib.Approximation
 import Arlib.MDP
 import Arlib.GameTheory
-import Arlib.Algorithms
 import Arlib.KnowledgeCompilation
 import Arlib.Automata

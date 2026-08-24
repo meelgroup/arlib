@@ -8,14 +8,18 @@ theory, finite MDPs, and coresets. It is written the way Mathlib is written —
 general statements, one namespace per module path, a docstring on every
 declaration. 
 
-Currently 310 modules and roughly 115,000 lines, `sorry`-free, and dependent on
+Currently 305 modules and roughly 115,000 lines, `sorry`-free, and dependent on
 no axiom beyond the three Mathlib itself uses.
 
 ## What's inside
 
-Twelve areas, in dependency order: `Prelude`, `Combinatorics`, `Communication`,
+Eleven areas, in dependency order: `Prelude`, `Combinatorics`, `Communication`,
 `Probability`, `InformationTheory`, `MarkovChains`, `Approximation`, `MDP`,
-`GameTheory`, `Algorithms`, `KnowledgeCompilation`, `Automata`.
+`GameTheory`, `KnowledgeCompilation`, `Automata`.
+
+Analyses of *specific algorithms* are not here: they live in the companion
+repository [arlib-community](https://github.com/meelgroup/arlib-community), which
+imports arlib. Nothing in arlib depends on it.
 
 Each is a directory `Arlib/<Area>/` with an area root `Arlib/<Area>.lean` that
 re-exports it. `import Arlib` gives you everything; `import Arlib.MarkovChains`

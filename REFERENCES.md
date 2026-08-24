@@ -235,12 +235,6 @@ Combinatorial Structures from a Uniform Distribution.* Theoret. Comput. Sci. 43:
 **`Gore97`** — Vivek Gore, Mark Jerrum, Sampath Kannan, Z. Sweedyk, Steve Mahaney. *A Quasi-Polynomial-
 Time Algorithm for Sampling Words from a Context-Free Language.* Inform. and Comput. 134(1):59–74, 1997.
 
-**`Hub10`** — Mark Huber, Sarah Schott. *Using TPA for Bayesian Inference.*
-Bayesian Statistics 9, OUP, 2010, pp. 257–282. arXiv:0907.2989.
-
-**`Hub15`** — Mark Huber. *Approximation Algorithms for the Normalizing Constant of Gibbs
-Distributions.* Ann. Appl. Probab. 25(2):974–985, 2015. arXiv:1206.2689.
-
 **`Lew78`** — D. R. Lewis. *Finite Dimensional Subspaces of `L_p`.* Studia Math. 63:207–212, 1978.
 (The weights themselves.)
 
@@ -298,7 +292,6 @@ corresponding docstrings say the source is unknown instead of naming a paper.
 | --- | --- | --- |
 | `Arlib/MDP/**` | A specific paper, quoted verbatim and by pseudocode line number (`Bellman.lean`, `Basic.lean`, `Reachability.lean`, `FixedPoint.lean`). | Never named anywhere in the repository. Reads as a Q-learning-for-reachability paper. |
 | `Arlib/Probability/TVDistance.lean` | LaTeX labels `lem:dtv`, `lem:condtv`, `lem:averagingtv` in an unshipped `prelims.tex` / `extended-prelims.tex`. | Copyright names Uddalok Sarkar; likely an in-preparation paper. Same for `IntersectionTailBound.lean`. |
-| `Arlib/Algorithms/TPA/**` | "Huber, 2010" in three files, but `TwoPhase.lean` cites "its Theorem 5" and a two-phase schedule matching Huber 2015. | One of the two attributions is wrong; they are different papers (`Hub10` vs `Hub15`). A third Huber paper, `BGHP`, is cited correctly elsewhere. |
 | `Arlib/Approximation/KarpLubyApprox.lean` | "Gore et al." | No in-repo anchor; the attribution is deferred to a file in a different repository. `Gore97` below is an identification from content alone. |
 | `Arlib/MarkovChains/**` | `relax-optimal` — Anari, Jain, Koehler, Pham, Vuong. | The result cited is "optimal relaxation time of the Glauber dynamics implies spectral independence" (`CSV23`, `lem:opt-relax-SI`). The monograph's own bibliography is not distributed, so the exact paper is unconfirmed. |
 | `Arlib/MarkovChains/**` | `CLV21` — Chen, Liu, Vigoda, located only as "Fact A.8" / "Theorem A.9". | Best candidate arXiv:2011.02075 (STOC 2021); two same-author papers of the period are plausible. |
