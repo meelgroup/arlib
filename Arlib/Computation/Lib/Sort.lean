@@ -54,6 +54,9 @@ itself recurses on the length, and its termination is `n`.
 * `mergeCost C` — the per-element charge, written out in `C`'s fields.
 * `steps_merge_le`, `steps_mergeSortRam_le` — the two bounds, and their
   `CostModel.unitCost` numeral corollaries.
+* `size_state_merge`, `size_state_mergeSortRam` — the frame fact that neither
+  allocates, which is what a later correctness proof needs in order to carry a
+  `HoldsList` across the sort.
 -/
 
 namespace Arlib.Computation
@@ -126,7 +129,6 @@ private theorem size_state_iterate {α : Type} (n : ℕ) (f : ℕ → α → RAM
     ((iterate n f a).state σ).size = σ.size :=
   iterate_induction n f a σ (fun _ _ τ => τ.size = σ.size) rfl
     (fun j x τ _ hτ => by rw [h j x τ]; exact hτ)
-
 
 /-- One output position of the merge loop.
 
