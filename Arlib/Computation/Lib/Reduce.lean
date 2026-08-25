@@ -100,6 +100,14 @@ theorem toNat_arrSum {σ : RamState w} {a : ℕ} {l : List ℕ} (H : HoldsList �
     conv_rhs => rw [Nat.add_mod]
     simp
 
+/-- **`arrSum` charges.**  The deterministic analogue of
+`Arlib.Approximation.IsFPRAS.Charges`: the zero-cost non-algorithm that
+predicate exists to exclude is not expressible here, because a program that
+performs a primitive has positive cost and this one begins with a literal. -/
+theorem steps_arrSum_pos (C : CostModel) (base : Word w) (n : ℕ) (σ : RamState w) :
+    0 < RAM.steps C (arrSum base n) σ :=
+  RAM.steps_pos_bind C _ (steps_lit_pos σ C 0)
+
 /-! ## Maximum -/
 
 /-- The largest of the `n` cells based at `base`; zero when `n = 0`.
@@ -142,6 +150,11 @@ theorem steps_arrMax_le_unitCost (base : Word w) (n : ℕ) (σ : RamState w) :
   have := steps_arrMax_le CostModel.unitCost base n σ
   simp only [CostModel.unitCost_cost] at this
   omega
+
+/-- **`arrMax` charges.**  See `steps_arrSum_pos`. -/
+theorem steps_arrMax_pos (C : CostModel) (base : Word w) (n : ℕ) (σ : RamState w) :
+    0 < RAM.steps C (arrMax base n) σ :=
+  RAM.steps_pos_bind C _ (steps_lit_pos σ C 0)
 
 /-- **`arrMax` returns the largest of the first `n` entries.** -/
 theorem toNat_arrMax {σ : RamState w} {a : ℕ} {l : List ℕ} (H : HoldsList σ a l)

@@ -200,6 +200,32 @@ trust. -/
 
 end RAM
 
+/-! ## Cost is monotone along a program
+
+The deterministic analogue of `Arlib.Approximation.IsFPRAS.Charges`, which is
+the predicate that excludes the zero-cost non-algorithm.  There it has to be
+assumed; here a program that performs any primitive at all has positive cost,
+and these two lemmas are how that is discharged for a composite program. -/
+
+namespace RAM
+
+variable {w : ℕ} {α β : Type u}
+
+/-- **Running more cannot cost less.**  A program's cost bounds the cost of any
+program that begins with it. -/
+theorem steps_le_bind (C : CostModel) (p : RAM w α) (f : α → RAM w β) (σ : RamState w) :
+    steps C p σ ≤ steps C (p >>= f) σ := by
+  simp only [steps_bind]
+  omega
+
+/-- A program that begins with a positively-charged step is itself positively
+charged. -/
+theorem steps_pos_bind (C : CostModel) {p : RAM w α} (f : α → RAM w β) {σ : RamState w}
+    (h : 0 < steps C p σ) : 0 < steps C (p >>= f) σ :=
+  lt_of_lt_of_le h (steps_le_bind C p f σ)
+
+end RAM
+
 /-! ## The primitives
 
 Each performs exactly one operation of the corresponding `Op`, except `alloc`,
