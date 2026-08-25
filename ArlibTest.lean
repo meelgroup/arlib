@@ -29,3 +29,4 @@ import ArlibTest.Combinatorics
 import ArlibTest.Probability
 import ArlibTest.GameTheory
 import ArlibTest.Communication
+import ArlibTest.Computation
