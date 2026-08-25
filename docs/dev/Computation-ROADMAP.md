@@ -8,9 +8,48 @@ of primitive operations, and a library of basic subroutines — `arrMax`,
 `median`, sorting, search, heaps, hashing — each with its correctness proved
 against Mathlib and its running time proved against that table.
 
-**Status.** Design only. No code exists. This document is prospective, unlike
-the Automata and KnowledgeCompilation roadmaps, which record work already done;
-`LewisWeights-ROUTE_A_PLAN.md` is the precedent for the genre.
+**Status.** The deterministic core is built and green: `Cost`, `Machine`, `Loop`,
+`Data`, `Lib/Reduce`, `Lib/Search`, an executable test suite in
+`ArlibTest/Computation.lean`, and the seal audit `scripts/ComputationAudit.lean`.
+`arrSum`, `arrMax` and `binSearch` each carry a correctness theorem against a
+Mathlib list and an explicit cost bound; the programs run, and the tests check
+the measured operation counts against the proved bounds. The randomised layer
+(§7.2), `Lib/Bignum`, `Lib/Sort` and the FPRAS bridge (§11) are not built.
+
+The first application is outside this repository: `esa22-copy` uses the cost
+layer to state and prove a **worst-case running-time bound for the CVM
+distinct-elements estimator**, which its paper does not have — see §0.
+
+## 0. What is built, and what it demonstrates
+
+Three findings from building it are worth recording here, because two of them
+correct this document and one is the reason the area is worth continuing.
+
+**The seal is stronger than §2.2 claimed.** All three cheats are rejected by the
+Lean compiler rather than by an audit: forging a `RAM` fails because the
+constructor is private, projecting `Word`'s field fails because the field is
+private, and reading a word through `Word.toNat` fails to *compile*, because
+`toNat` is `noncomputable` and Lean refuses to generate code for a definition
+that depends on it. `Word.rec` is likewise rejected — by the code generator,
+which does not compile recursors. The single route that remains open is
+`Word.casesOn`, which is generated public and *is* compiled; that is what
+`scripts/ComputationAudit.lean` looks for, and the audit was checked against a
+deliberately planted breach.
+
+**`Std.Do` was not needed.** §6 proposed instantiating Lean core's Hoare logic at
+`RAM`. In the event, writing loops as a combinator over Lean's own recursion made
+the program logic unnecessary: `Loop.steps_iterate_le` and
+`Loop.iterate_induction` are eleven lines together, and every bound and every
+correctness proof in `Lib/` goes through them. `Std.Do` remains the right answer
+for `while`-shaped code with a data-dependent trip count, which nothing in the
+library has yet.
+
+**The costs are checked against execution.** Every algorithm is a computable Lean
+function, so `ArlibTest/Computation.lean` runs them and compares measured
+operation counts with the proved bounds — 13 steps for a three-cell `arrMax`
+against a bound of `4n + 1`, 84 steps for a thousand-cell `binSearch` against a
+bound of `9·⌈log₂(n+1)⌉ + 2`. A cost model that cannot be executed cannot be
+checked this way, and this one can.
 
 **The claim.** The word RAM has not been formalized in any proof assistant.
 Formalizing it, and putting arlib's subroutines on top, is what this area is for.
@@ -717,29 +756,29 @@ Every cost theorem carries the width hypothesis of §2.5.
 
 | Module | Contents | Phase | Status |
 | --- | --- | --- | --- |
-| `Word` | `Word`, the seal, `LinearOrder`, `toNat` view lemmas | 1 | planned |
-| `Cost` | `CostModel`, `unitCost`, `cost_unitCost_le`, the projection `simp` set | 1 | planned |
-| `Ram` | `RamState`, `RAM`, the primitives of §3, `cost` and its equations | 1 | planned |
-| `CostLogic` | `Std.Do` instantiation, `@[spec]` lemmas, cost and failure components | 1 | planned |
-| `Footprint` | `Footprint`, the frame rule, allocation-order disjointness | 1 | planned |
-| `Data` | `HoldsList`, the `Perm`/`Pairwise` bridges | 1 | planned |
-| `Lib/Arr` | `arrGet`, `arrSet`, `arrSwap`, `arrCopy`, `arrFill`, `arrReverse` | 1 | planned |
-| `Lib/Reduce` | `arrMax`, `arrMin`, `arrSum`, `arrArgmax`, `arrCount` | 1 | planned |
-| `Lib/Search` | linear search, binary search | 1 | planned |
-| `Lib/Sort` | insertion, merge, heapsort | 1 | planned |
-| `Lib/Heap` | `heapSiftDown`, `heapInsert`, `heapExtractMin`, `heapBuild` | 1 | planned |
-| `Lib/Select` | `selPartition`, median-of-medians, **`median`** | 1 | planned |
-| `Lib/Bignum` | multi-word `add`, `sub`, `mul`, `cmp`, `shift`, `divmod` | 1 | planned |
-| `Random` | `RAMP`, the three cost shapes, the failure component | 2 | planned |
-| `Random/Uniform` | `randWord`, `uniformLt`, the TV bounds and the composition lemma | 2 | planned |
-| `Lib/Dyadic` | `m · 2^{-e}`, `toReal`, relative-error lemmas | 2 | planned |
-| `Lib/SelectRand` | randomised selection, randomised quicksort | 2 | planned |
-| `Lib/Shuffle` | Fisher–Yates, reservoir sampling | 2 | planned |
-| `Lib/Sample` | weighted sampling over bignum weights | 2 | planned |
-| `Lib/Hash` | table with `k`-wise independent hashing, against `PolyHash` | 2 | planned |
-| `Lib/Estimate` | median-of-means | 2 | planned |
-| `Bridge` | `ProgAlg`, `isFPRAS_of_progAlg`, `charges_of_cost_pos` | 2 | planned |
-| `Recurrence` *(in `Arlib.Combinatorics`)* | `le_mul_clog_of_halving` and the divide-and-conquer lemmas | 1 | planned |
+| `Word` | `Word`, the seal, `LinearOrder`, `toNat` view lemmas | 1 | built (in `Machine`) |
+| `Cost` | `CostModel`, `unitCost`, `cost_unitCost_le`, the projection `simp` set | 1 | built |
+| `Ram` | `RamState`, `RAM`, the primitives of §3, `cost` and its equations | 1 | built (as `Machine`) |
+| `CostLogic` | `Std.Do` instantiation, `@[spec]` lemmas, cost and failure components | 1 | not built — see §0 |
+| `Footprint` | `Footprint`, the frame rule, allocation-order disjointness | 1 | not built |
+| `Data` | `HoldsList`, the `Perm`/`Pairwise` bridges | 1 | built |
+| `Lib/Arr` | `arrGet`, `arrSet`, `arrSwap`, `arrCopy`, `arrFill`, `arrReverse` | 1 | not built |
+| `Lib/Reduce` | `arrMax`, `arrMin`, `arrSum`, `arrArgmax`, `arrCount` | 1 | built |
+| `Lib/Search` | linear search, binary search | 1 | built |
+| `Lib/Sort` | insertion, merge, heapsort | 1 | not built |
+| `Lib/Heap` | `heapSiftDown`, `heapInsert`, `heapExtractMin`, `heapBuild` | 1 | not built |
+| `Lib/Select` | `selPartition`, median-of-medians, **`median`** | 1 | not built |
+| `Lib/Bignum` | multi-word `add`, `sub`, `mul`, `cmp`, `shift`, `divmod` | 1 | not built |
+| `Random` | `RAMP`, the three cost shapes, the failure component | 2 | not built |
+| `Random/Uniform` | `randWord`, `uniformLt`, the TV bounds and the composition lemma | 2 | not built |
+| `Lib/Dyadic` | `m · 2^{-e}`, `toReal`, relative-error lemmas | 2 | not built |
+| `Lib/SelectRand` | randomised selection, randomised quicksort | 2 | not built |
+| `Lib/Shuffle` | Fisher–Yates, reservoir sampling | 2 | not built |
+| `Lib/Sample` | weighted sampling over bignum weights | 2 | not built |
+| `Lib/Hash` | table with `k`-wise independent hashing, against `PolyHash` | 2 | not built |
+| `Lib/Estimate` | median-of-means | 2 | not built |
+| `Bridge` | `ProgAlg`, `isFPRAS_of_progAlg`, `charges_of_cost_pos` | 2 | not built |
+| `Recurrence` *(in `Arlib.Combinatorics`)* | `le_mul_clog_of_halving` and the divide-and-conquer lemmas | 1 | not built |
 
 The recurrence lemmas are generic `Nat` arithmetic mentioning no program, so they
 belong in `Arlib.Combinatorics`, which `ARCHITECTURE.md` §1 describes as exactly

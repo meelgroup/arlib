@@ -185,6 +185,18 @@ variable {κ : Type} [Fintype κ] [DecidableEq κ]
 /-- The scalar cost of `c` under the rate `R`: the number of steps. -/
 def steps (C : Rate κ) (c : CostVec κ) : ℕ := ∑ o, C.cost o * c o
 
+/-- **An exchange rate between currencies.**  `E o` is what one `o` costs in the
+currency `κ'`.
+
+This is what lets an analysis carried out in one unit be reused in another.  An
+algorithm stated over an abstract dictionary is naturally charged in dictionary
+operations; an exchange rate saying what a dictionary operation costs in word
+operations turns that analysis into a machine-level one without redoing it.  The
+arrangement is [HL21]'s. -/
+def exchange (E : κ → CostVec κ') (c : CostVec κ) : CostVec κ' :=
+  fun o' => ∑ o, c o * E o o'
+
+
 omit [DecidableEq κ] in
 @[simp] theorem steps_zero (C : Rate κ) : steps C 0 = 0 := by simp [steps]
 
@@ -211,6 +223,26 @@ but not one that makes a program look faster than the reference model does. -/
 theorem steps_unit_le (C : Rate κ) (c : CostVec κ) :
     steps (Rate.unit κ) c ≤ steps C c :=
   Finset.sum_le_sum fun o _ => Nat.mul_le_mul_right _ (C.one_le o)
+
+omit [DecidableEq κ] in
+/-- **Exchanging at a rate bounded by `k` multiplies the cost by at most `k`.**
+
+The workhorse: an analysis giving `T` abstract operations, together with the fact
+that each costs at most `k` steps of the concrete machine, gives `k * T` concrete
+steps — with no re-derivation of the analysis. -/
+theorem steps_exchange_le {κ' : Type} [Fintype κ'] [DecidableEq κ']
+    (C : Rate κ') (E : κ → CostVec κ') (c : CostVec κ) (k : ℕ)
+    (hE : ∀ o, steps C (E o) ≤ k) :
+    steps C (exchange E c) ≤ k * steps (Rate.unit κ) c := by
+  have hrw : steps C (exchange E c) = ∑ o, c o * steps C (E o) := by
+    simp only [steps, exchange, Finset.mul_sum]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun o _ => Finset.sum_congr rfl fun o' _ => by ring
+  have hu : steps (Rate.unit κ) c = ∑ o, c o := by simp [steps]
+  rw [hrw, hu, Finset.mul_sum]
+  refine Finset.sum_le_sum fun o _ => ?_
+  rw [mul_comm k (c o)]
+  exact Nat.mul_le_mul_left _ (hE o)
 
 omit [DecidableEq κ] in
 /-- Under the unit rate the step count is the total number of operations
