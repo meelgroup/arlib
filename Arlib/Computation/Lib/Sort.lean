@@ -88,6 +88,12 @@ store.** -/
     RAM.steps C (storeAt base i v) σ = C.cost .lit + C.cost .add + C.cost .store := by
   simp [storeAt, RAM.steps, Nat.add_assoc]
 
+/-- Writing a cell does not change how much memory is allocated: `store` is
+`Array.setIfInBounds`, which is a no-op outside the allocated region. -/
+@[simp] theorem size_state_storeAt (base : Word w) (i : ℕ) (v : Word w) (σ : RamState w) :
+    ((storeAt base i v).state σ).size = σ.size := by
+  simp [storeAt, RamState.size]
+
 /-! ## The per-element charge
 
 Both of `merge`'s loops have a body of fixed size, so one constant covers the
@@ -110,6 +116,17 @@ def mergeCost (C : CostModel) : ℕ :=
   simp [mergeCost]
 
 /-! ## Merging two adjacent runs -/
+
+/-- A loop whose body leaves the allocated size alone leaves it alone.  This is
+the frame fact every later correctness proof about a sort needs, because
+`HoldsList.fits` and `HoldsList.bounded` are both statements about
+`RamState.size`. -/
+private theorem size_state_iterate {α : Type} (n : ℕ) (f : ℕ → α → RAM w α) (a : α)
+    (σ : RamState w) (h : ∀ j x τ, ((f j x).state τ).size = τ.size) :
+    ((iterate n f a).state σ).size = σ.size :=
+  iterate_induction n f a σ (fun _ _ τ => τ.size = σ.size) rfl
+    (fun j x τ _ hτ => by rw [h j x τ]; exact hτ)
+
 
 /-- One output position of the merge loop.
 
@@ -159,6 +176,18 @@ private theorem steps_mergeStep_le (C : CostModel) (base tmp : Word w)
     · simp [RAM.steps_bind]; omega
   · simp [RAM.steps_bind]; omega
 
+/-- Merging one element writes one cell of the scratch block and allocates
+nothing. -/
+private theorem size_state_mergeStep (base tmp : Word w) (mid hi t : ℕ) (p : ℕ × ℕ)
+    (σ : RamState w) : ((mergeStep base tmp mid hi t p).state σ).size = σ.size := by
+  simp only [mergeStep]
+  split
+  · split
+    · simp only [RAM.state_bind, state_loadAt, state_le]
+      split <;> simp [RAM.state_bind]
+    · simp [RAM.state_bind]
+  · simp [RAM.state_bind]
+
 /-- The body of the copy-back loop: move one cell of the scratch block back into
 the block being sorted. -/
 private def copyStep (base tmp : Word w) (lo t : ℕ) (_u : Unit) : RAM w Unit := do
@@ -172,6 +201,11 @@ private theorem steps_copyStep_le (C : CostModel) (base tmp : Word w) (lo t : �
       ≤ (C.cost .lit + C.cost .add + C.cost .load)
         + (C.cost .lit + C.cost .add + C.cost .store) := by
   simp [copyStep, RAM.steps_bind]
+
+/-- Copying one cell back allocates nothing. -/
+private theorem size_state_copyStep (base tmp : Word w) (lo t : ℕ) (u : Unit)
+    (σ : RamState w) : ((copyStep base tmp lo t u).state σ).size = σ.size := by
+  simp [copyStep, RAM.state_bind]
 
 /-- **Merge two adjacent sorted runs.**
 
@@ -223,6 +257,19 @@ theorem steps_merge_le_unitCost (base tmp : Word w) (lo k n : ℕ) (σ : RamStat
   rw [mergeCost_unitCost] at this
   omega
 
+/-- **Merging allocates nothing.**  Both loops only read and write cells that
+were already there. -/
+@[simp] theorem size_state_merge (base tmp : Word w) (lo k n : ℕ) (σ : RamState w) :
+    ((merge base tmp lo k n).state σ).size = σ.size := by
+  have h1 := size_state_iterate n
+    (fun t p => mergeStep base tmp (lo + k) (lo + n) (lo + t) p) (lo, lo + k) σ
+    (fun j x τ => size_state_mergeStep base tmp (lo + k) (lo + n) (lo + j) x τ)
+  have h2 := size_state_iterate n (fun t u => copyStep base tmp lo t u) ()
+    ((iterate n (fun t p => mergeStep base tmp (lo + k) (lo + n) (lo + t) p) (lo, lo + k)).state σ)
+    (fun j x τ => size_state_copyStep base tmp lo j x τ)
+  simp only [merge, RAM.state_bind]
+  omega
+
 /-! ## Merge sort -/
 
 /-- **Merge sort on the block `[lo, lo + n)` of `base`**, using `tmp` as scratch.
@@ -239,6 +286,28 @@ def mergeSortRam (base tmp : Word w) (lo n : ℕ) : RAM w Unit :=
 termination_by n
 decreasing_by
   all_goals omega
+
+/-- **Merge sort allocates nothing.**  The scratch block is supplied by the
+caller, so the whole sort runs inside the memory it was handed. -/
+theorem size_state_mergeSortRam (base tmp : Word w) :
+    ∀ (n lo : ℕ) (σ : RamState w),
+      ((mergeSortRam base tmp lo n).state σ).size = σ.size := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro lo σ
+    rcases Nat.lt_or_ge n 2 with h2 | h2
+    · rw [mergeSortRam, dif_pos (by omega : n ≤ 1)]
+      rfl
+    · have hA := ih (n / 2) (by omega) lo σ
+      have hB := ih (n - n / 2) (by omega) (lo + n / 2)
+        ((mergeSortRam base tmp lo (n / 2)).state σ)
+      have hM := size_state_merge base tmp lo (n / 2) n
+        ((mergeSortRam base tmp (lo + n / 2) (n - n / 2)).state
+          ((mergeSortRam base tmp lo (n / 2)).state σ))
+      rw [mergeSortRam, dif_neg (by omega : ¬ n ≤ 1)]
+      simp only [RAM.state_bind]
+      omega
 
 /-- **The cost of merge sort is `mergeCost C * n * (⌈log₂ n⌉ + 1)`.**
 
