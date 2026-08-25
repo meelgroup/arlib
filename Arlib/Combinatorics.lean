@@ -38,3 +38,4 @@ import Arlib.Combinatorics.BigOperators
 import Arlib.Combinatorics.ListFold
 import Arlib.Combinatorics.DistinctSamples
 import Arlib.Combinatorics.FoldMax
+import Arlib.Combinatorics.Recurrence

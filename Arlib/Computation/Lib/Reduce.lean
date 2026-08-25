@@ -100,6 +100,32 @@ theorem toNat_arrSum {σ : RamState w} {a : ℕ} {l : List ℕ} (H : HoldsList �
     conv_rhs => rw [Nat.add_mod]
     simp
 
+/-- **The cost of `arrSum` from below.**
+
+An upper bound quoted alone is bookkeeping — `Arlib.Approximation`'s own caveat
+makes exactly that point about `IsFPRAS.polytime`.  Together with
+`steps_arrSum_le` this is a sandwich: the scan performs at least four operations
+per cell and at most four per cell plus one, so the bound is tight.
+
+It also settles a question the model would otherwise leave open.  `iterate` does
+not charge for its own back-branch, so a loop with an empty body would be free;
+this says the loop in `arrSum` is not, because its body performs four
+primitives. -/
+theorem steps_arrSum_ge (C : CostModel) (base : Word w) (n : ℕ) (σ : RamState w) :
+    n * (C.cost .lit + C.cost .add + C.cost .load + C.cost .add)
+      ≤ RAM.steps C (arrSum base n) σ := by
+  simp only [arrSum, RAM.steps_bind, steps_lit]
+  refine le_trans (steps_iterate_ge C n _ _ _ _ ?_) (Nat.le_add_left _ _)
+  intro j x τ
+  simp [RAM.steps_bind, Nat.add_assoc]
+
+/-- On the unit-cost RAM the sandwich is `4n ≤ cost ≤ 4n + 1`. -/
+theorem steps_arrSum_ge_unitCost (base : Word w) (n : ℕ) (σ : RamState w) :
+    4 * n ≤ RAM.steps CostModel.unitCost (arrSum base n) σ := by
+  have := steps_arrSum_ge CostModel.unitCost base n σ
+  simp only [CostModel.unitCost_cost] at this
+  omega
+
 /-- **`arrSum` charges.**  The deterministic analogue of
 `Arlib.Approximation.IsFPRAS.Charges`: the zero-cost non-algorithm that
 predicate exists to exclude is not expressible here, because a program that
@@ -148,6 +174,23 @@ one.** -/
 theorem steps_arrMax_le_unitCost (base : Word w) (n : ℕ) (σ : RamState w) :
     RAM.steps CostModel.unitCost (arrMax base n) σ ≤ 4 * n + 1 := by
   have := steps_arrMax_le CostModel.unitCost base n σ
+  simp only [CostModel.unitCost_cost] at this
+  omega
+
+/-- **The cost of `arrMax` from below.**  See `steps_arrSum_ge`. -/
+theorem steps_arrMax_ge (C : CostModel) (base : Word w) (n : ℕ) (σ : RamState w) :
+    n * (C.cost .lit + C.cost .add + C.cost .load + C.cost .lt)
+      ≤ RAM.steps C (arrMax base n) σ := by
+  simp only [arrMax, RAM.steps_bind, steps_lit]
+  refine le_trans (steps_iterate_ge C n _ _ _ _ ?_) (Nat.le_add_left _ _)
+  intro j x τ
+  by_cases hc : ((lt x ((loadAt base j).val τ)).val τ) = true <;>
+    simp [RAM.steps_bind, hc, Nat.add_assoc]
+
+/-- On the unit-cost RAM the sandwich is `4n ≤ cost ≤ 4n + 1`. -/
+theorem steps_arrMax_ge_unitCost (base : Word w) (n : ℕ) (σ : RamState w) :
+    4 * n ≤ RAM.steps CostModel.unitCost (arrMax base n) σ := by
+  have := steps_arrMax_ge CostModel.unitCost base n σ
   simp only [CostModel.unitCost_cost] at this
   omega
 

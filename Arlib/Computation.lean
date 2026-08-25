@@ -8,6 +8,7 @@ import Arlib.Computation.Machine
 import Arlib.Computation.Loop
 import Arlib.Computation.Data
 import Arlib.Computation.Lib.Reduce
+import Arlib.Computation.Lib.Sort
 
 /-!
 # Arlib.Computation

@@ -25,10 +25,35 @@ it is what linear scans use.  `steps_iterate_le_sum` lets the bound depend on th
 index, which is what a merge or a sift-down needs; retrofitting it later would
 mean restating every rule, so both exist from the start.
 
+## What `iterate` does not charge
+
+**The loop's own back-branch is free.**  A real machine pays a comparison and an
+increment per iteration to decide whether to go round again; `iterate` recurses
+on a Lean `ℕ` and charges neither.  Two consequences, and the second is the
+reason this is written down rather than left to be discovered.
+
+*For the entries in `Arlib.Computation.Lib` the understatement is a constant
+factor*, because each of their bodies performs at least two primitives.  That is
+not a hope: `steps_iterate_ge` gives the matching lower bound, and each entry
+states it (`steps_arrMax_ge`, `steps_arrSum_ge`), so every cost claim in the
+library is a sandwich rather than an upper bound quoted alone.
+
+*In general it is not a constant factor.*  `iterate n (fun _ a => pure a) a`
+costs nothing, while the machine it models would pay `Θ(n)`.  Nothing in the
+library relies on that, but the model permits it, and a bound proved here is a
+bound on this model.  The fix is known and is not free: have `iterate` carry its
+index as a `Word` and perform the increment and the guard with real primitives,
+which charges two operations per iteration honestly and lets the body reuse the
+index register rather than recomputing it with `lit`.  That is a refactor of
+every entry and every proof, and it is recorded in
+`docs/dev/Computation-ROADMAP.md` as outstanding.
+
 ## Main definitions
 
 * `iterate n f a` — run `f 0`, `f 1`, …, `f (n-1)`, threading an accumulator.
-* `steps_iterate_le`, `steps_iterate_le_sum` — the cost of a loop.
+* `steps_iterate_le`, `steps_iterate_le_sum` — the cost of a loop, from above.
+* `steps_iterate_ge` — from below.
+* `iterate_induction` — the loop invariant.
 -/
 
 namespace Arlib.Computation
@@ -92,6 +117,31 @@ theorem steps_iterate_le_sum (C : CostModel) (n : ℕ) (f : ℕ → α → RAM w
     RAM.steps C (iterate n f a) σ ≤ ∑ j ∈ Finset.range n, b j := by
   have := steps_iterateGo_le_sum C f b n 0 a σ (by intro j x τ _ hj; exact h j x τ (by omega))
   simpa [iterate] using this
+
+/-- **A loop costs at least the sum of its iterations.**  The companion to
+`steps_iterateGo_le_sum`, and the reason a cost claim here is a sandwich rather
+than an upper bound quoted alone. -/
+theorem steps_iterateGo_ge (C : CostModel) (f : ℕ → α → RAM w α) (b : ℕ) :
+    ∀ (k i : ℕ) (a : α) (σ : RamState w),
+      (∀ j x τ, b ≤ RAM.steps C (f j x) τ) →
+      k * b ≤ RAM.steps C (iterateGo f i k a) σ := by
+  intro k
+  induction k with
+  | zero => intro i a σ _; simp [iterateGo]
+  | succ k ih =>
+      intro i a σ h
+      rw [iterateGo_succ, RAM.steps_bind]
+      have hhead : b ≤ RAM.steps C (f i a) σ := h i a σ
+      have htail := ih (i + 1) ((f i a).val σ) ((f i a).state σ) h
+      have : (k + 1) * b = k * b + b := by ring
+      omega
+
+/-- A loop's cost is at least `n` times its cheapest iteration. -/
+theorem steps_iterate_ge (C : CostModel) (n : ℕ) (f : ℕ → α → RAM w α)
+    (a : α) (σ : RamState w) (b : ℕ)
+    (h : ∀ j x τ, b ≤ RAM.steps C (f j x) τ) :
+    n * b ≤ RAM.steps C (iterate n f a) σ :=
+  steps_iterateGo_ge C f b n 0 a σ h
 
 /-- **Induction along a loop.**  A predicate on (index, accumulator, state) that
 holds at the start and is preserved by the body holds at the end.

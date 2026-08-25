@@ -44,6 +44,17 @@ correctness proof in `Lib/` goes through them. `Std.Do` remains the right answer
 for `while`-shaped code with a data-dependent trip count, which nothing in the
 library has yet.
 
+**One modelling defect is open.** `iterate` does not charge for its own
+back-branch, so a loop with an empty body is free while the machine it models
+would pay `Θ(n)`. For every entry in `Lib/` the understatement is a constant
+factor, and each entry now proves the matching *lower* bound so that its cost
+claim is a sandwich rather than an upper bound quoted alone — which is the trap
+`Arlib.Approximation`'s own caveat describes. The general fix is to have
+`iterate` carry its index as a `Word` and perform the guard and the increment
+with real primitives, charging two operations per iteration and letting the body
+reuse the index register instead of recomputing it with `lit`. That is a refactor
+of every entry and every proof, and it is not done.
+
 **The costs are checked against execution.** Every algorithm is a computable Lean
 function, so `ArlibTest/Computation.lean` runs them and compares measured
 operation counts with the proved bounds — 13 steps for a three-cell `arrMax`
