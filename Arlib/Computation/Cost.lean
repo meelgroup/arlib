@@ -125,6 +125,18 @@ omit [DecidableEq κ] in
 
 theorem many_one (o : κ) : many o 1 = one o := by funext o'; simp [many, one]
 
+/-- Performing `o` once more. -/
+theorem many_succ (o : κ) (n : ℕ) : many o (n + 1) = one o + many o n := by
+  funext o'
+  by_cases h : o' = o
+  · simp only [many, one, h, if_pos, CostVec.add_apply]
+    omega
+  · simp [many, one, h]
+
+/-- Tallies of the same operation add. -/
+theorem many_add (o : κ) (m n : ℕ) : many o (m + n) = many o m + many o n := by
+  funext o'; by_cases h : o' = o <;> simp [many, h]
+
 /-- Pointwise order on tallies: `c ≤ d` when every operation is performed no more
 often. -/
 def le (c d : CostVec κ) : Prop := ∀ o, c o ≤ d o

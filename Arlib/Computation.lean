@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Computation.Cost
+import Arlib.Computation.Charged
+import Arlib.Computation.Dict
 import Arlib.Computation.Machine
 import Arlib.Computation.Loop
 import Arlib.Computation.Data
@@ -28,6 +30,13 @@ algorithm's cost from its text rather than accepting it from its author.
 
 ## The shape of it
 
+* `Computation/Charged.lean` — `Charged κ α`, a value paired with the tally that
+  produced it, for algorithms written against an abstract interface rather than
+  against words. Same discipline, no machine: the constructor is private, so the
+  only ways to build one are `pure`, `bind` and one operation at a time.
+* `Computation/Dict.lean` — `Dict ι`, a sealed finite set with charged
+  operations, including `filterErase`, one pass whose deletion count is read off
+  the pass rather than supplied. This is the data seal that makes `Charged` bite.
 * `Computation/Cost.lean` — `Op`, the primitive operations; `CostVec κ`, a tally
   of work in a currency `κ`; `Rate κ`, a charge per operation with every entry at
   least one; and `CostVec.steps`, which turns a tally into a number. Costs are
@@ -56,7 +65,13 @@ checked by the compiler:
 3. `Word.toNat` — the view a specification needs — is `noncomputable`, so a
    program that inspects a word without a primitive **fails to compile**.
 
-`ArlibTest/Computation.lean` §3 tests all three by writing the cheats and
+The abstract half is sealed the same way. `Charged.val` is `noncomputable`, so
+`pure p.val` cannot copy a program's result and drop its charges; `Dict`'s
+contents, its size and the conversion from a `Finset` are all `noncomputable`, so
+outside `Dict.lean` the only thing one can do with a dictionary is call a charged
+operation on it.
+
+`ArlibTest/Computation.lean` §3 and §8 test all of this by writing the cheats and
 checking they are rejected.
 
 ## What is not claimed
@@ -74,12 +89,14 @@ debt.
 polynomial time is what licenses reading a bound here as a complexity claim in
 the usual sense. It is stated, not proved, and no theorem depends on it.
 
-**One route past the seal is open.** `Word.casesOn` is generated public and is
-compiled, so a determined author can project the field out. It is greppable, it
-is what `scripts/ComputationAudit.lean` looks for, and its worst case is a
+**One route past the seal is open.** `Word.casesOn` — and likewise `Dict.casesOn`
+and `Charged.casesOn` — is generated public and is compiled, so a determined
+author can project the field out. It is greppable, it is what
+`scripts/ComputationAudit.lean` looks for, and for `Word` its worst case is a
 constant factor: what leaks is the contents of words already in hand, on which
 the primitives are unit-cost anyway, while memory stays unreachable without
-`load`.
+`load`. For `Dict` it is not bounded that way, which is why the audit is the
+answer rather than a shrug.
 
 **`#print axioms` gives no signal here** once the randomised layer lands, because
 `PMF` pulls `Classical.choice`. A clean audit is not evidence.

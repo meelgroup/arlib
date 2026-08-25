@@ -7,6 +7,8 @@ import Arlib.Computation.Lib.Reduce
 import Arlib.Computation.Lib.Search
 import Arlib.Computation.Lib.Sort
 import Arlib.Computation.Lib.Arr
+import Arlib.Computation.Charged
+import Arlib.Computation.Dict
 
 /-!
 # `Arlib.Computation` — executable tests
@@ -417,5 +419,178 @@ example : (336 : ℕ) ≤ 16 * 8 * (Nat.clog 2 8 + 1) := by
   omega
 
 end MergeSort
+
+
+/-! ## 8. Charged computation over a sealed dictionary
+
+`Arlib.Computation.Charged` and `Arlib.Computation.Dict` are the other half of
+the area: a cost model for algorithms written against an abstract interface
+rather than against words and memory. The claim they make is that a program's
+cost is computed from its text, so this section checks it two ways — by running
+programs and reading their tallies, and by writing the cheats and confirming the
+compiler rejects them. -/
+
+namespace ChargedDict
+
+/-- A small currency, standing in for whatever an algorithm's operations are. -/
+inductive DOp
+  | find | del | put
+  deriving DecidableEq, Repr, Inhabited
+
+namespace DOp
+
+/-- Every operation, as a list. -/
+def all : List DOp := [.find, .del, .put]
+
+/-- INTERNAL: `all` is exhaustive. -/
+theorem mem_all (o : DOp) : o ∈ all := by cases o <;> simp [all]
+
+instance : Fintype DOp := Fintype.ofList all mem_all
+
+end DOp
+
+open Arlib.Computation
+
+section Counting
+
+/-! A three-operation program: two puts and a size test. Its cost is nowhere
+written down — it is what the elaborator accumulates. -/
+
+/-- INTERNAL: insert two elements and ask whether the result has two. -/
+def twoPuts : Charged DOp Bool := do
+  let d ← Dict.insert DOp.put (3 : Fin 8) Dict.empty
+  let d ← Dict.insert DOp.put (5 : Fin 8) d
+  Dict.cardEq DOp.find 2 d
+
+#guard Charged.steps (Rate.unit DOp) twoPuts == 3
+#guard twoPuts.cost DOp.put == 2
+#guard twoPuts.cost DOp.find == 1
+#guard twoPuts.cost DOp.del == 0
+
+/-! A rate other than the unit one: if a put costs seven, the same program costs
+`2 · 7 + 1 = 15`. The program is unchanged; only the price is. -/
+
+/-- INTERNAL: a table on which insertion is the expensive operation. -/
+def slowPut : Rate DOp where
+  cost := fun o => match o with | .put => 7 | _ => 1
+  one_le := fun o => by cases o <;> decide
+
+#guard Charged.steps slowPut twoPuts == 15
+
+/-! `CostVec.steps_unit_le` in action: no rate makes the program look cheaper
+than the unit one does. -/
+example : Charged.steps (Rate.unit DOp) twoPuts ≤ Charged.steps slowPut twoPuts :=
+  CostVec.steps_unit_le _ _
+
+end Counting
+
+section Filtering
+
+/-! `Dict.filterErase` is where a hand-written cost would go wrong, because the
+number of deletions is data-dependent. Here it is read off the pass. -/
+
+/-- INTERNAL: build `{0, 1, 2, 3}` and delete the odd elements, at one `find` per
+element tested and one `del` per element removed. -/
+def dropOdds : Charged DOp (Dict (Fin 8)) := do
+  let d ← Dict.insert DOp.put (0 : Fin 8) Dict.empty
+  let d ← Dict.insert DOp.put (1 : Fin 8) d
+  let d ← Dict.insert DOp.put (2 : Fin 8) d
+  let d ← Dict.insert DOp.put (3 : Fin 8) d
+  Dict.filterErase DOp.del (fun x => Charged.op DOp.find (decide (x.val % 2 = 0))) d
+
+/-! Four puts, four tests, two deletions. Nobody wrote "two". -/
+#guard dropOdds.cost DOp.put == 4
+#guard dropOdds.cost DOp.find == 4
+#guard dropOdds.cost DOp.del == 2
+#guard Charged.steps (Rate.unit DOp) dropOdds == 10
+
+/-- INTERNAL: the same pass with a test that rejects nothing, which must
+therefore charge no deletions. -/
+def dropNothing : Charged DOp (Dict (Fin 8)) := do
+  let d ← Dict.insert DOp.put (0 : Fin 8) Dict.empty
+  let d ← Dict.insert DOp.put (1 : Fin 8) d
+  Dict.filterErase DOp.del (fun _ => Charged.op DOp.find true) d
+
+#guard dropNothing.cost DOp.del == 0
+#guard dropNothing.cost DOp.find == 2
+
+/-- INTERNAL: and one that rejects everything. -/
+def dropAll : Charged DOp (Dict (Fin 8)) := do
+  let d ← Dict.insert DOp.put (0 : Fin 8) Dict.empty
+  let d ← Dict.insert DOp.put (1 : Fin 8) d
+  Dict.filterErase DOp.del (fun _ => Charged.op DOp.find false) d
+
+#guard dropAll.cost DOp.del == 2
+
+end Filtering
+
+section Seal
+
+/-! ### The seal
+
+As in §3, each test *passes* when the compiler produces exactly the stated error.
+These are the four routes by which a program could avoid paying. -/
+
+/-! Forging a tally: rejected, because `Charged`'s constructor is private. There
+is no syntax for asserting what something cost. -/
+/--
+error: Invalid `⟨...⟩` notation: Constructor for `Arlib.Computation.Charged` is marked as private
+-/
+#guard_msgs in
+example : Charged DOp Nat := ⟨0, 0⟩
+
+/-! Copying a program's result to discard its charges. This is the one that
+matters: `pure p.val` would have the same value as `p` and cost nothing, so
+`Charged.val` is `noncomputable` and the copy fails to compile. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Charged.val', which is 'noncomputable'
+-/
+#guard_msgs in
+def launder (p : Charged DOp Nat) : Charged DOp Nat := pure p.val
+
+/-! Reading a dictionary's contents without asking it: rejected, because
+`Dict.toFinset` is `noncomputable`. Without this, a program could compute the
+answer from the set directly and charge for nothing. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Dict.toFinset', which is 'noncomputable'
+-/
+#guard_msgs in
+def peekDict (d : Dict (Fin 8)) : Finset (Fin 8) := d.toFinset
+
+/-! Conjuring a dictionary from a set that some other computation produced:
+rejected, because `Dict.ofFinset` is `noncomputable`. This is what confines the
+boundary to the instrumentation. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Dict.ofFinset', which is 'noncomputable'
+-/
+#guard_msgs in
+def conjure (s : Finset (Fin 8)) : Dict (Fin 8) := Dict.ofFinset s
+
+/-! Asking a dictionary its size without paying for the question: rejected, for
+the same reason. `Dict.cardEq` is what a program uses, and it charges. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Dict.card', which is 'noncomputable'
+-/
+#guard_msgs in
+def peekSize (d : Dict (Fin 8)) : Nat := d.card
+
+/-! The dictionary's representation is private, so a program cannot get at the
+elements and iterate over them for free. -/
+/--
+error: Field `elems` from structure `Arlib.Computation.Dict` is private
+-/
+#guard_msgs in
+def peekElems (d : Dict (Fin 8)) : List (Fin 8) := d.elems
+
+/-- **The routes that remain open**, recorded rather than hidden: `casesOn` is
+generated public for both structures and is compiled, so a determined author can
+project a private field out. `scripts/ComputationAudit.lean` is what catches
+that, and §3's note on `Word` applies here word for word. -/
+def peekDictViaCasesOn (d : Dict (Fin 8)) : List (Fin 8) :=
+  Dict.casesOn d (fun l _ => l)
+
+end Seal
+
+end ChargedDict
 
 end ArlibTest.Computation

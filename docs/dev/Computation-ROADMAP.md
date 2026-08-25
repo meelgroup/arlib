@@ -38,6 +38,9 @@ distinct-elements estimator**, which its paper does not have — see §0.
 | `HoldsList.of_footprint` | a block survives a call that writes outside it: the frame property every composition needs |
 | `holdsList_state_arrFill` | a writing entry proved correct through that bridge, with cost exactly `3n` |
 | `disjoint_block_alloc` | two blocks are disjoint by allocation order, discharged by `omega` on `ℕ` addresses |
+| `Charged.cost_bind` | the same compositionality without a machine, for algorithms written against an abstract interface |
+| `Dict.cost_filterErase_card` | one pass over a set costs the test on every element plus one deletion per rejection — the count read off the pass, not supplied |
+| `Dict.toFinset_filterErase` | and the pass leaves exactly the elements the test accepted |
 
 Every one is stated twice where it matters: symbolically in the `CostModel`, so
 it survives a change to the instruction set, and as a numeral under
@@ -48,9 +51,10 @@ it survives a change to the instruction set, and as a numeral under
 `esa22-copy` — the CVM distinct-elements estimator — now carries a
 **worst-case running-time theorem, which its paper does not state at all**: the
 paper's only complexity claim is worst-case *space*, and the word "time" does not
-appear in it. The development instruments the estimator's transition with a tally
-in its own currency (deletions, coins, insertions, cardinality tests, thinning),
-and proves:
+appear in it. One arrival of the estimator is written as a program over a sealed
+dictionary, in its own currency (deletions, coins, insertions, cardinality tests,
+thinning), and both its cost *and the state it leaves* are read off that program.
+The development proves:
 
 * `timedRun_fst`, `timedRunLevel_fst` — instrumenting does not change the
   algorithm. These are equalities *of distributions*, so every existing accuracy
@@ -71,8 +75,29 @@ That last one is why the cost layer is generic in its currency: the estimator's
 analysis is carried out in dictionary operations, where the pseudocode lives, and
 converted afterwards.
 
-Three findings from building it are worth recording here, because two of them
-correct this document and one is the reason the area is worth continuing.
+**The first version of this had the defect the area exists to remove.** The cost
+of an arrival was written down beside the transition, as
+`arrivalBaseCost := one .delete + one .coin + …`, and nothing related the two.
+`arrivalBaseCost := 0` would have typechecked and every theorem downstream would
+have survived — which is exactly the CSLib `TimeM` situation, reproduced inside a
+development built to improve on it. The two definitions also duplicated the
+branch condition, so they could drift apart with no proof noticing.
+
+`Charged` and `Dict` are the fix, and the fix is structural rather than
+disciplinary: there is now no place to write a cost. `cvmStepCost` is *defined*
+as `(Program.step …).cost`, the closed forms `arrivalBaseCost` and `thinningCost`
+are theorems about it, and the new sample set, level and bottom flag are taken
+from the same program — so a program that stopped doing the work would fail
+`timedStep_fst`, not merely under-report. `Esa22Copy.Program` is checked on every
+build: three program declarations, none noncomputable, none touching
+`Dict.toFinset`, `Dict.card`, `Dict.ofFinset` or `Charged.val`. That check was
+verified against a planted breach.
+
+The one thing not read off the program is `peakSamples`, which is the meter the
+space theorem reads rather than a line of the algorithm.
+
+Findings from building it are worth recording here, because some of them correct
+this document.
 
 **The seal is stronger than §2.2 claimed.** All three cheats are rejected by the
 Lean compiler rather than by an audit: forging a `RAM` fails because the

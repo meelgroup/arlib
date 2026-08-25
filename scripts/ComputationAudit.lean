@@ -20,7 +20,8 @@ Two routes are *not* closed by the compiler, and this script is what closes them
 **`Word.casesOn` and friends.** A structure's `casesOn` is generated public even
 when its constructor is private, and unlike `rec` it is compiled. So
 `Word.casesOn x (fun v => v)` extracts the field. No algorithm has any reason to
-mention it.
+mention it. The same applies to `Dict` and `Charged`, whose fields are private for
+the same reason.
 
 **An explicit `noncomputable def`.** Marking a program `noncomputable` silences
 the compiler error that stops it from reading a word. A specification may be
@@ -48,7 +49,11 @@ namespace Arlib.ComputationAudit
 of them belongs in an algorithm. -/
 def forbidden : List Name :=
   [``Arlib.Computation.Word.casesOn, ``Arlib.Computation.Word.rec,
-   ``Arlib.Computation.Word.recOn]
+   ``Arlib.Computation.Word.recOn,
+   ``Arlib.Computation.Dict.casesOn, ``Arlib.Computation.Dict.rec,
+   ``Arlib.Computation.Dict.recOn,
+   ``Arlib.Computation.Charged.casesOn, ``Arlib.Computation.Charged.rec,
+   ``Arlib.Computation.Charged.recOn]
 
 /-- Declarations in the area that are *allowed* to be noncomputable, because they
 are specification vocabulary rather than programs.
@@ -56,7 +61,14 @@ are specification vocabulary rather than programs.
 `Word.toNat` is the view a theorem needs and is noncomputable precisely so that a
 program cannot use it; the rest are predicates and cost accounting. -/
 def specOnly : List Name :=
-  [``Arlib.Computation.Word.toNat]
+  [``Arlib.Computation.Word.toNat,
+   -- the value a charged computation produced; noncomputable so that `pure p.val`
+   -- cannot copy a program at zero cost
+   ``Arlib.Computation.Charged.val,
+   -- the dictionary's set view, its size, and the boundary that builds one from a
+   -- `Finset`: each would let a program read or conjure a dictionary for free
+   ``Arlib.Computation.Dict.toFinset, ``Arlib.Computation.Dict.card,
+   ``Arlib.Computation.Dict.ofFinset]
 
 /-- Declarations the elaborator generates for every inductive type.  They are
 nobody's algorithm, and `noConfusion` in particular necessarily mentions the
