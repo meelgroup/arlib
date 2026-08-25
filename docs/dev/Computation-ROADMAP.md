@@ -9,7 +9,8 @@ of primitive operations, and a library of basic subroutines — `arrMax`,
 against Mathlib and its running time proved against that table.
 
 **Status.** The deterministic core is built and green: `Cost`, `Machine`, `Loop`,
-`Data`, `Lib/Reduce`, `Lib/Search`, `Lib/Sort`, `Arlib.Combinatorics.Recurrence`,
+`Data`, `Footprint`, `Lib/Arr`, `Lib/Reduce`, `Lib/Search`, `Lib/Sort`,
+`Arlib.Combinatorics.Recurrence`,
 an executable test suite in `ArlibTest/Computation.lean`, and the seal audit
 `scripts/ComputationAudit.lean`. The randomised layer (§7.2), `Lib/Bignum` and
 the FPRAS bridge (§11) are not built.
@@ -33,6 +34,10 @@ distinct-elements estimator**, which its paper does not have — see §0.
 | `steps_mergeSortRam_le_unitCost` | `cost ≤ 16·n·(⌈log₂ n⌉ + 1)` |
 | `Arlib.Combinatorics.le_mul_clog_of_halving` | the divide-and-conquer master lemma, as generic `Nat` arithmetic |
 | `steps_arrMax_pos`, `steps_arrSum_pos` | every entry charges — the deterministic analogue of `IsFPRAS.Charges` |
+| `HoldsList.state_storeAt` | writing `v` at index `i` leaves the block holding `l.set i v.toNat` — the write side of the data bridge |
+| `HoldsList.of_footprint` | a block survives a call that writes outside it: the frame property every composition needs |
+| `holdsList_state_arrFill` | a writing entry proved correct through that bridge, with cost exactly `3n` |
+| `disjoint_block_alloc` | two blocks are disjoint by allocation order, discharged by `omega` on `ℕ` addresses |
 
 Every one is stated twice where it matters: symbolically in the `CostModel`, so
 it survives a change to the instruction set, and as a numeral under
@@ -87,6 +92,14 @@ the program logic unnecessary: `Loop.steps_iterate_le` and
 correctness proof in `Lib/` goes through them. `Std.Do` remains the right answer
 for `while`-shaped code with a data-dependent trip count, which nothing in the
 library has yet.
+
+**The frame property is built and used.** `Footprint`, `NoAlloc` and
+`HoldsList.of_footprint` let a caller carry an array across a call that writes
+somewhere else, and `HoldsList.state_storeAt` is the lemma a correctness proof
+consumes. `arrFill` is the first entry proved through it: its postcondition is a
+Mathlib list carried across every store, rather than a claim about cells. Merge
+sort's correctness, which is the entry that would exercise it hardest, is still
+not proved.
 
 **One modelling defect is open.** `iterate` does not charge for its own
 back-branch, so a loop with an empty body is free while the machine it models
@@ -815,9 +828,9 @@ Every cost theorem carries the width hypothesis of §2.5.
 | `Cost` | `CostModel`, `unitCost`, `cost_unitCost_le`, the projection `simp` set | 1 | built |
 | `Ram` | `RamState`, `RAM`, the primitives of §3, `cost` and its equations | 1 | built (as `Machine`) |
 | `CostLogic` | `Std.Do` instantiation, `@[spec]` lemmas, cost and failure components | 1 | not built — see §0 |
-| `Footprint` | `Footprint`, the frame rule, allocation-order disjointness | 1 | not built |
+| `Footprint` | `Footprint`, `NoAlloc`, the frame rule, allocation-order disjointness, the `HoldsList` write side | 1 | built |
 | `Data` | `HoldsList`, the `Perm`/`Pairwise` bridges | 1 | built |
-| `Lib/Arr` | `arrGet`, `arrSet`, `arrSwap`, `arrCopy`, `arrFill`, `arrReverse` | 1 | not built |
+| `Lib/Arr` | `arrFill`, with correctness through the write bridge and an exact cost | 1 | partly built |
 | `Lib/Reduce` | `arrMax`, `arrMin`, `arrSum`, `arrArgmax`, `arrCount` | 1 | built |
 | `Lib/Search` | linear search, binary search | 1 | built |
 | `Lib/Sort` | `merge` and `mergeSortRam` with an `n log n` cost bound; correctness not proved | 1 | cost built |

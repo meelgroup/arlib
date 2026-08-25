@@ -7,9 +7,11 @@ import Arlib.Computation.Cost
 import Arlib.Computation.Machine
 import Arlib.Computation.Loop
 import Arlib.Computation.Data
+import Arlib.Computation.Lib.Arr
 import Arlib.Computation.Lib.Reduce
 import Arlib.Computation.Lib.Search
 import Arlib.Computation.Lib.Sort
+import Arlib.Computation.Footprint
 
 /-!
 # Arlib.Computation
@@ -39,7 +41,7 @@ algorithm's cost from its text rather than accepting it from its author.
   goes through.
 * `Computation/Data.lean` — `HoldsList`, which lets a postcondition speak about a
   Mathlib `List` rather than about cells.
-* `Computation/Lib/` — the subroutines: `arrSum`, `arrMax`, `binSearch`.
+* `Computation/Lib/` — the subroutines: `arrFill`, `arrSum`, `arrMax`, `binSearch`, `mergeSortRam`.
 
 ## What makes the cost honest
 

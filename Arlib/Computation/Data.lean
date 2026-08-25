@@ -22,7 +22,8 @@ discharges it.
 ## Main definitions
 
 * `HoldsList σ a l` — the cells from `a` hold `l`.
-* `loadAt base i` — read the `i`-th cell of a block, and its cost.
+* `loadAt base i`, `storeAt base i v` — read and write the `i`-th cell of a
+  block, and their costs.
 -/
 
 namespace Arlib.Computation
@@ -90,5 +91,38 @@ theorem toNat_loadAt {σ : RamState w} {a : ℕ} {l : List ℕ} (H : HoldsList �
     toNat_add, toNat_lit, hb]
   rw [Nat.mod_eq_of_lt hi', Nat.mod_eq_of_lt hai]
   exact H.get i hi
+
+/-! ## Writing a cell
+
+The dual of `loadAt`.  As there, the index arithmetic is done with real
+primitives — a literal, an addition and a store — so the three operations a
+machine performs to write into an array are the three this charges. -/
+
+/-- Write `v` into the `i`-th cell of the block based at `base`.  The dual of `loadAt`,
+and charged the same way: a literal, an addition and
+a store. -/
+def storeAt (base : Word w) (i : ℕ) (v : Word w) : RAM w Unit := do
+  let iw ← lit i
+  let addr ← add base iw
+  store addr v
+
+/-- The cost of `storeAt`, as a tally. -/
+@[simp] theorem cost_storeAt (base : Word w) (i : ℕ) (v : Word w) (σ : RamState w) :
+    (storeAt base i v).cost σ
+      = CostVec.one .lit + (CostVec.one .add + CostVec.one .store) := rfl
+
+/-- The cost of `storeAt`, as a number: **a literal, an addition and a
+store.** -/
+@[simp] theorem steps_storeAt (C : CostModel) (base : Word w) (i : ℕ) (v : Word w)
+    (σ : RamState w) :
+    RAM.steps C (storeAt base i v) σ = C.cost .lit + C.cost .add + C.cost .store := by
+  simp [storeAt, RAM.steps, Nat.add_assoc]
+
+/-- Writing a cell does not change how much memory is allocated: `store` is
+`Array.setIfInBounds`, which is a no-op outside the allocated region. -/
+@[simp] theorem size_state_storeAt (base : Word w) (i : ℕ) (v : Word w) (σ : RamState w) :
+    ((storeAt base i v).state σ).size = σ.size := by
+  simp [storeAt, RamState.size]
+
 
 end Arlib.Computation

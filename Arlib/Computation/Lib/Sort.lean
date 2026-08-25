@@ -3,7 +3,7 @@ Copyright (c) 2026 Kuldeep S. Meel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
-import Arlib.Computation.Data
+import Arlib.Computation.Footprint
 import Arlib.Combinatorics.Recurrence
 
 /-!
@@ -62,40 +62,6 @@ itself recurses on the length, and its termination is `n`.
 namespace Arlib.Computation
 
 variable {w : ℕ}
-
-/-! ## Writing a cell
-
-`Arlib.Computation.Data` supplies `loadAt`; a sort is the first entry that also
-writes, so the dual belongs here.  As with `loadAt` the index arithmetic is done
-with real primitives — a literal, an addition and a store — so the three
-operations a machine performs to write into an array are the three this
-charges. -/
-
-/-- Write `v` into the `i`-th cell of the block based at `base`.  The dual of
-`Arlib.Computation.loadAt`, and charged the same way: a literal, an addition and
-a store. -/
-def storeAt (base : Word w) (i : ℕ) (v : Word w) : RAM w Unit := do
-  let iw ← lit i
-  let addr ← add base iw
-  store addr v
-
-/-- The cost of `storeAt`, as a tally. -/
-@[simp] theorem cost_storeAt (base : Word w) (i : ℕ) (v : Word w) (σ : RamState w) :
-    (storeAt base i v).cost σ
-      = CostVec.one .lit + (CostVec.one .add + CostVec.one .store) := rfl
-
-/-- The cost of `storeAt`, as a number: **a literal, an addition and a
-store.** -/
-@[simp] theorem steps_storeAt (C : CostModel) (base : Word w) (i : ℕ) (v : Word w)
-    (σ : RamState w) :
-    RAM.steps C (storeAt base i v) σ = C.cost .lit + C.cost .add + C.cost .store := by
-  simp [storeAt, RAM.steps, Nat.add_assoc]
-
-/-- Writing a cell does not change how much memory is allocated: `store` is
-`Array.setIfInBounds`, which is a no-op outside the allocated region. -/
-@[simp] theorem size_state_storeAt (base : Word w) (i : ℕ) (v : Word w) (σ : RamState w) :
-    ((storeAt base i v).state σ).size = σ.size := by
-  simp [storeAt, RamState.size]
 
 /-! ## The per-element charge
 
@@ -388,5 +354,24 @@ theorem steps_mergeSortRam_le_unitCost (base tmp : Word w) (lo n : ℕ) (σ : Ra
       ≤ 16 * n * (Nat.clog 2 n + 1) := by
   have := steps_mergeSortRam_le CostModel.unitCost base tmp n lo σ
   rwa [mergeCost_unitCost] at this
+
+/-! ## Composing a sort with its caller
+
+A caller who sorts one block and then reads another needs to know the sort did
+not disturb it.  `HoldsList.of_footprint` is what carries a block across such a
+call, and it needs two facts about the callee: where it writes, and that it does
+not allocate.  The second is unconditional and is recorded here; the first
+depends on the two blocks not wrapping the address space and is left to the
+caller, since `merge`'s footprint is the union of the two blocks it is given. -/
+
+/-- Merging allocates nothing. -/
+theorem noAlloc_merge (base tmp : Word w) (lo k n : ℕ) : NoAlloc (merge base tmp lo k n) :=
+  fun σ => size_state_merge base tmp lo k n σ
+
+/-- **Sorting allocates nothing.**  Together with a footprint, this is what lets
+a caller carry an unrelated block across a call to `mergeSortRam`. -/
+theorem noAlloc_mergeSortRam (base tmp : Word w) (lo n : ℕ) :
+    NoAlloc (mergeSortRam base tmp lo n) :=
+  fun σ => size_state_mergeSortRam base tmp n lo σ
 
 end Arlib.Computation

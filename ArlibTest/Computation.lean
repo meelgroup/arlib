@@ -6,6 +6,7 @@ Authors: Kuldeep S. Meel
 import Arlib.Computation.Lib.Reduce
 import Arlib.Computation.Lib.Search
 import Arlib.Computation.Lib.Sort
+import Arlib.Computation.Lib.Arr
 
 /-!
 # `Arlib.Computation` — executable tests
@@ -331,6 +332,32 @@ example : (84 : ℕ) ≤ 9 * Nat.clog 2 (1000 + 1) + 2 := by
   omega
 
 end Logarithmic
+
+/-! ## 6b. Writing
+
+`arrFill` is the entry that exercises the write side of the data bridge: its
+correctness is proved through `HoldsList.state_storeAt`, so the block's contents
+are tracked as a Mathlib list across every store rather than cell by cell.  Its
+cost is exactly three operations per cell — the upper and lower bounds coincide. -/
+
+section Writing
+
+/-- Allocate four cells, fill them with 7, and emit them. -/
+def fillDemo : RAM 16 Unit := do
+  let n ← lit 4
+  let base ← alloc n
+  let v ← lit 7
+  arrFill base 4 v
+  let _ ← iterate 4 (fun i _ => do let x ← loadAt base i; emit x) ()
+  pure ()
+
+#guard (fillDemo.state (RamState.empty 16)).out == #[7#16, 7#16, 7#16, 7#16]
+
+/-! Three operations per cell, exactly. -/
+#guard RAM.steps CostModel.unitCost (arrFill (wordOf 0) 10 (wordOf 7))
+    (RamState.empty 16) == 30
+
+end Writing
 
 /-! ## 7. Merge sort
 
