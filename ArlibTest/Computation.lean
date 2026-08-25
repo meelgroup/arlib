@@ -5,6 +5,7 @@ Authors: Kuldeep S. Meel
 -/
 import Arlib.Computation.Lib.Reduce
 import Arlib.Computation.Lib.Search
+import Arlib.Computation.Lib.Sort
 
 /-!
 # `Arlib.Computation` — executable tests
@@ -108,6 +109,53 @@ for a maximum, 21 to sum it, and two emits — less the sharing. -/
 #guard RAM.steps CostModel.unitCost demo (RamState.empty 16) == 44
 
 end Counts
+
+/-! ### The primitives compute what they say
+
+The cost table is only half of a primitive's specification; the other half is
+what it returns.  These check the arithmetic of the less obvious ones, which is
+where a silent error would otherwise sit unnoticed behind a correct-looking cost
+bound. -/
+
+section Primitives
+
+/-- Emit `clz k` for each `k`, over 8-bit words. -/
+def clzOf (k : ℕ) : RAM 8 Unit := do
+  let x ← lit k
+  let c ← clz x
+  emit c
+
+/-! Zero has all eight bits leading; `1` has seven; `2` and `3` have six. -/
+#guard ((clzOf 0).state (RamState.empty 8)).out == #[8#8]
+#guard ((clzOf 1).state (RamState.empty 8)).out == #[7#8]
+#guard ((clzOf 2).state (RamState.empty 8)).out == #[6#8]
+#guard ((clzOf 3).state (RamState.empty 8)).out == #[6#8]
+#guard ((clzOf 8).state (RamState.empty 8)).out == #[4#8]
+#guard ((clzOf 255).state (RamState.empty 8)).out == #[0#8]
+
+/-- The high half of a product, which truncating multiplication loses.  At width
+8, `200 * 200 = 40000 = 156 * 256 + 64`. -/
+def mulParts (a b : ℕ) : RAM 8 Unit := do
+  let x ← lit a
+  let y ← lit b
+  let lo ← mul x y
+  let hi ← mulHi x y
+  emit lo
+  emit hi
+
+#guard ((mulParts 200 200).state (RamState.empty 8)).out == #[64#8, 156#8]
+
+/-- Arithmetic wraps at the word width, and the bounds above say so: `arrSum`
+returns the sum modulo `2 ^ w`. -/
+def wrapAdd : RAM 8 Unit := do
+  let x ← lit 200
+  let y ← lit 100
+  let z ← add x y
+  emit z
+
+#guard ((wrapAdd).state (RamState.empty 8)).out == #[44#8]
+
+end Primitives
 
 /-! ## 3. The seal
 
@@ -283,5 +331,64 @@ example : (84 : ℕ) ≤ 9 * Nat.clog 2 (1000 + 1) + 2 := by
   omega
 
 end Logarithmic
+
+/-! ## 7. Merge sort
+
+The entry that shows the framework handles a recurrence rather than a loop:
+`steps_mergeSortRam_le_unitCost` bounds the cost by `16 · n · (⌈log₂ n⌉ + 1)`,
+proved by strong induction on `n`.
+
+Merge sort's *correctness* is not proved — the write-side bridge from `store`
+back to `HoldsList` does not exist yet, and `docs/dev/Computation-ROADMAP.md`
+records it as outstanding.  So these tests do the next best thing, which is only
+available because the programs are executable: they run the sort and check the
+output.  That is evidence, not proof, and it is labelled as such. -/
+
+section MergeSort
+
+/-- Fill a fresh block from `vals`, sort it, and emit every cell. -/
+def sortDemo (vals : List ℕ) : RAM 16 Unit := do
+  let n ← lit vals.length
+  let base ← alloc n
+  let tmp ← alloc n
+  let _ ← iterate vals.length (fun i _ => do
+      let iw ← lit i
+      let a ← add base iw
+      let v ← lit (vals.getD i 0)
+      store a v) ()
+  mergeSortRam base tmp 0 vals.length
+  let _ ← iterate vals.length (fun i _ => do
+      let x ← loadAt base i
+      emit x) ()
+  pure ()
+
+/-! It sorts. -/
+#guard ((sortDemo [5, 3, 8, 1, 9, 2, 7]).state (RamState.empty 16)).out
+    == #[1#16, 2#16, 3#16, 5#16, 7#16, 8#16, 9#16]
+
+/-! Duplicates survive, and the multiset is preserved. -/
+#guard ((sortDemo [4, 4, 2, 2, 1]).state (RamState.empty 16)).out
+    == #[1#16, 2#16, 2#16, 4#16, 4#16]
+
+/-! Already sorted, and reverse sorted. -/
+#guard ((sortDemo [1, 2, 3, 4]).state (RamState.empty 16)).out
+    == #[1#16, 2#16, 3#16, 4#16]
+#guard ((sortDemo [4, 3, 2, 1]).state (RamState.empty 16)).out
+    == #[1#16, 2#16, 3#16, 4#16]
+
+/-! The empty and singleton cases, where the recursion bottoms out. -/
+#guard ((sortDemo []).state (RamState.empty 16)).out == #[]
+#guard ((sortDemo [1]).state (RamState.empty 16)).out == #[1#16]
+
+/-! Sorting eight cells costs 336 steps, inside the proved bound of
+`16 · 8 · (⌈log₂ 8⌉ + 1) = 512`. -/
+#guard RAM.steps CostModel.unitCost (mergeSortRam (wordOf 0) (wordOf 0) 0 8)
+    (RamState.empty 16) == 336
+
+example : (336 : ℕ) ≤ 16 * 8 * (Nat.clog 2 8 + 1) := by
+  have h : Nat.clog 2 8 = 3 := by decide
+  omega
+
+end MergeSort
 
 end ArlibTest.Computation

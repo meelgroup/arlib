@@ -277,9 +277,12 @@ def shl (x y : Word w) : RAM w (Word w) :=
 def shr (x y : Word w) : RAM w (Word w) :=
   ⟨fun σ => (⟨x.val >>> y.val.toNat⟩, σ, CostVec.one .shr)⟩
 
-/-- The number of leading zeros. -/
+/-- The number of leading zeros: `w` for zero, and `w - (⌊log₂ x⌋ + 1)`
+otherwise, since a positive `x` occupies `⌊log₂ x⌋ + 1` bits. -/
 def clz (x : Word w) : RAM w (Word w) :=
-  ⟨fun σ => (⟨BitVec.ofNat w (w - (Nat.log2 (x.val.toNat + 1)))⟩, σ, CostVec.one .clz)⟩
+  ⟨fun σ =>
+    (⟨BitVec.ofNat w (if x.val.toNat = 0 then w else w - (Nat.log2 x.val.toNat + 1))⟩,
+     σ, CostVec.one .clz)⟩
 
 /-- Unsigned strict comparison.  The `Bool` it returns may then be branched on
 for free: a machine pays for the compare and the conditional jump together. -/

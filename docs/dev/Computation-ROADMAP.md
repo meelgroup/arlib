@@ -9,18 +9,62 @@ of primitive operations, and a library of basic subroutines — `arrMax`,
 against Mathlib and its running time proved against that table.
 
 **Status.** The deterministic core is built and green: `Cost`, `Machine`, `Loop`,
-`Data`, `Lib/Reduce`, `Lib/Search`, an executable test suite in
-`ArlibTest/Computation.lean`, and the seal audit `scripts/ComputationAudit.lean`.
-`arrSum`, `arrMax` and `binSearch` each carry a correctness theorem against a
-Mathlib list and an explicit cost bound; the programs run, and the tests check
-the measured operation counts against the proved bounds. The randomised layer
-(§7.2), `Lib/Bignum`, `Lib/Sort` and the FPRAS bridge (§11) are not built.
+`Data`, `Lib/Reduce`, `Lib/Search`, `Lib/Sort`, `Arlib.Combinatorics.Recurrence`,
+an executable test suite in `ArlibTest/Computation.lean`, and the seal audit
+`scripts/ComputationAudit.lean`. The randomised layer (§7.2), `Lib/Bignum` and
+the FPRAS bridge (§11) are not built.
 
 The first application is outside this repository: `esa22-copy` uses the cost
 layer to state and prove a **worst-case running-time bound for the CVM
 distinct-elements estimator**, which its paper does not have — see §0.
 
 ## 0. What is built, and what it demonstrates
+
+### 0.1 The statements
+
+| Theorem | Says |
+| --- | --- |
+| `RAM.cost_bind` | costs add — the whole compositionality story, a consequence of the monad laws |
+| `CostVec.steps_unit_le` | the unit-cost model is the cheapest, so a caller may supply a cost table but not make a program look faster |
+| `CostVec.steps_exchange_le` | an analysis in one currency converts to another at a bounded rate, without redoing it |
+| `toNat_arrMax`, `toNat_arrSum` | correctness, against a Mathlib `List ℕ` |
+| `steps_arrMax_le_unitCost` / `_ge_unitCost` | `4n ≤ cost ≤ 4n + 1` — a sandwich, not an upper bound alone |
+| `steps_binSearch_le_unitCost` | `cost ≤ 9·⌈log₂(n+1)⌉ + 2` |
+| `steps_mergeSortRam_le_unitCost` | `cost ≤ 16·n·(⌈log₂ n⌉ + 1)` |
+| `Arlib.Combinatorics.le_mul_clog_of_halving` | the divide-and-conquer master lemma, as generic `Nat` arithmetic |
+| `steps_arrMax_pos`, `steps_arrSum_pos` | every entry charges — the deterministic analogue of `IsFPRAS.Charges` |
+
+Every one is stated twice where it matters: symbolically in the `CostModel`, so
+it survives a change to the instruction set, and as a numeral under
+`CostModel.unitCost`.
+
+### 0.2 The first application, outside this repository
+
+`esa22-copy` — the CVM distinct-elements estimator — now carries a
+**worst-case running-time theorem, which its paper does not state at all**: the
+paper's only complexity claim is worst-case *space*, and the word "time" does not
+appear in it. The development instruments the estimator's transition with a tally
+in its own currency (deletions, coins, insertions, cardinality tests, thinning),
+and proves:
+
+* `timedRun_fst`, `timedRunLevel_fst` — instrumenting does not change the
+  algorithm. These are equalities *of distributions*, so every existing accuracy
+  and space theorem about `run` is literally a theorem about the instrumented
+  run.
+* `timedRunLevel_steps_le` — `cost ≤ 4m + L·(2·thresh + 2)`, where `L` is the
+  run's final level. The thinning sweep is paid per level increment, not per
+  arrival.
+* `timedRunState_level_le` — `L ≤ m + 1 - thresh`, because the sample cannot
+  reach the threshold before arrival `thresh`. A note in `TimeBound.lean` records
+  why this is the best *deterministic* bound available and that the real
+  improvement needs `E[L]`, which is open.
+* `timedRun_wordSteps_le` — the same bound in **word operations**, given a
+  `DictImpl` saying what one dictionary operation costs. The bundle is shown
+  inhabited, so the theorem is not vacuous.
+
+That last one is why the cost layer is generic in its currency: the estimator's
+analysis is carried out in dictionary operations, where the pseudocode lives, and
+converted afterwards.
 
 Three findings from building it are worth recording here, because two of them
 correct this document and one is the reason the area is worth continuing.
@@ -776,7 +820,7 @@ Every cost theorem carries the width hypothesis of §2.5.
 | `Lib/Arr` | `arrGet`, `arrSet`, `arrSwap`, `arrCopy`, `arrFill`, `arrReverse` | 1 | not built |
 | `Lib/Reduce` | `arrMax`, `arrMin`, `arrSum`, `arrArgmax`, `arrCount` | 1 | built |
 | `Lib/Search` | linear search, binary search | 1 | built |
-| `Lib/Sort` | insertion, merge, heapsort | 1 | not built |
+| `Lib/Sort` | `merge` and `mergeSortRam` with an `n log n` cost bound; correctness not proved | 1 | cost built |
 | `Lib/Heap` | `heapSiftDown`, `heapInsert`, `heapExtractMin`, `heapBuild` | 1 | not built |
 | `Lib/Select` | `selPartition`, median-of-medians, **`median`** | 1 | not built |
 | `Lib/Bignum` | multi-word `add`, `sub`, `mul`, `cmp`, `shift`, `divmod` | 1 | not built |
@@ -789,7 +833,7 @@ Every cost theorem carries the width hypothesis of §2.5.
 | `Lib/Hash` | table with `k`-wise independent hashing, against `PolyHash` | 2 | not built |
 | `Lib/Estimate` | median-of-means | 2 | not built |
 | `Bridge` | `ProgAlg`, `isFPRAS_of_progAlg`, `charges_of_cost_pos` | 2 | not built |
-| `Recurrence` *(in `Arlib.Combinatorics`)* | `le_mul_clog_of_halving` and the divide-and-conquer lemmas | 1 | not built |
+| `Recurrence` *(in `Arlib.Combinatorics`)* | `le_mul_clog_of_halving` | 1 | built |
 
 The recurrence lemmas are generic `Nat` arithmetic mentioning no program, so they
 belong in `Arlib.Combinatorics`, which `ARCHITECTURE.md` §1 describes as exactly
