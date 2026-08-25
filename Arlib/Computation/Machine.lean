@@ -420,6 +420,51 @@ theorem steps_lit_pos (C : CostModel) (k : ℕ) : 0 < RAM.steps C (lit k : RAM w
 @[simp] theorem steps_alloc (C : CostModel) (n : Word w) :
     RAM.steps C (alloc n) σ = C.cost .alloc * n.toNat := by simp [RAM.steps]
 
+@[simp] theorem cost_udiv : (udiv x y).cost σ = CostVec.one .udiv := rfl
+@[simp] theorem state_udiv : (udiv x y).state σ = σ := rfl
+@[simp] theorem steps_udiv (C : CostModel) : RAM.steps C (udiv x y) σ = C.cost .udiv := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_umod : (umod x y).cost σ = CostVec.one .umod := rfl
+@[simp] theorem state_umod : (umod x y).state σ = σ := rfl
+@[simp] theorem steps_umod (C : CostModel) : RAM.steps C (umod x y) σ = C.cost .umod := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_mulHi : (mulHi x y).cost σ = CostVec.one .mulHi := rfl
+@[simp] theorem state_mulHi : (mulHi x y).state σ = σ := rfl
+@[simp] theorem steps_mulHi (C : CostModel) : RAM.steps C (mulHi x y) σ = C.cost .mulHi := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_band : (band x y).cost σ = CostVec.one .band := rfl
+@[simp] theorem state_band : (band x y).state σ = σ := rfl
+@[simp] theorem steps_band (C : CostModel) : RAM.steps C (band x y) σ = C.cost .band := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_bor : (bor x y).cost σ = CostVec.one .bor := rfl
+@[simp] theorem state_bor : (bor x y).state σ = σ := rfl
+@[simp] theorem steps_bor (C : CostModel) : RAM.steps C (bor x y) σ = C.cost .bor := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_bxor : (bxor x y).cost σ = CostVec.one .bxor := rfl
+@[simp] theorem state_bxor : (bxor x y).state σ = σ := rfl
+@[simp] theorem steps_bxor (C : CostModel) : RAM.steps C (bxor x y) σ = C.cost .bxor := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_shl : (shl x y).cost σ = CostVec.one .shl := rfl
+@[simp] theorem state_shl : (shl x y).state σ = σ := rfl
+@[simp] theorem steps_shl (C : CostModel) : RAM.steps C (shl x y) σ = C.cost .shl := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_shr : (shr x y).cost σ = CostVec.one .shr := rfl
+@[simp] theorem state_shr : (shr x y).state σ = σ := rfl
+@[simp] theorem steps_shr (C : CostModel) : RAM.steps C (shr x y) σ = C.cost .shr := by
+  simp [RAM.steps]
+
+@[simp] theorem cost_clz : (clz x).cost σ = CostVec.one .clz := rfl
+@[simp] theorem state_clz : (clz x).state σ = σ := rfl
+@[simp] theorem steps_clz (C : CostModel) : RAM.steps C (clz x) σ = C.cost .clz := by
+  simp [RAM.steps]
+
 end Spec
 
 end Arlib.Computation

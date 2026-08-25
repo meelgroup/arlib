@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Computation.Lib.Reduce
+import Arlib.Computation.Lib.Search
 
 /-!
 # `Arlib.Computation` — executable tests
@@ -228,5 +229,59 @@ def rangeAnswers (n : ℕ) : RAM 16 Unit := do
 #guard RAM.steps CostModel.unitCost (arrMax (wordOf 0) 25) (RamState.empty 16) == 101
 
 end Battery
+
+/-! ## 6. A logarithmic bound
+
+`arrMax` and `arrSum` cost a constant per cell.  Binary search costs a constant
+per halving, and these tests check both halves of that claim: that it finds the
+right answer, and that its cost really does grow like `Nat.clog 2 (n + 1)` rather
+than like `n`. -/
+
+section Logarithmic
+
+/-- Build a sorted block holding `0, 2, 4, …, 2(n-1)`. -/
+def buildSorted (n : ℕ) : RAM 16 (Word 16) := do
+  let nw ← lit n
+  let base ← alloc nw
+  let _ ← iterate n (fun i _ => do
+    let iw ← lit i
+    let a ← add base iw
+    let v ← lit (2 * i)
+    store a v) ()
+  pure base
+
+/-- Search a sorted block of `n` even numbers for `k`, and emit the index. -/
+def probe (n k : ℕ) : RAM 16 Unit := do
+  let base ← buildSorted n
+  let key ← lit k
+  let idx ← binSearch base n key
+  emit idx
+
+/-! Present keys are found at their own index. -/
+#guard ((probe 16 0).state (RamState.empty 16)).out == #[0#16]
+#guard ((probe 16 10).state (RamState.empty 16)).out == #[5#16]
+#guard ((probe 16 30).state (RamState.empty 16)).out == #[15#16]
+
+/-! Absent keys give the insertion point, and a key past the end gives `n`. -/
+#guard ((probe 16 31).state (RamState.empty 16)).out == #[16#16]
+#guard ((probe 16 99).state (RamState.empty 16)).out == #[16#16]
+
+/-! **The cost grows logarithmically.**  Doubling the block adds nine
+operations, not `n`.  Each line is the measured cost; the proved bound
+`steps_binSearch_le_unitCost` is `9 * Nat.clog 2 (n + 1) + 2`. -/
+#guard RAM.steps CostModel.unitCost (binSearch (wordOf 0) 15 (wordOf 5))
+    (RamState.empty 16) == 38
+#guard RAM.steps CostModel.unitCost (binSearch (wordOf 0) 31 (wordOf 5))
+    (RamState.empty 16) == 47
+#guard RAM.steps CostModel.unitCost (binSearch (wordOf 0) 1000 (wordOf 5))
+    (RamState.empty 16) == 84
+
+/-- A thousand cells cost 84 steps, well inside the proved bound of 92 — and a
+linear scan of the same block would cost 4001. -/
+example : (84 : ℕ) ≤ 9 * Nat.clog 2 (1000 + 1) + 2 := by
+  have h : Nat.clog 2 (1000 + 1) = 10 := by decide
+  omega
+
+end Logarithmic
 
 end ArlibTest.Computation
