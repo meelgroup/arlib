@@ -51,23 +51,46 @@ it survives a change to the instruction set, and as a numeral under
 `esa22-copy` — the CVM distinct-elements estimator — now carries a
 **worst-case running-time theorem, which its paper does not state at all**: the
 paper's only complexity claim is worst-case *space*, and the word "time" does not
-appear in it. One arrival of the estimator is written as a program over a sealed
-dictionary, in its own currency (deletions, coins, insertions, cardinality tests,
-thinning), and both its cost *and the state it leaves* are read off that program.
-The development proves:
+appear in it.
 
-* `timedRun_fst`, `timedRunLevel_fst` — instrumenting does not change the
-  algorithm. These are equalities *of distributions*, so every existing accuracy
-  and space theorem about `run` is literally a theorem about the instrumented
-  run.
-* `timedRunLevel_steps_le` — `cost ≤ 4m + L·(2·thresh + 2)`, where `L` is the
-  run's final level. The thinning sweep is paid per level increment, not per
-  arrival.
-* `timedRunState_level_le` — `L ≤ m + 1 - thresh`, because the sample cannot
-  reach the threshold before arrival `thresh`. A note in `TimeBound.lean` records
-  why this is the best *deterministic* bound available and that the real
-  improvement needs `E[L]`, which is open.
-* `timedRun_wordSteps_le` — the same bound in **word operations**, given a
+The development is arranged so that the running-time claim is about the algorithm
+rather than about a description of it.
+
+* **`Model/Program.lean` is the algorithm, and the only thing in `Model/` that
+  defines one.** An arrival is written once, as a program over a sealed
+  dictionary, in its own currency (deletions, coins, insertions, cardinality
+  tests, thinning). There is no cost definition anywhere under `Model/` — the
+  time operator is `Charged.cost` applied to that program, and `estimator`'s
+  second component is what it accumulates along the fold. `#modelClosure`
+  machine-checks that the algorithm's whole closure lives under `Model/`, and
+  `#modelClosureOfType` that both headline statements do.
+* **`Analysis/Pseudocode.lean` is the mathematical model**, the same transition
+  written on a `Finset` where the accuracy proof can use all of Mathlib.
+  `Analysis/ProgramModel.lean` proves the two agree — `estimatorOutput_eq`, an
+  equality *of distributions* — which is what lets the eighty analysis files stay
+  as they are and still be about the program.
+* The state, not only the cost, is read off the program: `advance` takes the new
+  sample set, level and bottom flag from the program's result. A program that
+  stopped doing the work would fail `execStep_map`, not merely under-report.
+  The one exception is `peakSamples`, the meter the space theorem reads, which is
+  computed in the run and charged nothing.
+* The run threads the dictionary from `Dict.empty` to the end, so there is no
+  per-arrival conversion between a `Finset` and a dictionary. `Dict.ofFinset`
+  does not appear in the development at all.
+
+The statements:
+
+* `esa22Copy` — accuracy and worst-case space, the paper's theorem, now stated
+  about `estimatorOutput`.
+* `esa22CopyTime` — `cost ≤ m·(2·thresh + 6)` dictionary operations, not in the
+  paper.
+* `execRunLevel_steps_le` — the sharp form, `4m + L·(2·thresh + 2)`, charging the
+  thinning sweep per level increment rather than per arrival.
+* `execRunState_level_le` — `L ≤ m + 1 - thresh`, because the sample cannot reach
+  the threshold before arrival `thresh`. A note in `TimeBound.lean` records why
+  this is the best *deterministic* bound available and that the real improvement
+  needs `E[L]`, which is open.
+* `estimator_wordSteps_le` — the same bound in **word operations**, given a
   `DictImpl` saying what one dictionary operation costs. The bundle is shown
   inhabited, so the theorem is not vacuous.
 
@@ -84,17 +107,12 @@ development built to improve on it. The two definitions also duplicated the
 branch condition, so they could drift apart with no proof noticing.
 
 `Charged` and `Dict` are the fix, and the fix is structural rather than
-disciplinary: there is now no place to write a cost. `cvmStepCost` is *defined*
-as `(Program.step …).cost`, the closed forms `arrivalBaseCost` and `thinningCost`
-are theorems about it, and the new sample set, level and bottom flag are taken
-from the same program — so a program that stopped doing the work would fail
-`timedStep_fst`, not merely under-report. `Esa22Copy.Program` is checked on every
-build: three program declarations, none noncomputable, none touching
-`Dict.toFinset`, `Dict.card`, `Dict.ofFinset` or `Charged.val`. That check was
-verified against a planted breach.
-
-The one thing not read off the program is `peakSamples`, which is the meter the
-space theorem reads rather than a line of the algorithm.
+disciplinary: there is now no place to write a cost. `arrivalBaseCost` and
+`thinningCost` survive as closed expressions in `Analysis/TimeBound.lean`, with
+`cost_work_of_running` proving the program spends exactly them.
+`Esa22Copy.Program` is checked on every build: sixteen program declarations, none
+noncomputable, none touching `Dict.toFinset`, `Dict.card`, `Dict.ofFinset` or
+`Charged.val`. That check was verified against a planted breach.
 
 Findings from building it are worth recording here, because some of them correct
 this document.
