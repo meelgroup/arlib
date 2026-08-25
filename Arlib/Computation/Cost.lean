@@ -174,6 +174,8 @@ namespace CostModel
 /-- The unit-cost RAM: every primitive word operation costs one step. -/
 abbrev unitCost : CostModel := Rate.unit Op
 
+@[simp] theorem unitCost_cost (o : Op) : unitCost.cost o = 1 := rfl
+
 end CostModel
 
 namespace CostVec

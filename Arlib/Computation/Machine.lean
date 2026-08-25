@@ -299,4 +299,127 @@ def emit (x : Word w) : RAM w Unit :=
 
 end Primitives
 
+/-! ## Specification lemmas
+
+For each primitive: what it returns, what it leaves the state, and what it cost.
+The value lemmas are stated through `Word.toNat`, because that is the only view
+of a word a client outside this module has.
+
+These are the whole public API of the machine.  Everything in
+`Arlib.Computation.Lib` is proved from them and from `RAM.cost_bind`. -/
+
+section Spec
+
+variable {w : ℕ} (σ : RamState w) (x y : Word w)
+
+@[simp] theorem cost_lit (k : ℕ) : (lit k : RAM w (Word w)).cost σ = CostVec.one .lit := rfl
+@[simp] theorem state_lit (k : ℕ) : (lit k : RAM w (Word w)).state σ = σ := rfl
+
+@[simp] theorem toNat_lit (k : ℕ) :
+    ((lit k : RAM w (Word w)).val σ).toNat = k % 2 ^ w := by
+  simp [lit, RAM.val, Word.toNat]
+
+@[simp] theorem cost_add : (add x y).cost σ = CostVec.one .add := rfl
+@[simp] theorem state_add : (add x y).state σ = σ := rfl
+
+@[simp] theorem toNat_add :
+    ((add x y).val σ).toNat = (x.toNat + y.toNat) % 2 ^ w := by
+  simp [add, RAM.val, Word.toNat, BitVec.toNat_add]
+
+@[simp] theorem cost_sub : (sub x y).cost σ = CostVec.one .sub := rfl
+@[simp] theorem state_sub : (sub x y).state σ = σ := rfl
+
+@[simp] theorem cost_mul : (mul x y).cost σ = CostVec.one .mul := rfl
+@[simp] theorem state_mul : (mul x y).state σ = σ := rfl
+
+@[simp] theorem toNat_mul :
+    ((mul x y).val σ).toNat = (x.toNat * y.toNat) % 2 ^ w := by
+  simp [mul, RAM.val, Word.toNat, BitVec.toNat_mul]
+
+@[simp] theorem cost_lt : (lt x y).cost σ = CostVec.one .lt := rfl
+@[simp] theorem state_lt : (lt x y).state σ = σ := rfl
+
+@[simp] theorem val_lt : (lt x y).val σ = decide (x.toNat < y.toNat) := rfl
+
+@[simp] theorem cost_le : (le x y).cost σ = CostVec.one .le := rfl
+@[simp] theorem state_le : (le x y).state σ = σ := rfl
+@[simp] theorem val_le : (le x y).val σ = decide (x.toNat ≤ y.toNat) := rfl
+
+@[simp] theorem cost_eq : (eq x y).cost σ = CostVec.one .eq := rfl
+@[simp] theorem state_eq : (eq x y).state σ = σ := rfl
+
+@[simp] theorem cost_load : (load x).cost σ = CostVec.one .load := rfl
+@[simp] theorem state_load : (load x).state σ = σ := rfl
+
+@[simp] theorem toNat_load : ((load x).val σ).toNat = (σ.get x.toNat).toNat := rfl
+
+@[simp] theorem cost_store : (store x y).cost σ = CostVec.one .store := rfl
+
+@[simp] theorem state_store :
+    (store x y).state σ = { σ with mem := σ.mem.setIfInBounds x.toNat y.val } := rfl
+
+@[simp] theorem cost_emit : (emit x).cost σ = CostVec.one .store := rfl
+
+@[simp] theorem state_emit : (emit x).state σ = { σ with out := σ.out.push x.val } := rfl
+
+@[simp] theorem cost_alloc (n : Word w) : (alloc n).cost σ = CostVec.many .alloc n.toNat := rfl
+
+@[simp] theorem size_state_alloc (n : Word w) :
+    ((alloc n).state σ).size = σ.size + n.toNat := by
+  simp [alloc, RAM.state, RamState.size, Word.toNat]
+
+/-- Allocation preserves what was already there: the cells below the old frontier
+are untouched.  This is the frame property every composition of two allocated
+blocks needs, and with addresses in `ℕ` it is `omega` rather than a
+wraparound argument. -/
+theorem get_state_alloc (n : Word w) {i : ℕ} (hi : i < σ.size) :
+    ((alloc n).state σ).get i = σ.get i := by
+  simp only [alloc, RAM.state, RamState.get, RamState.size] at *
+  have hlt : i < (σ.mem ++ Array.replicate n.val.toNat 0).size := by
+    simp only [Array.size_append, Array.size_replicate]; omega
+  rw [Array.getD, Array.getD, dif_pos hlt, dif_pos hi]
+  show (σ.mem ++ Array.replicate n.val.toNat 0)[i] = σ.mem[i]
+  rw [Array.getElem_append_left hi]
+
+/-- **Every primitive charges.**  A word operation performs one operation of its
+own kind, so its cost is positive under every cost model. -/
+theorem steps_lit_pos (C : CostModel) (k : ℕ) : 0 < RAM.steps C (lit k : RAM w (Word w)) σ := by
+  refine CostVec.steps_pos C (o := Op.lit) ?_
+  simp
+
+@[simp] theorem steps_lit (C : CostModel) (k : ℕ) :
+    RAM.steps C (lit k : RAM w (Word w)) σ = C.cost .lit := by simp [RAM.steps]
+
+@[simp] theorem steps_add (C : CostModel) : RAM.steps C (add x y) σ = C.cost .add := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_sub (C : CostModel) : RAM.steps C (sub x y) σ = C.cost .sub := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_mul (C : CostModel) : RAM.steps C (mul x y) σ = C.cost .mul := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_lt (C : CostModel) : RAM.steps C (lt x y) σ = C.cost .lt := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_le (C : CostModel) : RAM.steps C (le x y) σ = C.cost .le := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_eq (C : CostModel) : RAM.steps C (eq x y) σ = C.cost .eq := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_load (C : CostModel) : RAM.steps C (load x) σ = C.cost .load := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_store (C : CostModel) : RAM.steps C (store x y) σ = C.cost .store := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_emit (C : CostModel) : RAM.steps C (emit x) σ = C.cost .store := by
+  simp [RAM.steps]
+
+@[simp] theorem steps_alloc (C : CostModel) (n : Word w) :
+    RAM.steps C (alloc n) σ = C.cost .alloc * n.toNat := by simp [RAM.steps]
+
+end Spec
+
 end Arlib.Computation

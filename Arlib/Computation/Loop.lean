@@ -93,6 +93,40 @@ theorem steps_iterate_le_sum (C : CostModel) (n : ℕ) (f : ℕ → α → RAM w
   have := steps_iterateGo_le_sum C f b n 0 a σ (by intro j x τ _ hj; exact h j x τ (by omega))
   simpa [iterate] using this
 
+/-- **Induction along a loop.**  A predicate on (index, accumulator, state) that
+holds at the start and is preserved by the body holds at the end.
+
+This is how a `Lib/` entry's correctness is proved: the loop invariant is `P`,
+and the two obligations are exactly the ones a paper proof states. -/
+theorem iterateGo_induction (f : ℕ → α → RAM w α) (P : ℕ → α → RamState w → Prop) :
+    ∀ (k i : ℕ) (a : α) (σ : RamState w),
+      P i a σ →
+      (∀ j x τ, i ≤ j → j < i + k → P j x τ →
+        P (j + 1) ((f j x).val τ) ((f j x).state τ)) →
+      P (i + k) ((iterateGo f i k a).val σ) ((iterateGo f i k a).state σ) := by
+  intro k
+  induction k with
+  | zero => intro i a σ h0 _; simpa [iterateGo] using h0
+  | succ k ih =>
+      intro i a σ h0 hstep
+      rw [iterateGo_succ]
+      have hnext : P (i + 1) ((f i a).val σ) ((f i a).state σ) :=
+        hstep i a σ (le_refl i) (by omega) h0
+      have := ih (i + 1) ((f i a).val σ) ((f i a).state σ) hnext
+        (by intro j x τ hj hj' hP; exact hstep j x τ (by omega) (by omega) hP)
+      have hidx : i + 1 + k = i + (k + 1) := by omega
+      rw [hidx] at this
+      simpa [RAM.val_bind, RAM.state_bind] using this
+
+/-- Induction along `iterate`: the loop invariant `P` holds at the end. -/
+theorem iterate_induction (n : ℕ) (f : ℕ → α → RAM w α) (a : α) (σ : RamState w)
+    (P : ℕ → α → RamState w → Prop) (h0 : P 0 a σ)
+    (hstep : ∀ j x τ, j < n → P j x τ → P (j + 1) ((f j x).val τ) ((f j x).state τ)) :
+    P n ((iterate n f a).val σ) ((iterate n f a).state σ) := by
+  have := iterateGo_induction f P n 0 a σ h0
+    (by intro j x τ _ hj hP; exact hstep j x τ (by omega) hP)
+  simpa [iterate] using this
+
 /-- The cost of `iterate`, with a uniform per-iteration bound: **`n` iterations
 costing `b` each cost `n * b`.** -/
 theorem steps_iterate_le (C : CostModel) (n : ℕ) (f : ℕ → α → RAM w α)
