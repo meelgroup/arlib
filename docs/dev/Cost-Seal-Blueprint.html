@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A file-level protocol for writing Program.lean and CostSeal.lean.">
+<title>Cost Seal Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,500;0,600;1,6..72,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+:root{
+  --ground:#F7F8F6;
+  --surface:#FFFFFF;
+  --surface-sunk:#EFF2EF;
+  --ink:#16211F;
+  --ink-soft:#4A5A57;
+  --ink-faint:#75847F;
+  --rule:#DCE2DE;
+  --rule-strong:#C3CDC8;
+  --accent:#0E6E63;
+  --accent-deep:#0A5049;
+  --accent-wash:#E3F0ED;
+  --breach:#A32E28;
+  --breach-wash:#F6E6E4;
+  --code-bg:#F1F4F1;
+  --shadow:0 1px 2px rgba(22,33,31,.05), 0 8px 24px -18px rgba(22,33,31,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1413;
+    --surface:#161F1D;
+    --surface-sunk:#111917;
+    --ink:#E5ECE9;
+    --ink-soft:#9DAEA9;
+    --ink-faint:#788A85;
+    --rule:#25322E;
+    --rule-strong:#35443F;
+    --accent:#54C4B2;
+    --accent-deep:#7BD6C6;
+    --accent-wash:#12302C;
+    --breach:#E4837A;
+    --breach-wash:#33201E;
+    --code-bg:#111A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1413;
+  --surface:#161F1D;
+  --surface-sunk:#111917;
+  --ink:#E5ECE9;
+  --ink-soft:#9DAEA9;
+  --ink-faint:#788A85;
+  --rule:#25322E;
+  --rule-strong:#35443F;
+  --accent:#54C4B2;
+  --accent-deep:#7BD6C6;
+  --accent-wash:#12302C;
+  --breach:#E4837A;
+  --breach-wash:#33201E;
+  --code-bg:#111A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -18px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Public Sans","Helvetica Neue",Arial,sans-serif;
+  font-size:16.5px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  max-width:1180px;
+  margin:0 auto;
+  padding:0 24px 96px;
+}
+@media (min-width:1000px){
+  .wrap{grid-template-columns:216px minmax(0,1fr);gap:56px;padding:0 32px 120px;}
+}
+
+/* ---------- masthead ---------- */
+.masthead{
+  grid-column:1/-1;
+  border-bottom:1px solid var(--rule);
+  padding:64px 0 40px;
+  margin-bottom:56px;
+}
+.eyebrow{
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:11.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0 0 20px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+.eyebrow .dot{color:var(--rule-strong);}
+h1{
+  font-family:Newsreader,Georgia,serif;
+  font-weight:500;
+  font-size:clamp(2.4rem,5.2vw,3.5rem);
+  line-height:1.08;
+  letter-spacing:-.015em;
+  margin:0 0 20px;
+  text-wrap:balance;
+  max-width:16ch;
+}
+.standfirst{
+  font-size:1.14rem;
+  line-height:1.6;
+  color:var(--ink-soft);
+  max-width:62ch;
+  margin:0 0 28px;
+}
+.provenance{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 28px;
+  font-size:13.5px;
+  color:var(--ink-faint);
+  border-top:1px dashed var(--rule);
+  padding-top:20px;
+}
+.provenance b{
+  color:var(--ink-soft);
+  font-weight:600;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:12.5px;
+}
+
+/* ---------- index rail ---------- */
+nav.rail{display:none;}
+@media (min-width:1000px){
+  nav.rail{
+    display:block;
+    position:sticky;
+    top:0;
+    align-self:start;
+    max-height:100vh;
+    overflow-y:auto;
+    padding:8px 0 40px;
+    font-size:13.5px;
+  }
+  nav.rail h2{
+    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    font-size:10.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin:24px 0 10px;
+    font-weight:500;
+  }
+  nav.rail h2:first-child{margin-top:0;}
+  nav.rail a{
+    display:flex;
+    gap:9px;
+    color:var(--ink-soft);
+    text-decoration:none;
+    padding:3px 0;
+    line-height:1.35;
+    border-radius:3px;
+  }
+  nav.rail a:hover{color:var(--accent);}
+  nav.rail a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  nav.rail a .id{
+    font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    font-size:11.5px;
+    color:var(--ink-faint);
+    flex:0 0 22px;
+    padding-top:1px;
+  }
+}
+
+/* ---------- content ---------- */
+main{min-width:0;max-width:74ch;}
+section{margin:0 0 12px;}
+.part{
+  margin:64px 0 32px;
+  padding-top:28px;
+  border-top:2px solid var(--ink);
+}
+.part:first-of-type{margin-top:0;}
+.part .label{
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:11px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  display:block;
+  margin-bottom:10px;
+}
+.part h2{
+  font-family:Newsreader,Georgia,serif;
+  font-weight:500;
+  font-size:clamp(1.7rem,3.4vw,2.2rem);
+  line-height:1.2;
+  letter-spacing:-.01em;
+  margin:0;
+  text-wrap:balance;
+}
+.part h2 code{font-size:.86em;}
+
+.clause{margin:44px 0;position:relative;}
+.clause h3{
+  font-family:Newsreader,Georgia,serif;
+  font-weight:600;
+  font-size:1.32rem;
+  line-height:1.3;
+  margin:0 0 12px;
+  text-wrap:balance;
+}
+.clause .cid{
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:11.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color:var(--accent);
+  display:block;
+  margin-bottom:6px;
+}
+@media (min-width:1180px){
+  .clause .cid{
+    position:absolute;
+    left:-84px;
+    top:6px;
+    margin:0;
+    text-align:right;
+    width:64px;
+  }
+}
+h4{
+  font-family:"Public Sans",sans-serif;
+  font-size:.94rem;
+  font-weight:600;
+  letter-spacing:.01em;
+  margin:28px 0 8px;
+}
+p{margin:0 0 16px;max-width:68ch;}
+ul,ol{margin:0 0 16px;padding-left:1.25em;max-width:68ch;}
+li{margin-bottom:8px;}
+li::marker{color:var(--ink-faint);}
+strong{font-weight:600;}
+em{font-style:italic;}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;}
+
+code{
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:.86em;
+  background:var(--code-bg);
+  padding:.1em .34em;
+  border-radius:3px;
+  border:1px solid var(--rule);
+}
+pre{
+  background:var(--code-bg);
+  border:1px solid var(--rule);
+  border-radius:6px;
+  padding:16px 18px;
+  overflow-x:auto;
+  margin:0 0 20px;
+  line-height:1.55;
+}
+pre code{
+  background:none;
+  border:none;
+  padding:0;
+  font-size:13px;
+  white-space:pre;
+}
+.cmt{color:var(--ink-faint);}
+.kw{color:var(--accent-deep);font-weight:500;}
+.bad{color:var(--breach);}
+
+blockquote{
+  margin:24px 0;
+  padding:16px 20px;
+  background:var(--accent-wash);
+  border-left:3px solid var(--accent);
+  border-radius:0 5px 5px 0;
+}
+blockquote p{margin:0;font-size:1.02rem;}
+blockquote p + p{margin-top:12px;}
+
+.shipped{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:10.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--breach);
+  background:var(--breach-wash);
+  border:1px solid color-mix(in srgb,var(--breach) 28%,transparent);
+  padding:3px 9px;
+  border-radius:99px;
+  margin-bottom:12px;
+  font-weight:500;
+}
+
+.tablewrap{overflow-x:auto;margin:0 0 22px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);}
+table{border-collapse:collapse;width:100%;font-size:14.2px;min-width:440px;}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule);vertical-align:top;}
+thead th{
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:10.5px;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  font-weight:500;
+  background:var(--surface-sunk);
+}
+tbody tr:last-child td{border-bottom:none;}
+td code{font-size:.84em;}
+.no td:first-child{color:var(--ink-soft);}
+.rejected{color:var(--breach);font-weight:600;white-space:nowrap;}
+
+ol.steps{list-style:none;padding:0;counter-reset:step;}
+ol.steps li{
+  counter-increment:step;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  gap:14px;
+  padding:11px 0;
+  border-bottom:1px solid var(--rule);
+  margin:0;
+}
+ol.steps li:last-child{border-bottom:none;}
+ol.steps li::before{
+  content:counter(step);
+  font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  font-size:12px;
+  color:var(--ink-faint);
+  padding-top:3px;
+}
+ol.steps li.hi::before{color:var(--accent);font-weight:700;}
+ol.steps li.hi{background:var(--accent-wash);margin:0 -14px;padding:11px 14px;border-radius:5px;border-bottom-color:transparent;}
+
+dl.flags{margin:0;}
+dl.flags dt{
+  font-weight:600;
+  font-style:italic;
+  color:var(--ink);
+  margin-top:22px;
+  max-width:68ch;
+}
+dl.flags dd{margin:6px 0 0;color:var(--ink-soft);max-width:68ch;}
+
+footer{
+  grid-column:1/-1;
+  margin-top:72px;
+  padding-top:24px;
+  border-top:1px solid var(--rule);
+  font-size:13.5px;
+  color:var(--ink-faint);
+  max-width:68ch;
+}
+figure{margin:30px 0;padding:0;}
+figure svg{display:block;width:100%;height:auto;color:var(--ink);}
+figcaption{
+  font-size:13px;
+  color:var(--ink-faint);
+  margin-top:14px;
+  padding-top:11px;
+  border-top:1px solid var(--rule);
+  max-width:66ch;
+  line-height:1.55;
+}
+figcaption b{color:var(--ink-soft);font-weight:600;}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Blueprint <span class="dot">/</span> arlib <span class="dot">/</span> docs/dev/Cost-Seal-Blueprint.md</p>
+  <h1>Cost Seal Blueprint</h1>
+  <p class="standfirst">A file-level protocol for writing <code>Program.lean</code> and <code>CostSeal.lean</code>, so that a proved running-time bound is a claim about the algorithm rather than about a number its author supplied.</p>
+  <div class="provenance">
+    <span><b>Companion to</b> Cost-Modelling-Protocol.md</span>
+    <span><b>Supersedes</b> A5 · extends Phase 2</span>
+    <span><b>Audience</b> auto-formalization agent</span>
+  </div>
+</header>
+
+<nav class="rail" aria-label="Clause index">
+  <h2>Principle</h2>
+  <a href="#principle"><span class="id">—</span><span>One sentence</span></a>
+  <h2>I · Program.lean</h2>
+  <a href="#halves"><span class="id">—</span><span>Two halves</span></a>
+  <a href="#p1"><span class="id">P1</span><span>Shape</span></a>
+  <a href="#p2"><span class="id">P2</span><span>What goes inside</span></a>
+  <a href="#p3"><span class="id">P3</span><span>Whose noncomputability</span></a>
+  <a href="#p4"><span class="id">P4</span><span>Read off, never rebuild</span></a>
+  <a href="#p5"><span class="id">P5</span><span>Meters</span></a>
+  <a href="#p6"><span class="id">P6</span><span>Randomized shape</span></a>
+  <a href="#p7"><span class="id">P7</span><span>Stating the bound</span></a>
+  <a href="#p8"><span class="id">P8</span><span>Declare only what arlib cannot</span></a>
+  <a href="#p9"><span class="id">P9</span><span>The escape hatch</span></a>
+  <a href="#p10"><span class="id">P10</span><span>Named for what it stores</span></a>
+  <h2>II · CostSeal.lean</h2>
+  <a href="#where"><span class="id">—</span><span>Where it lives</span></a>
+  <a href="#s1"><span class="id">S1</span><span>Program seal</span></a>
+  <a href="#s2"><span class="id">S2</span><span>Driver seal</span></a>
+  <a href="#s3"><span class="id">S3</span><span>Namespace, not shape</span></a>
+  <a href="#s4"><span class="id">S4</span><span>The allowlist</span></a>
+  <a href="#s5"><span class="id">S5</span><span>Planted breaches</span></a>
+  <a href="#s6"><span class="id">S6</span><span>Self-exclusion</span></a>
+  <h2>III–V</h2>
+  <a href="#order"><span class="id">III</span><span>Order of work</span></a>
+  <a href="#flags"><span class="id">IV</span><span>Red flags</span></a>
+  <a href="#person"><span class="id">V</span><span>Stays with a person</span></a>
+</nav>
+
+<main>
+
+<section id="principle">
+  <p>The failure this exists to prevent is not a wrong proof. It is a correct proof of a claim about a number the author supplied. <code>Cost-Modelling-Protocol.md</code> says what the layers are and why; this says how the two files that carry them are written, and is prescriptive where that document is general.</p>
+  <p>It <strong>supersedes A5</strong> and <strong>extends Phase 2</strong>. A5 says meters live in the driver, are charged nothing, and that an agent should “say so in one sentence.” That is not enough, and the reason is the whole of Part&nbsp;II: a driver that can hold charged values and declare them free has exactly the discretion the protocol exists to remove. <strong>Sealing the algorithm is half a seal.</strong></p>
+  <blockquote>
+    <p>Everything that can charge lives in one namespace; everything outside it is <em>checked</em> to be incapable of charging; and the short list of exceptions is written down somewhere a person reads it.</p>
+  </blockquote>
+  <figure>
+<svg viewBox="0 0 720 430" role="img" aria-label="The algorithm namespace is the only place a charge is created. The tally crosses into the driver through bind and map, which preserve cost by theorem. The program seal rejects eliminators, noncomputable definitions and currency conversion; the driver seal rejects charge creation, value extraction and dictionary operations, leaving one named exception for the peak meter.">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+    </marker>
+    <marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+    </marker>
+  </defs>
+
+  <rect x="210" y="40" width="300" height="112" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <text x="360" y="70" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="13" font-weight="700" fill="currentColor">namespace Program</text>
+  <text x="360" y="91" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".62">computable · sealed data · no cost expressions</text>
+  <line x1="240" y1="104" x2="480" y2="104" stroke="currentColor" stroke-width="1" opacity=".22"/>
+  <text x="360" y="128" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">the only place a charge is created</text>
+
+  <line x1="360" y1="152" x2="360" y2="283" stroke="currentColor" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="376" y="197" font-size="11.5" font-weight="600" fill="currentColor">the tally</text>
+  <text x="376" y="215" font-size="10.5" fill="currentColor" opacity=".62">carried by bind and map</text>
+  <text x="376" y="231" font-size="10.5" fill="currentColor" opacity=".62">cost-preserving, by theorem</text>
+
+  <rect x="210" y="290" width="300" height="112" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <text x="360" y="320" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="13" font-weight="700" fill="currentColor">the driver</text>
+  <text x="360" y="341" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".62">randomness · threading · meters</text>
+  <line x1="240" y1="354" x2="480" y2="354" stroke="currentColor" stroke-width="1" opacity=".22"/>
+  <text x="360" y="378" text-anchor="middle" font-size="12" font-weight="600" fill="var(--accent)">pure · bind · map, and nothing else</text>
+
+  <path d="M202 46 L194 46 L194 146 L202 146" fill="none" stroke="var(--breach)" stroke-width="1.25"/>
+  <text x="184" y="64" text-anchor="end" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="var(--breach)">#programSeal</text>
+  <text x="184" y="86" text-anchor="end" font-size="10" fill="var(--breach)">× casesOn / rec / recOn</text>
+  <text x="184" y="103" text-anchor="end" font-size="10" fill="var(--breach)">× noncomputable def</text>
+  <text x="184" y="120" text-anchor="end" font-size="10" fill="var(--breach)">× Charged.exchange</text>
+
+  <path d="M202 296 L194 296 L194 396 L202 396" fill="none" stroke="var(--breach)" stroke-width="1.25"/>
+  <text x="184" y="314" text-anchor="end" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="var(--breach)">#driverSeal</text>
+  <text x="184" y="336" text-anchor="end" font-size="10" fill="var(--breach)">× Charged.op — invent work</text>
+  <text x="184" y="353" text-anchor="end" font-size="10" fill="var(--breach)">× Charged.val — erase tally</text>
+  <text x="184" y="370" text-anchor="end" font-size="10" fill="var(--breach)">× Roster operations</text>
+
+  <line x1="700" y1="346" x2="517" y2="346" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwA)"/>
+  <text x="700" y="330" text-anchor="end" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5" font-weight="700" fill="var(--accent)">driverByPermission</text>
+  <text x="700" y="367" text-anchor="end" font-size="10" fill="currentColor" opacity=".62">Roster.card — the peak meter</text>
+</svg>
+<figcaption><b>Why sealing the algorithm is half a seal.</b> A charge can only be created in the top box, and the only routes out of it preserve the tally — so the driver cannot inflate or deflate what the algorithm spent. The red lists are what each seal rejects; the dashed edge is the one free read the driver is allowed, and it is allowed by name rather than by rule.</figcaption>
+</figure>
+  <p>Every failure named below is one this development actually shipped and then had to fix. None is hypothetical.</p>
+</section>
+
+<div class="part" id="part1">
+  <span class="label">Part I</span>
+  <h2>Writing <code>Program.lean</code></h2>
+</div>
+
+<section class="clause" id="halves">
+  <h3>The file has exactly two halves</h3>
+<pre><code><span class="kw">namespace</span> Program        <span class="cmt">-- the algorithm: computable, sealed data, no cost expressions</span>
+  …
+<span class="kw">end</span> Program
+
+<span class="cmt">-- the driver: noncomputable, supplies randomness, threads the tally,</span>
+<span class="cmt">--             attaches meters, and provably creates and destroys no charge</span></code></pre>
+  <p>The boundary is a <strong>namespace</strong> — not a file, not a type. <code>CostSeal.lean</code> keys off it and both halves of the seal are stated in terms of it. Do not put the algorithm in a file and hope the file boundary carries the meaning; a check cannot see a file.</p>
+</section>
+
+<section class="clause" id="p1">
+  <span class="cid">P1</span>
+  <h3>The algorithm's shape</h3>
+  <ul>
+    <li>Every program returns <code>Charged κ α</code>, never a bare <code>α</code>. This is the load-bearing typing decision: you cannot write a function producing the data without also producing what it took, because the only ways to obtain the data are the charged operations.</li>
+    <li>Composition is <code>do</code> / <code>&gt;&gt;=</code>. <strong>Tail position is composition too</strong> — a <code>Charged</code> returned as the last expression of a <code>do</code> block is spliced in by <code>bind</code> and its tally added. This reads like an escape and cannot be one: the block's type forbids a bare value there.</li>
+    <li>Branch only on values you bought. <code>if full then …</code> after <code>let full ← Roster.cardEq …</code> is the pattern; the condition is a purchased bit.</li>
+    <li><code>pure</code> only of arguments and of values already in hand. <code>pure</code> of an argument is honest bookkeeping; <code>pure</code> of something lifted out of a computation is laundering — and that is the only reachable syntax for the cheat, which is why it is the one the seal blocks.</li>
+  </ul>
+</section>
+
+<section class="clause" id="p2">
+  <span class="cid">P2</span>
+  <h3>What must be inside, and the test for it</h3>
+  <p>The test is <strong>not</strong> “does it cost something” — that invites the author to decide, which is the thing being prevented.</p>
+  <blockquote><p>If the paper's pseudocode has a line for it, it is inside the namespace.</p></blockquote>
+  <p>Three kinds of line are easy to leave out, and this development left out all three at first.</p>
+  <ol>
+    <li><strong>Control flow.</strong> “Have I already answered?” is a line. While the driver did that test by pattern-matching on the run's own state, the driver was deciding, for the algorithm, that discovering it had stopped was free.</li>
+    <li><strong>The last line.</strong> <code>return |X| / p</code> is a line. It sat outside for as long as nobody looked, computing the paper's estimate from an unpaid read.</li>
+    <li><strong>Any question put to the data structure.</strong> Asking is a line. If the sealed type has no operation for the question the algorithm needs to ask, <strong>add the operation</strong> — do not answer it outside. We had <code>cardEq</code> (compare the size with a number) and no <code>size</code> (ask for it), so the estimate was assembled from the specification's noncomputable view instead.</li>
+  </ol>
+</section>
+
+<section class="clause" id="p3">
+  <span class="cid">P3</span>
+  <span class="shipped">shipped defect</span>
+  <h3>Noncomputability is usually the specification's, not the algorithm's</h3>
+  <p>This is the trap that kept the last line outside. The estimate looked to require <code>Real</code> division; <code>Real</code> division is noncomputable; a program may not be noncomputable — therefore it must live outside. Every step true, conclusion wrong.</p>
+  <p>The sampling rate is <code>2⁻ˡᵉᵛᵉˡ</code>, so <code>|X| / p</code> is <code>|X| * 2 ^ level</code>: a <code>Nat</code>. The <code>Real</code> was only how the answer is <em>represented</em> so accuracy can be compared against a real-valued truth.</p>
+  <blockquote><p>Before concluding that a line must live outside the program because it is noncomputable, work out <strong>whose</strong> noncomputability it is. If it is the specification's representation, the program computes in the type an implementation would use and the driver casts. A cast is not a step.</p></blockquote>
+</section>
+
+<section class="clause" id="p4">
+  <span class="cid">P4</span>
+  <h3>The state is read off, never rebuilt</h3>
+  <p>The driver copies fields straight off the program's result. If the driver has to <em>reconstruct</em> a field, the program's result type is too narrow — widen it until the copy is total.</p>
+  <p>Concretely: the step result first carried <code>answered : Bool</code>, forcing the driver to write <code>answer := if r.answered then some none else none</code> — a reconstruction, and one that was wrong for an already-stopped run. Changing the field to <code>answer : Option Answer</code> made the driver a straight copy and deleted the branch.</p>
+  <blockquote><p><strong>A branch in the driver is a smell.</strong> Every <code>if</code> below the namespace is a decision the program should have made. Count them; the target is zero.</p></blockquote>
+</section>
+
+<section class="clause" id="p5">
+  <span class="cid">P5</span>
+  <h3>Meters</h3>
+  <p>A meter — a peak-usage counter, a step index — exists so the analysis can talk about the run. It is not a line of the algorithm, and charging it would report the cost of measuring.</p>
+  <p>But <em>why</em> it is free matters. It is free because it is attached with <code>&lt;$&gt;</code> and <code>Charged.cost_map</code> is a theorem — <strong>not</strong> because the author said so. So: attach meters with <code>map</code>, never assemble them with <code>pure</code>; and name every meter's free read in the allowlist of <a href="#s4">S4</a>.</p>
+</section>
+
+<section class="clause" id="p6">
+  <span class="cid">P6</span>
+  <h3>The randomized shape</h3>
+  <p>Use <code>PMF (Charged κ α)</code>. Do <strong>not</strong> use <code>PMF (α × CostVec κ)</code>. The pair form types the meter as part of what the algorithm <em>returns</em>, and every consequence is bad.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th></th><th>PMF (α × CostVec κ)</th><th>PMF (Charged κ α)</th></tr></thead>
+    <tbody>
+      <tr class="no"><td>composition along the fold</td><td>hand-written <code>ec.2 + (work …).cost</code></td><td><code>&gt;&gt;=</code>, and <code>cost_bind</code> adds</td></tr>
+      <tr class="no"><td>getting the algorithm's result</td><td>a <code>Prod.fst</code> projection</td><td><code>Charged.val</code></td></tr>
+      <tr class="no"><td>accuracy vs. time</td><td>two objects, related by a lemma</td><td>one object</td></tr>
+      <tr class="no"><td>re-pricing in another currency</td><td>re-inline the whole quantifier</td><td><code>Charged.exchange</code>, one lemma</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The hand-written <code>+</code> is the tell. It is the same defect as a cost annotation, one level up: an author writing a number where a theorem should be.</p>
+</section>
+
+<section class="clause" id="p7">
+  <span class="cid">P7</span>
+  <h3>Stating the bound</h3>
+  <p>Worst-case time is a <strong>function</strong>, not a predicate, and the rate is a <strong>parameter</strong>.</p>
+<pre><code><span class="cmt">-- no</span>
+<span class="kw">def</span> WorstCaseTime (mu : PMF ((α × Nat) × CostVec κ)) (b : Nat) : <span class="kw">Prop</span> :=
+  ∀ o ∈ mu.support, CostVec.steps (Rate.unit κ) o.2 ≤ b
+
+<span class="cmt">-- yes</span>
+<span class="kw">noncomputable def</span> worstSteps (R : Rate κ) (mu : PMF (Charged κ α)) : ℕ∞ :=
+  ⨆ p ∈ mu.support, (Charged.steps R p : ℕ∞)</code></pre>
+  <p>“Worst case” <em>names</em> the reduction of a random variable to a number — the supremum over the support — so it can be a value and the bound an ordinary <code>≤</code>. Three payoffs: monotonicity and transitivity come free instead of being re-derived; a re-pricing composes as an inequality between values; and the machine-level restatement shares the vocabulary instead of re-inlining the quantifier at a different rate. Provide <code>worstSteps_le_iff</code> as the bridge to the support-wise form a proof actually works in.</p>
+  <p>Hard-wiring the rate has a visible symptom: two theorems of the same shape, one of whose docstrings says it is “the same statement in the form the rest of the development uses.” If you write that sentence, the vocabulary is wrong.</p>
+</section>
+
+<section class="clause" id="p8">
+  <span class="cid">P8</span>
+  <h3>The development declares only what arlib cannot</h3>
+  <p>A development declares the cost of <em>its own</em> steps — a coin flip, a stopping test, whatever the algorithm does that a library could not know about. It does not declare what an erase costs, any more than it declares what an element occupies. With the opcode passed per call, <code>Roster.insert cheap</code> and <code>Roster.insert dear</code> are both well typed, so an author can file insertions under whichever name their rate table treats kindly and leave nothing in the program to show it.</p>
+  <p>So the standard operations take <strong>no opcode and no storage kind</strong>. Two classes supply a <em>name</em>, never an amount:</p>
+  <table>
+    <thead><tr><th>class</th><th>what it says</th><th>what arlib fixes</th></tr></thead>
+    <tbody>
+      <tr><td><code>RosterCells ι κₛ</code></td><td>which kind of cell an element occupies</td><td><em>one</em> cell per element</td></tr>
+      <tr><td><code>RosterOps κ</code></td><td>which opcode each standard operation charges</td><td><em>one</em> charge per call</td></tr>
+    </tbody>
+  </table>
+  <p><code>charge_injective</code>, discharged by <code>decide</code>, keeps the naming from being a choice with consequences: without it a development could send <code>erase</code> and <code>insert</code> to one opcode and lose the distinction its own rate table draws between them. Three consequences worth expecting: an opcode may vanish (both deletion sites now charge <code>delete</code>); an opcode may be forced into existence and go unused, because injectivity requires it; and the transitive seal will need the instances on its allowlist, since every operation reaches them.</p>
+</section>
+
+<section class="clause" id="p9">
+  <span class="cid">P9</span>
+  <h3><code>Charged.op</code> is an escape hatch, and a simple algorithm needs none</h3>
+  <p>Every <code>Charged.op</code> in a program is a place where the author priced something. That is legitimate exactly when arlib has no carrier for what the line touches — and for a streaming estimator it never should. <strong>The fix is never a better cost; it is a sealed carrier.</strong></p>
+  <table>
+    <thead><tr><th>the line touches</th><th>arlib supplies</th><th>what it stops</th></tr></thead>
+    <tbody>
+      <tr><td>fair bits</td><td><code>Block n</code>, <code>Coins ι</code></td><td>branching on a bit for nothing</td></tr>
+      <tr><td>a sampling rate <code>2⁻ˡ</code></td><td><code>Sampler</code></td><td><code>acceptsAt level</code> outside the program</td></tr>
+      <tr><td>the answer register</td><td><code>Slot α</code></td><td>unbounded free <code>isNone</code> reads</td></tr>
+      <tr><td>a finite set</td><td><code>Roster ι</code></td><td>a free cardinality</td></tr>
+    </tbody>
+  </table>
+  <p><code>Sampler</code> is the one worth studying, because the obvious cut is wrong. A sealed <em>counter</em> holding the level moves the free computation one indirection along — the read returns a number and <code>2 ^ level</code> happens outside. The right cut is the object the algorithm actually has: <strong>a rate</strong>, with the three things one does to a rate, and a level that never leaves the structure.</p>
+  <p>Then name the hatch in <code>forbiddenInProgram</code>, so “this algorithm needs nothing outside the library” stops being a property someone checked once.</p>
+  <p><strong>What this costs, stated because it is not free.</strong> Sealing a carrier turns previously-free reads into operations, so bounds go up: esa22-copy's went from <code>P.m * (2 * threshold P + 7) + 2</code> to <code>P.m * (2 * threshold P + 8) + 3</code> — one <code>record</code> per thinning that lands on bottom, and the division in <code>return |X| / p</code>, both of which the algorithm always did. A bound that rises when you seal something is the seal reporting work that was already happening.</p>
+</section>
+
+<section class="clause" id="p10">
+  <span class="cid">P10</span>
+  <h3>A carrier is named for what it stores, and priced by what it does</h3>
+  <p><strong>The name.</strong> <code>Roster ι</code> was called <code>Dict ι</code> while the library had one container, and the name was false — it stored keys and no values. Nothing was unsound; what changed was what a reader could predict. The operation a reader goes looking for — retrieve the value at a key — did not exist and could not, so a development that needed values kept them in an ordinary <code>ι → α</code> beside the structure, and <strong>every read of that side table was free</strong>. A misnamed carrier does not mis-charge on its own; it routes work around the thing that charges.</p>
+  <table>
+    <thead><tr><th>what is stored</th><th>the type</th><th>the operation a reader expects</th></tr></thead>
+    <tbody>
+      <tr><td>keys alone</td><td><code>Roster ι</code></td><td><code>mem</code>, <code>cardEq</code>, <code>filterErase</code></td></tr>
+      <tr><td>keys with values</td><td><code>Dict ι α</code></td><td><code>find</code>, <code>insert k v</code>, <code>erase</code></td></tr>
+      <tr><td>an ordered queue</td><td><code>Queue ι</code></td><td><code>enqueue</code>, <code>dequeue</code></td></tr>
+      <tr><td>a priority queue</td><td><code>Heap α</code></td><td><code>push</code>, <code>pop</code>, <code>peek</code></td></tr>
+    </tbody>
+  </table>
+  <p><code>Dict ι α</code> has deliberately <strong>no <code>modify</code></strong>: an in-place <code>modify k (f : α → α) d</code> applies the caller's function to the stored value at the price of one operation, and the caller's function is exactly what arlib cannot price. <code>Y[k] ← Y[k] + 1</code> is a <code>find</code> and an <code>insert</code>.</p>
+  <p><strong>The price.</strong> <code>Rate κ</code> charges by opcode and nothing else, so a structure whose operations are not constant-time cannot be handled by declaring one — there is no way to write “a push costs <code>log n</code>”, and there should not be. The structure charges the primitive it actually performs, once per performance:</p>
+<pre><code><span class="kw">private def</span> mergeC : HTree α → HTree α → Charged κ κₛ (HTree α)
+  | .node rk₁ x l₁ r₁, .node rk₂ y l₂ r₂ =&gt;
+      Charged.op (heapOpcode κ .cmp) (decide (x ≤ y)) &gt;&gt;= <span class="kw">fun</span> b =&gt; …</code></pre>
+  <p>one <code>HeapOp.cmp</code> per key comparison, by the recursion that performs it — and <code>Heap.rank_le_log</code> and <code>Heap.steps_push_le</code> recover the logarithm as a theorem. This is P7's “the bound is derived, not asserted” applied to a data structure rather than a loop, and it is why the <em>leftist</em> heap is the right one to seal: its merge walks two right spines, so every step it takes is a comparison. An array heap would need the index arithmetic modelled too. An author who wants a cheaper heap has to write a different program.</p>
+</section>
+
+<div class="part" id="part2">
+  <span class="label">Part II</span>
+  <h2>Writing <code>CostSeal.lean</code></h2>
+</div>
+
+<section class="clause" id="where">
+  <h3>Where it lives</h3>
+  <p><code>Meta/</code>. It is tooling, hence outside the surface it checks — the standing <code>ModelClosure</code> has, for the same reason. It exports commands, invoked at the bottom of <code>Program.lean</code>:</p>
+<pre><code>#programSeal Esa22Copy.Program
+#driverSeal  Esa22Copy.Program</code></pre>
+  <p><code>#driverSeal</code> derives the driver from its argument: everything under the namespace's <em>parent</em> that is not under the namespace itself. One name at the call site, and the split follows.</p>
+</section>
+
+<section class="clause" id="s1">
+  <span class="cid">S1</span>
+  <h3>The program seal — closing what the compiler leaves open</h3>
+  <p>The compiler already does most of this. A private constructor means the tally is a function of the program's text; noncomputable views mean a program cannot read data without a charged operation. Three routes stay open:</p>
+  <ul>
+    <li><code>T.casesOn</code> / <code>rec</code> / <code>recOn</code> are generated <strong>public</strong> even when the constructor is private, and <code>casesOn</code> is compiled.</li>
+    <li><code>noncomputable def</code> silences the error that enforces the data seal.</li>
+    <li><strong>Any currency-conversion operator launders.</strong> <code>Charged.exchange (fun _ =&gt; 0)</code> re-prices a computation at nothing. Whenever you add such an operator, add it to this list in the same commit.</li>
+  </ul>
+  <p>Reject any non-<code>Prop</code> declaration under the namespace that is <code>noncomputable</code> or mentions a forbidden name.</p>
+</section>
+
+<section class="clause" id="s2">
+  <span class="cid">S2</span>
+  <h3>The driver seal — the half the protocol did not have</h3>
+  <p>Sealing the algorithm does not seal the claim, because the compiler has nothing to say about the driver: a driver is noncomputable by nature — <code>PMF</code>, real-valued parameters, meters — so “not noncomputable” cannot be asked of it. Yet:</p>
+  <ul>
+    <li>a driver mentioning <code>Charged.op</code> can <strong>invent</strong> work the algorithm never did;</li>
+    <li>a driver mentioning <code>Charged.val</code> can rebuild a computation from a program's result and <strong>erase</strong> its tally — <code>pure (advance …).val</code> typechecks;</li>
+    <li>a driver mentioning the data structure's view can <strong>perform a line of the algorithm</strong> where nothing pays for it.</li>
+  </ul>
+  <h4>Two tiers</h4>
+  <ul>
+    <li><strong>Never allowed:</strong> charge creation (<code>op</code>, <code>opMany</code>, <code>exchange</code>, the eliminators) and every charged data-structure operation. These are the algorithm's, and the algorithm is above.</li>
+    <li><strong>Restricted:</strong> the free reads — the data structure's specification views, and <code>Charged.val</code>. Allowed only where the allowlist says.</li>
+  </ul>
+  <p>What remains to the driver is <code>pure</code>, <code>bind</code> and <code>map</code>. Of those only <code>pure</code> sets a tally, to zero, before any work has been done; and <code>cost_bind</code> and <code>cost_map</code> are theorems, so the driver's arithmetic on costs is not the driver's to choose.</p>
+</section>
+
+<section class="clause" id="s3">
+  <span class="cid">S3</span>
+  <span class="shipped">shipped defect</span>
+  <h3>Filter by namespace, never by type shape</h3>
+  <p>This is the sharpest lesson in this document, and it cost a shipped defect.</p>
+  <p>The first driver seal examined only declarations whose <strong>type mentioned <code>Charged</code></strong>, reasoning that nothing else could build a computation. True, and beside the point. <code>finishExec : Exec P → RunOutput P</code> built no computation and still computed the paper's <code>|X| / p</code> from a free <code>Roster.card</code> — because it had never been put inside the charged world in the first place. It was not a leak across the boundary; it was a line of the algorithm that was never brought to it. The filter skipped it before the body was ever inspected. Five declarations were scanned; the defect was in the hundred that were not.</p>
+  <blockquote><p>A check with a shape has a shape to hide in. Scan the whole namespace and enumerate the exceptions.</p></blockquote>
+  <figure>
+<svg viewBox="0 0 700 292" role="img" aria-label="The old driver seal filtered declarations by whether their type mentioned Charged, reaching five of them. finishExec lay outside that set and computed the paper's estimate from a free dictionary read. The new filter scans the whole namespace, one hundred and seven declarations, and contains the defect.">
+  <text x="40" y="46" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="11" fill="currentColor" opacity=".62">new filter · by namespace</text>
+  <rect x="40" y="60" width="560" height="182" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <text x="60" y="88" font-size="11.5" fill="currentColor">all non-Prop declarations below <tspan font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="11">Program</tspan></text>
+  <text x="580" y="92" text-anchor="end" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="20" font-weight="700" fill="currentColor">107</text>
+
+  <rect x="70" y="110" width="212" height="106" rx="6" fill="var(--accent-wash)" stroke="var(--accent)" stroke-width="1.25" stroke-dasharray="4 3"/>
+  <text x="88" y="134" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="10.5" font-weight="700" fill="var(--accent)">old filter · by type shape</text>
+  <text x="88" y="178" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="22" font-weight="700" fill="var(--accent)">5</text>
+  <text x="88" y="199" font-size="9.5" fill="var(--accent)" opacity=".85">type mentions Charged</text>
+
+  <circle cx="372" cy="150" r="6" fill="var(--breach)"/>
+  <text x="392" y="147" font-family="JetBrains Mono, ui-monospace, Menlo, monospace" font-size="11.5" font-weight="700" fill="var(--breach)">finishExec</text>
+  <text x="392" y="165" font-size="10" fill="var(--breach)">computed |X| / p from a free Roster.card</text>
+  <text x="392" y="181" font-size="9.5" fill="currentColor" opacity=".55">built no computation — so the old filter skipped it</text>
+
+  <text x="60" y="228" font-size="10" fill="currentColor" opacity=".55">the defect was in the hundred that were not scanned</text>
+</svg>
+<figcaption><b>Where the shipped defect hid.</b> Both filters are correct about what they claim; the old one asked which declarations <em>build</em> a computation, and <code>finishExec</code> did not — it performed a line of the algorithm that had never been brought inside the charged world at all. Widening the filter from a type shape to a namespace is what put the defect in range.</figcaption>
+</figure>
+  <p>Widening the filter took the scan from 5 declarations to 107, and re-introducing the old <code>finishExec</code> is now rejected.</p>
+</section>
+
+<section class="clause" id="s4">
+  <span class="cid">S4</span>
+  <h3>The allowlist is the trusted surface</h3>
+  <p>Reading the data structure, or taking a computation's value, costs nothing. That is right for a meter and wrong for a line of the algorithm, and <strong>nothing distinguishes the two by inspection</strong>. So name each one:</p>
+<pre><code><span class="kw">def</span> driverByPermission : List (Name × Name) :=
+  [(`Esa22Copy.advance,         ``Arlib.Computation.Roster.card),
+   (`Esa22Copy.estimatorOutput, ``Arlib.Computation.Charged.val)]</code></pre>
+  <ul>
+    <li>An entry names a declaration <strong>and</strong> the single constant it may read. Not a blanket exemption for either.</li>
+    <li>Its docstring gives the reason for each entry. This list is the whole of what the development takes on trust about where the algorithm ends, and must be readable in one sitting.</li>
+    <li>Use <strong>unresolved</strong> names so the Meta module need not import what it audits. This also fails closed: a typo leaves the real declaration unpermitted and the check reports a breach.</li>
+    <li><strong>The allowlist is not where you put things to make the build green.</strong> If it grows past a handful, the boundary is in the wrong place — a line of the algorithm is outside the namespace and wants moving in, not exempting.</li>
+  </ul>
+</section>
+
+<section class="clause" id="s5">
+  <span class="cid">S5</span>
+  <h3>Planted-breach testing</h3>
+  <p>An audit that has never failed is not known to work. Plant one breach <strong>per rejection reason</strong>, not per check, and record the table.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Planted cheat</th><th>Rejected by</th></tr></thead>
+    <tbody>
+      <tr><td><code>Charged.exchange (fun _ =&gt; 0)</code> inside the algorithm</td><td class="rejected">#programSeal</td></tr>
+      <tr><td><code>pure (step …).val</code> in tail position</td><td class="rejected">compiler, then #programSeal</td></tr>
+      <tr><td><code>pure (advance …).val</code> in the driver — erase a tally</td><td class="rejected">#driverSeal</td></tr>
+      <tr><td><code>Charged.op …</code> in the driver — invent work</td><td class="rejected">#driverSeal</td></tr>
+      <tr><td>an algorithm line computed from a free <code>Roster.card</code></td><td class="rejected">#driverSeal</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The second is worth keeping for its own sake: the compiler rejects it as noncomputable, and the seal catches the <code>noncomputable def</code> that would silence the compiler. Two independent layers, and the test shows both firing.</p>
+</section>
+
+<section class="clause" id="s6">
+  <span class="cid">S6</span>
+  <h3>The checker must exclude itself</h3>
+  <p>Importing <code>CostSeal</code> puts its own declarations under the audited prefix, and the driver seal will scan them. Skip the <code>Meta</code> namespace explicitly.</p>
+  <p>It would pass anyway — a <code>Name</code> literal is a term, not a reference to the constant it names, so the forbidden-name lists do not register as uses. Skip it regardless: that should be an irrelevance, not a coincidence the check depends on. Watch the reported count; ours moved 109 → 115 when <code>CostSeal</code> was imported, which is how the self-scan was noticed at all.</p>
+</section>
+
+<div class="part" id="part3">
+  <span class="label">Part III</span>
+  <h2>Order of work, revised</h2>
+</div>
+
+<section>
+  <p>The protocol's ordering, with one step promoted.</p>
+  <ol class="steps">
+    <li>Fix the currency and the primitive operations.</li>
+    <li>Write the algorithm.</li>
+    <li class="hi"><strong>Write both seals and break them on purpose.</strong></li>
+    <li>Write the model and the bridge.</li>
+    <li>Do the accounting.</li>
+    <li>State the bound.</li>
+  </ol>
+  <p>Step 3 already came before 4 because sealing forces redesigns. The driver seal belongs there too, and for a stronger reason: <strong>it changes the algorithm.</strong> Writing it is what forced the stop test and the final report inside the namespace, which changed the per-arrival constant from 4 to 5 and added a constant term. Discovering that after the accounting means redoing the accounting.</p>
+</section>
+
+<div class="part" id="part4">
+  <span class="label">Part IV</span>
+  <h2>Red flags — report, do not route around</h2>
+</div>
+
+<section>
+  <dl class="flags">
+    <dt>“The driver just reads a field of the run's own state.”</dt>
+    <dd>A free read of the run's state to decide whether to do work is a <strong>control decision</strong> taken on the algorithm's behalf. Charge it and move it inside.</dd>
+    <dt>“This can't be computable, it's a real number.”</dt>
+    <dd>Whose noncomputability? Almost always the specification's representation. See <a href="#p3">P3</a>.</dd>
+    <dt>“An <code>if</code> in the driver.”</dt>
+    <dd>A decision the program should have made. See <a href="#p4">P4</a>.</dd>
+    <dt>“The audit passes.”</dt>
+    <dd>With what filter, over how many declarations? Report the count. A number that is suspiciously small is the symptom of <a href="#s3">S3</a>.</dd>
+    <dt>“I'll add it to the allowlist.”</dt>
+    <dd>See <a href="#s4">S4</a>. The allowlist is a record of judgment, not a build-fixing tool.</dd>
+    <dt>“The statement elaborated.”</dt>
+    <dd>With <code>autoImplicit</code> on, a missing <code>open</code> turns an unknown name into an auto-bound variable and the theorem still elaborates. Our closure check reported OK on a statement whose proof was <code>sorryAx</code>; only <code>#print axioms</code> caught it. Always run both.</dd>
+  </dl>
+</section>
+
+<div class="part" id="part5">
+  <span class="label">Part V</span>
+  <h2>What must stay with a person</h2>
+</div>
+
+<section>
+  <p>Three things, all of which change what the theorem says.</p>
+  <ol>
+    <li><strong>The currency table</strong> and the one-line justification for each operation.</li>
+    <li><strong>Every entry of <code>driverByPermission</code></strong>, with its reason. This is where “the algorithm ends here” is asserted rather than proved.</li>
+    <li><strong>Whether a lower bound is available, and if not, why.</strong> The protocol asks for a sandwich wherever the shape permits. Here the shape does not: once the run returns bottom the state is absorbing and the arrival performs one operation, so a run that stops on its first arrival has a constant tally whatever the stream length, and no bound of the form <code>c * m ≤ steps</code> holds. That must be written down next to the upper bound rather than left as an absence a reader has to notice.</li>
+  </ol>
+  <p>Everything else in this document is mechanical.</p>
+</section>
+
+</main>
+
+<footer>
+  Source of truth: <code>arlib/docs/dev/Cost-Seal-Blueprint.md</code>. Companion to <code>Cost-Modelling-Protocol.md</code>, which it supersedes at A5 and extends at Phase 2.
+</footer>
+
+</div>
+</body>
+</html>
