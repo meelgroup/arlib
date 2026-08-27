@@ -4,8 +4,17 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Computation.Cost
+import Arlib.Computation.Space
 import Arlib.Computation.Charged
+import Arlib.Computation.ChargedPMF
+import Arlib.Computation.Roster
 import Arlib.Computation.Dict
+import Arlib.Computation.Heap
+import Arlib.Computation.Rand
+import Arlib.Computation.Num
+import Arlib.Computation.Queue
+import Arlib.Computation.Slot
+import Arlib.Computation.Std
 import Arlib.Computation.Machine
 import Arlib.Computation.Loop
 import Arlib.Computation.Data
@@ -34,9 +43,44 @@ algorithm's cost from its text rather than accepting it from its author.
   produced it, for algorithms written against an abstract interface rather than
   against words. Same discipline, no machine: the constructor is private, so the
   only ways to build one are `pure`, `bind` and one operation at a time.
-* `Computation/Dict.lean` — `Dict ι`, a sealed finite set with charged
+* `Computation/Roster.lean` — `Roster ι`, a sealed finite set with charged
   operations, including `filterErase`, one pass whose deletion count is read off
   the pass rather than supplied. This is the data seal that makes `Charged` bite.
+  Its operations take no opcode and no storage kind: `RosterOps` and `RosterCells`
+  say what a development *calls* an erase and a cell, and this module fixes what
+  each one *is* — one charge per call, one cell per element. A development
+  declares the cost of its own operations, which is all it is in a position to
+  know; it does not get to price an erase.
+* `Computation/Dict.lean` — `Dict ι α`, a sealed finite map: keys with values
+  behind them, and a charged `find`. A `Roster` stores membership alone, so
+  anything with values — a table of counts, a memo — belongs here. There is no
+  `modify`: changing the value at a key is a `find` and an `insert`.
+* `Computation/Heap.lean` — `Heap α`, a sealed leftist priority queue, whose
+  operations are not constant-time. The merge charges one `HeapOp.cmp` per key
+  comparison it performs, and `Heap.rank_le_log`, `Heap.steps_push_le` and
+  `Heap.steps_pop_le` bound that count by `log₂ (n + 1)`.
+* `Computation/Space.lean` — `Residency` and `Profile`, the algebra of a
+  resource that is *given back*.  Time is a commutative monoid under `+`; space
+  is a `(net, peak)` pair whose composition is a `max`, and the two are not the
+  same shape.  `peak_foldProfiles_le` is the lemma with no time-side counterpart:
+  a loop that keeps itself below a ceiling stays below it however long it runs,
+  because residency is a property of the state and an invariant can cap it, while
+  time is cumulative and no invariant can.  See
+  `docs/dev/Space-Modelling-Design.md`.
+* `Computation/Rand.lean` — `Block`, `Coins` and `Sampler`: the randomness a
+  sampling algorithm consumes, sealed the same way its data is. A bare
+  `bits : Fin n → Bool` is a free oracle and a bare `level : ℕ` is a free read;
+  `Sampler` is the cut that removes both, because a rate `2⁻ˡ` is the object the
+  algorithm actually has and its level never leaves the structure.
+* `Computation/Slot.lean` — `Slot α`, the answer register, and the last
+  `Charged.op` a streaming algorithm needs.
+* `Computation/Num.lean` — `Num α`, a sealed number, and `Num.iterate`, the loop
+  whose length the algorithm itself computed. Arithmetic on held values is free
+  in Lean, and a paper's pseudocode is full of it: `Y ← Y + 1`, `⌈Σ/max⌉`,
+  `(Y/t)·Σ` are three lines of one Karp–Luby estimator.
+* `Computation/Queue.lean` — `Queue ι`, a sealed FIFO with a destructive charged
+  `dequeue`. A `Roster` is a set: no order, no consumption, and no way to say that
+  a sample list ran out.
 * `Computation/Cost.lean` — `Op`, the primitive operations; `CostVec κ`, a tally
   of work in a currency `κ`; `Rate κ`, a charge per operation with every entry at
   least one; and `CostVec.steps`, which turns a tally into a number. Costs are
@@ -66,9 +110,9 @@ checked by the compiler:
    program that inspects a word without a primitive **fails to compile**.
 
 The abstract half is sealed the same way. `Charged.val` is `noncomputable`, so
-`pure p.val` cannot copy a program's result and drop its charges; `Dict`'s
+`pure p.val` cannot copy a program's result and drop its charges; `Roster`'s
 contents, its size and the conversion from a `Finset` are all `noncomputable`, so
-outside `Dict.lean` the only thing one can do with a dictionary is call a charged
+outside `Roster.lean` the only thing one can do with a roster is call a charged
 operation on it.
 
 `ArlibTest/Computation.lean` §3 and §8 test all of this by writing the cheats and
@@ -89,13 +133,13 @@ debt.
 polynomial time is what licenses reading a bound here as a complexity claim in
 the usual sense. It is stated, not proved, and no theorem depends on it.
 
-**One route past the seal is open.** `Word.casesOn` — and likewise `Dict.casesOn`
+**One route past the seal is open.** `Word.casesOn` — and likewise `Roster.casesOn`
 and `Charged.casesOn` — is generated public and is compiled, so a determined
 author can project the field out. It is greppable, it is what
 `scripts/ComputationAudit.lean` looks for, and for `Word` its worst case is a
 constant factor: what leaks is the contents of words already in hand, on which
 the primitives are unit-cost anyway, while memory stays unreachable without
-`load`. For `Dict` it is not bounded that way, which is why the audit is the
+`load`. For `Roster` it is not bounded that way, which is why the audit is the
 answer rather than a shrug.
 
 **`#print axioms` gives no signal here** once the randomised layer lands, because

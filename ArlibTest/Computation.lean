@@ -8,7 +8,9 @@ import Arlib.Computation.Lib.Search
 import Arlib.Computation.Lib.Sort
 import Arlib.Computation.Lib.Arr
 import Arlib.Computation.Charged
-import Arlib.Computation.Dict
+import Arlib.Computation.Roster
+import Arlib.Computation.Rand
+import Arlib.Computation.Slot
 
 /-!
 # `Arlib.Computation` — executable tests
@@ -423,24 +425,33 @@ end MergeSort
 
 /-! ## 8. Charged computation over a sealed dictionary
 
-`Arlib.Computation.Charged` and `Arlib.Computation.Dict` are the other half of
+`Arlib.Computation.Charged` and `Arlib.Computation.Roster` are the other half of
 the area: a cost model for algorithms written against an abstract interface
 rather than against words and memory. The claim they make is that a program's
 cost is computed from its text, so this section checks it two ways — by running
 programs and reading their tallies, and by writing the cheats and confirming the
 compiler rejects them. -/
 
-namespace ChargedDict
+namespace ChargedRoster
 
-/-- A small currency, standing in for whatever an algorithm's operations are. -/
+/-- A small currency, standing in for whatever an algorithm's operations are.
+
+`find` is this development's *own* operation — the test a `filterErase` pass runs
+on each element, which no library could know the price of.  The other five are
+the standard dictionary operations, and their names are all this currency gets to
+say about them: what each *costs* is fixed in `Arlib.Computation.Roster`. -/
 inductive DOp
-  | find | del | put
+  | find | del | put | card | size | mem
+  | flip | accept | halve | inflate
+  | test | fill
   deriving DecidableEq, Repr, Inhabited
 
 namespace DOp
 
 /-- Every operation, as a list. -/
-def all : List DOp := [.find, .del, .put]
+def all : List DOp :=
+  [.find, .del, .put, .card, .size, .mem,
+   .flip, .accept, .halve, .inflate, .test, .fill]
 
 /-- INTERNAL: `all` is exhaustive. -/
 theorem mem_all (o : DOp) : o ∈ all := by cases o <;> simp [all]
@@ -451,20 +462,59 @@ end DOp
 
 open Arlib.Computation
 
+/-- INTERNAL: the storage currency for these tests — one cell per dictionary
+element.  A currency, like `DOp`, and passed to each operation the same way. -/
+inductive DKind | slot deriving DecidableEq
+instance : Fintype DKind := Fintype.ofList [.slot] (by intro k; cases k <;> simp)
+
+/-- One instance, read once: a dictionary element occupies one `slot`.  The kind
+is a property of the data, so it is declared here rather than named at every
+operation — see `Roster.RosterCells`. -/
+instance : RosterCells (Fin 8) DKind := ⟨DKind.slot⟩
+
+/-- And one instance saying what this currency *calls* each standard dictionary
+operation.  Note what is not here: a price.  `charge_injective`, discharged by
+`decide`, is what stops two different operations being filed under one name. -/
+instance : RosterOps DOp where
+  charge
+    | .erase => .del
+    | .insert => .put
+    | .cardEq => .card
+    | .size => .size
+    | .mem => .mem
+  charge_injective := by decide
+
+/-- And the same for the randomness and the answer register.  Twelve
+constructors, of which **eleven name an arlib operation** and one — `find` — is
+this development's own.  That ratio is the point of the whole arrangement. -/
+instance : RandOps DOp where
+  charge
+    | .flip => .flip
+    | .accept => .accept
+    | .halve => .halve
+    | .inflate => .inflate
+  charge_injective := by decide
+
+instance : SlotOps DOp where
+  charge
+    | .test => .test
+    | .fill => .fill
+  charge_injective := by decide
+
 section Counting
 
 /-! A three-operation program: two puts and a size test. Its cost is nowhere
 written down — it is what the elaborator accumulates. -/
 
 /-- INTERNAL: insert two elements and ask whether the result has two. -/
-def twoPuts : Charged DOp Bool := do
-  let d ← Dict.insert DOp.put (3 : Fin 8) Dict.empty
-  let d ← Dict.insert DOp.put (5 : Fin 8) d
-  Dict.cardEq DOp.find 2 d
+def twoPuts : Charged DOp DKind Bool := do
+  let d ← Roster.insert (3 : Fin 8) Roster.empty
+  let d ← Roster.insert (5 : Fin 8) d
+  Roster.cardEq 2 d
 
 #guard Charged.steps (Rate.unit DOp) twoPuts == 3
 #guard twoPuts.cost DOp.put == 2
-#guard twoPuts.cost DOp.find == 1
+#guard twoPuts.cost DOp.card == 1
 #guard twoPuts.cost DOp.del == 0
 
 /-! A rate other than the unit one: if a put costs seven, the same program costs
@@ -486,17 +536,17 @@ end Counting
 
 section Filtering
 
-/-! `Dict.filterErase` is where a hand-written cost would go wrong, because the
+/-! `Roster.filterErase` is where a hand-written cost would go wrong, because the
 number of deletions is data-dependent. Here it is read off the pass. -/
 
 /-- INTERNAL: build `{0, 1, 2, 3}` and delete the odd elements, at one `find` per
 element tested and one `del` per element removed. -/
-def dropOdds : Charged DOp (Dict (Fin 8)) := do
-  let d ← Dict.insert DOp.put (0 : Fin 8) Dict.empty
-  let d ← Dict.insert DOp.put (1 : Fin 8) d
-  let d ← Dict.insert DOp.put (2 : Fin 8) d
-  let d ← Dict.insert DOp.put (3 : Fin 8) d
-  Dict.filterErase DOp.del (fun x => Charged.op DOp.find (decide (x.val % 2 = 0))) d
+def dropOdds : Charged DOp DKind (Roster (Fin 8)) := do
+  let d ← Roster.insert (0 : Fin 8) Roster.empty
+  let d ← Roster.insert (1 : Fin 8) d
+  let d ← Roster.insert (2 : Fin 8) d
+  let d ← Roster.insert (3 : Fin 8) d
+  Roster.filterErase (fun x => Charged.op DOp.find (decide (x.val % 2 = 0))) d
 
 /-! Four puts, four tests, two deletions. Nobody wrote "two". -/
 #guard dropOdds.cost DOp.put == 4
@@ -504,21 +554,77 @@ def dropOdds : Charged DOp (Dict (Fin 8)) := do
 #guard dropOdds.cost DOp.del == 2
 #guard Charged.steps (Rate.unit DOp) dropOdds == 10
 
+/-! ## Space, measured by running the program
+
+`Cost-Modelling-Protocol.md`'s CI check 6 for the other resource: run the
+algorithm, read what it actually held, and compare with what the theorems say.
+This is the check that catches an accounting that is wrong but internally
+consistent, and it is possible only because the program is computable.
+
+`dropOdds` puts four elements in and deletes two.  **Its peak is four and its net
+is two**, and the difference between those two numbers is the whole content of
+this module: a tally would report six operations on the dictionary and tell you
+nothing about how much was held at once. -/
+
+#guard dropOdds.peakAt DKind.slot == 4
+#guard dropOdds.netAt DKind.slot == 2
+
+/-- INTERNAL: insert two, delete both, insert two more.  The *total* traffic is
+four insertions, but the most ever held is two — which is what a streaming
+algorithm's space bound is about, and what no sum can express. -/
+def churn : Charged DOp DKind (Roster (Fin 8)) := do
+  let d ← Roster.insert (0 : Fin 8) Roster.empty
+  let d ← Roster.insert (1 : Fin 8) d
+  let d ← Roster.erase (0 : Fin 8) d
+  let d ← Roster.erase (1 : Fin 8) d
+  let d ← Roster.insert (2 : Fin 8) d
+  Roster.insert (3 : Fin 8) d
+
+#guard churn.cost DOp.put == 4          -- four insertions of work …
+#guard churn.peakAt DKind.slot == 2     -- … and never more than two cells held
+#guard churn.netAt DKind.slot == 2
+
+/-! **Order matters, and the monoid says so.**  The same six operations in the
+other order — insert four, then delete two — peak at four rather than two.  Time
+cannot tell these two programs apart; space is not commutative and that is the
+content. -/
+def churnLate : Charged DOp DKind (Roster (Fin 8)) := do
+  let d ← Roster.insert (0 : Fin 8) Roster.empty
+  let d ← Roster.insert (1 : Fin 8) d
+  let d ← Roster.insert (2 : Fin 8) d
+  let d ← Roster.insert (3 : Fin 8) d
+  let d ← Roster.erase (0 : Fin 8) d
+  Roster.erase (1 : Fin 8) d
+
+#guard churnLate.cost DOp.put == churn.cost DOp.put        -- same work …
+#guard churnLate.cost DOp.del == churn.cost DOp.del
+#guard churnLate.peakAt DKind.slot == 4                    -- … twice the space
+#guard churnLate.netAt DKind.slot == 2
+
+/-! An insertion of something already present takes no cell, and the program did
+not have to know that: the delta is read off the list. -/
+def reinsert : Charged DOp DKind (Roster (Fin 8)) := do
+  let d ← Roster.insert (0 : Fin 8) Roster.empty
+  Roster.insert (0 : Fin 8) d
+
+#guard reinsert.cost DOp.put == 2
+#guard reinsert.peakAt DKind.slot == 1
+
 /-- INTERNAL: the same pass with a test that rejects nothing, which must
 therefore charge no deletions. -/
-def dropNothing : Charged DOp (Dict (Fin 8)) := do
-  let d ← Dict.insert DOp.put (0 : Fin 8) Dict.empty
-  let d ← Dict.insert DOp.put (1 : Fin 8) d
-  Dict.filterErase DOp.del (fun _ => Charged.op DOp.find true) d
+def dropNothing : Charged DOp DKind (Roster (Fin 8)) := do
+  let d ← Roster.insert (0 : Fin 8) Roster.empty
+  let d ← Roster.insert (1 : Fin 8) d
+  Roster.filterErase (fun _ => Charged.op DOp.find true) d
 
 #guard dropNothing.cost DOp.del == 0
 #guard dropNothing.cost DOp.find == 2
 
 /-- INTERNAL: and one that rejects everything. -/
-def dropAll : Charged DOp (Dict (Fin 8)) := do
-  let d ← Dict.insert DOp.put (0 : Fin 8) Dict.empty
-  let d ← Dict.insert DOp.put (1 : Fin 8) d
-  Dict.filterErase DOp.del (fun _ => Charged.op DOp.find false) d
+def dropAll : Charged DOp DKind (Roster (Fin 8)) := do
+  let d ← Roster.insert (0 : Fin 8) Roster.empty
+  let d ← Roster.insert (1 : Fin 8) d
+  Roster.filterErase (fun _ => Charged.op DOp.find false) d
 
 #guard dropAll.cost DOp.del == 2
 
@@ -537,7 +643,7 @@ is no syntax for asserting what something cost. -/
 error: Invalid `⟨...⟩` notation: Constructor for `Arlib.Computation.Charged` is marked as private
 -/
 #guard_msgs in
-example : Charged DOp Nat := ⟨0, 0⟩
+example : Charged DOp DKind Nat := ⟨0, 0⟩
 
 /-! Copying a program's result to discard its charges. This is the one that
 matters: `pure p.val` would have the same value as `p` and cost nothing, so
@@ -546,51 +652,153 @@ matters: `pure p.val` would have the same value as `p` and cost nothing, so
 error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Charged.val', which is 'noncomputable'
 -/
 #guard_msgs in
-def launder (p : Charged DOp Nat) : Charged DOp Nat := pure p.val
+def launder (p : Charged DOp DKind Nat) : Charged DOp DKind Nat := pure p.val
 
 /-! Reading a dictionary's contents without asking it: rejected, because
-`Dict.toFinset` is `noncomputable`. Without this, a program could compute the
+`Roster.toFinset` is `noncomputable`. Without this, a program could compute the
 answer from the set directly and charge for nothing. -/
 /--
-error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Dict.toFinset', which is 'noncomputable'
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Roster.toFinset', which is 'noncomputable'
 -/
 #guard_msgs in
-def peekDict (d : Dict (Fin 8)) : Finset (Fin 8) := d.toFinset
+def peekRoster (d : Roster (Fin 8)) : Finset (Fin 8) := d.toFinset
 
 /-! Conjuring a dictionary from a set that some other computation produced:
-rejected, because `Dict.ofFinset` is `noncomputable`. This is what confines the
+rejected, because `Roster.ofFinset` is `noncomputable`. This is what confines the
 boundary to the instrumentation. -/
 /--
-error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Dict.ofFinset', which is 'noncomputable'
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Roster.ofFinset', which is 'noncomputable'
 -/
 #guard_msgs in
-def conjure (s : Finset (Fin 8)) : Dict (Fin 8) := Dict.ofFinset s
+def conjure (s : Finset (Fin 8)) : Roster (Fin 8) := Roster.ofFinset s
 
 /-! Asking a dictionary its size without paying for the question: rejected, for
-the same reason. `Dict.cardEq` is what a program uses, and it charges. -/
+the same reason. `Roster.cardEq` is what a program uses, and it charges. -/
 /--
-error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Dict.card', which is 'noncomputable'
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Roster.card', which is 'noncomputable'
 -/
 #guard_msgs in
-def peekSize (d : Dict (Fin 8)) : Nat := d.card
+def peekSize (d : Roster (Fin 8)) : Nat := d.card
 
 /-! The dictionary's representation is private, so a program cannot get at the
 elements and iterate over them for free. -/
 /--
-error: Field `elems` from structure `Arlib.Computation.Dict` is private
+error: Field `elems` from structure `Arlib.Computation.Roster` is private
 -/
 #guard_msgs in
-def peekElems (d : Dict (Fin 8)) : List (Fin 8) := d.elems
+def peekElems (d : Roster (Fin 8)) : List (Fin 8) := d.elems
+
+/-! ### The sampler and the register
+
+`Arlib.Computation.Rand` and `.Slot` exist to remove the last `Charged.op` from a
+sampling algorithm.  A rate `2⁻ˡ` is sealed, so the level cannot be read, so
+`|X| * 2ˡ` cannot happen outside the program. -/
+
+/-- INTERNAL: halve the rate twice, then scale a count by its reciprocal. -/
+def scaleUp : Charged DOp DKind Nat := do
+  let s ← Sampler.halve Sampler.start
+  let s ← Sampler.halve s
+  Sampler.inflate 5 s
+
+#guard scaleUp.cost DOp.halve == 2
+#guard scaleUp.cost DOp.inflate == 1
+#guard Charged.steps (Rate.unit DOp) scaleUp == 3
+
+/-! The estimate itself cannot be `#guard`ed, because `Charged.val` is
+`noncomputable` — which is the seal doing its job.  It is still a theorem, and
+`rfl` proves it: two halvings put the sampler at level two, so `5` scales to
+`20`, and nothing in `scaleUp` named either number. -/
+example : scaleUp.val = 20 := rfl
+
+/-- INTERNAL: a run that answers, then discovers on the next arrival that it
+has.  Two tests and one write. -/
+def stopAfterAnswer : Charged DOp DKind Bool := do
+  let r ← Slot.isEmpty (Slot.empty : Slot Nat)
+  let s ← Slot.fill 7 (Slot.empty : Slot Nat)
+  let r' ← Slot.isEmpty s
+  pure (r && !r')
+
+#guard stopAfterAnswer.cost DOp.test == 2
+#guard stopAfterAnswer.cost DOp.fill == 1
+
+/-! The register was empty and then was not, and the program never read what went
+into it. -/
+example : stopAfterAnswer.val = true := rfl
+
+/-! **A sampler's level cannot be read.**  This is the test that matters: with
+`level : ℕ` a bare field, `n * 2 ^ level` is free and the last line of a sampling
+algorithm happens outside the charged world. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Sampler.levelOf', which is 'noncomputable'
+-/
+#guard_msgs in
+def peekLevel (s : Sampler) : Nat := s.levelOf
+
+/-! **Nor can a block's bits**, so a program cannot branch on the randomness it
+was handed for free. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Block.get', which is 'noncomputable'
+-/
+#guard_msgs in
+def peekBit (b : Block 8) (i : Fin 8) : Bool := b.get i
+
+/-! **Nor can a program seal its own randomness**, which would be worse: it would
+choose the bits rather than merely read them. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Block.ofFun', which is 'noncomputable'
+-/
+#guard_msgs in
+def rigBits : Block 8 := Block.ofFun (fun _ => true)
+
+/-! **Nor read the answer it wrote.**  `isEmpty` is the only question a register
+answers. -/
+/--
+error: failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Slot.get', which is 'noncomputable'
+-/
+#guard_msgs in
+def peekAnswer (s : Slot Nat) : Option Nat := s.get
+
+/-! **Pricing a standard operation.**  There is no parameter to pass: `Roster.insert`
+takes an element and a dictionary, and the opcode comes from the currency's
+`RosterOps` instance.  An author who wants their insertions filed under a cheaper
+name has nowhere to write it. -/
+/--
+error: Application type mismatch: The argument
+  a
+has type
+  Fin 8
+but is expected to have type
+  Roster DOp
+in the application
+  Roster.insert DOp.find a
+-/
+#guard_msgs in
+def cheapPut (a : Fin 8) (d : Roster (Fin 8)) : Charged DOp DKind (Roster (Fin 8)) :=
+  Roster.insert DOp.find a d
+
+/-! **Blurring two standard operations into one name.**  The instance supplies
+names, so the remaining latitude is to give two operations the same one — which
+would let a bound on deletions silently cover insertions.  `charge_injective` is
+the field that rejects it, and it is rejected by `decide` rather than by review. -/
+/--
+error: Tactic `decide` proved that the proposition
+  Function.Injective fun x => DOp.del
+is false
+-/
+#guard_msgs in
+example : RosterOps DOp where
+  charge := fun _ => .del
+  charge_injective := by decide
 
 /-- **The routes that remain open**, recorded rather than hidden: `casesOn` is
 generated public for both structures and is compiled, so a determined author can
 project a private field out. `scripts/ComputationAudit.lean` is what catches
 that, and §3's note on `Word` applies here word for word. -/
-def peekDictViaCasesOn (d : Dict (Fin 8)) : List (Fin 8) :=
-  Dict.casesOn d (fun l _ => l)
+def peekRosterViaCasesOn (d : Roster (Fin 8)) : List (Fin 8) :=
+  Roster.casesOn d (fun l _ => l)
 
 end Seal
 
-end ChargedDict
+end ChargedRoster
 
 end ArlibTest.Computation

@@ -39,8 +39,8 @@ distinct-elements estimator**, which its paper does not have — see §0.
 | `holdsList_state_arrFill` | a writing entry proved correct through that bridge, with cost exactly `3n` |
 | `disjoint_block_alloc` | two blocks are disjoint by allocation order, discharged by `omega` on `ℕ` addresses |
 | `Charged.cost_bind` | the same compositionality without a machine, for algorithms written against an abstract interface |
-| `Dict.cost_filterErase_card` | one pass over a set costs the test on every element plus one deletion per rejection — the count read off the pass, not supplied |
-| `Dict.toFinset_filterErase` | and the pass leaves exactly the elements the test accepted |
+| `Roster.cost_filterErase_card` | one pass over a set costs the test on every element plus one deletion per rejection — the count read off the pass, not supplied |
+| `Roster.toFinset_filterErase` | and the pass leaves exactly the elements the test accepted |
 
 Every one is stated twice where it matters: symbolically in the `CostModel`, so
 it survives a change to the instruction set, and as a numeral under
@@ -74,8 +74,8 @@ rather than about a description of it.
   stopped doing the work would fail `execStep_map`, not merely under-report.
   The one exception is `peakSamples`, the meter the space theorem reads, which is
   computed in the run and charged nothing.
-* The run threads the dictionary from `Dict.empty` to the end, so there is no
-  per-arrival conversion between a `Finset` and a dictionary. `Dict.ofFinset`
+* The run threads the dictionary from `Roster.empty` to the end, so there is no
+  per-arrival conversion between a `Finset` and a dictionary. `Roster.ofFinset`
   does not appear in the development at all.
 
 The statements:
@@ -91,7 +91,7 @@ The statements:
   this is the best *deterministic* bound available and that the real improvement
   needs `E[L]`, which is open.
 * `estimator_wordSteps_le` — the same bound in **word operations**, given a
-  `DictImpl` saying what one dictionary operation costs. The bundle is shown
+  `RosterImpl` saying what one dictionary operation costs. The bundle is shown
   inhabited, so the theorem is not vacuous.
 
 That last one is why the cost layer is generic in its currency: the estimator's
@@ -106,13 +106,25 @@ have survived — which is exactly the CSLib `TimeM` situation, reproduced insid
 development built to improve on it. The two definitions also duplicated the
 branch condition, so they could drift apart with no proof noticing.
 
-`Charged` and `Dict` are the fix, and the fix is structural rather than
+`Charged` and `Roster` are the fix, and the fix is structural rather than
 disciplinary: there is now no place to write a cost. `arrivalBaseCost` and
 `thinningCost` survive as closed expressions in `Analysis/TimeBound.lean`, with
 `cost_work_of_running` proving the program spends exactly them.
 `Esa22Copy.Program` is checked on every build: sixteen program declarations, none
-noncomputable, none touching `Dict.toFinset`, `Dict.card`, `Dict.ofFinset` or
+noncomputable, none touching `Roster.toFinset`, `Roster.card`, `Roster.ofFinset` or
 `Charged.val`. That check was verified against a planted breach.
+
+**The charged interface now has four containers, not one.** `Roster ι` (a set of
+keys) was the whole of it for as long as the CVM estimator was the only client.
+The others came out of writing programs against it: `Queue ι` because a set has
+no order and no destructive read, `Dict ι α` because a table of counts has values
+and a `Roster` has nowhere to put them, and `Heap α` because a priority queue's
+operations are not constant-time and `Rate` prices an opcode rather than a call.
+The last is the interesting one — see `Cost-Seal-Blueprint.md` P10: the merge
+charges one `HeapOp.cmp` per key comparison it performs, and `log n` comes back
+as `Heap.rank_le_log` and `Heap.steps_push_le` rather than as a declared price.
+Note that `Lib/Heap` below is a different thing: an array heap in the RAM machine
+model, where the index arithmetic is also work.
 
 Findings from building it are worth recording here, because some of them correct
 this document.

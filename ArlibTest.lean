@@ -30,3 +30,5 @@ import ArlibTest.Probability
 import ArlibTest.GameTheory
 import ArlibTest.Communication
 import ArlibTest.Computation
+import ArlibTest.Computation.AppUnion
+import ArlibTest.Computation.Structures
