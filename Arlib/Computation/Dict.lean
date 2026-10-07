@@ -222,6 +222,33 @@ omit [DecidableEq κ] [DecidableEq κₛ] in
 @[simp] theorem card_keys (d : Dict ι α) : d.keys.card = d.card := by
   simpa [keys, card] using List.toFinset_card_of_nodup d.nodupKeys
 
+private theorem findEntry_isSome (k : ι) :
+    ∀ l : List (ι × α), (findEntry k l).isSome = decide (k ∈ l.map Prod.fst) := by
+  intro l
+  induction l with
+  | nil => simp [findEntry]
+  | cons p l ih =>
+      by_cases hk : p.1 = k
+      · simp [findEntry, hk]
+      · have hne : k ≠ p.1 := Ne.symm hk
+        simp [findEntry, hk, hne, ih]
+
+omit [DecidableEq κ] [DecidableEq κₛ] in
+/-- Membership in the dictionary's key set is exactly successful lookup. -/
+theorem lookup_isSome (d : Dict ι α) (k : ι) :
+    (d.lookup k).isSome = decide (k ∈ d.keys) := by
+  change (findEntry k d.entries).isSome = decide (k ∈ (d.entries.map Prod.fst).toFinset)
+  rw [findEntry_isSome]
+  apply Bool.eq_iff_iff.mpr
+  simp only [Bool.decide_iff, List.mem_toFinset]
+
+omit [DecidableEq κ] [DecidableEq κₛ] in
+/-- A missing lookup is precisely a key outside the dictionary domain. -/
+theorem lookup_eq_none_iff_not_mem_keys (d : Dict ι α) (k : ι) :
+    d.lookup k = none ↔ k ∉ d.keys := by
+  have h := lookup_isSome d k
+  cases hl : d.lookup k <;> simp [hl] at h ⊢ <;> simp_all
+
 /-! ## What a dictionary occupies
 
 **A dictionary occupies one cell of the storage kind it is given, per entry, and

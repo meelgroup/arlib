@@ -32,6 +32,13 @@ statement here disagrees with `Arlib/`, `Arlib/` is right.
 | [`MarkovChains-PAPER-INVENTORY.md`](MarkovChains-PAPER-INVENTORY.md) | `Arlib.MarkovChains` | Statement-by-statement catalogue of the source monograph, numbered `D…`/`T…`, referenced from the roadmap tables. |
 | [`Automata-ROADMAP.md`](Automata-ROADMAP.md) | `Arlib.Automata` | Module plan for the Göös–Kiefer–Yuan formalization, what is imported and why, and what is deliberately absent. |
 | [`LewisWeights-ROUTE_A_PLAN.md`](LewisWeights-ROUTE_A_PLAN.md) | `Arlib.Approximation.LewisWeights` | The staged plan for "Route A", the concentration argument behind the Lewis-weight sampler. |
+| [`Computation-ROADMAP.md`](Computation-ROADMAP.md) | `Arlib.Computation` | The design of the machine, the seal, and the module plan; §3 the machine-level language, §10 why a deep embedding is not the plan. |
+| [`Charged-RAM-Realization.md`](Charged-RAM-Realization.md) | `Arlib.Computation` | Additive certified RAM realizations of unchanged Charged algorithms, reviewed design, concrete first milestone, and remaining implementation work. |
+| [`Program-Language.md`](Program-Language.md) | `Arlib.Computation` | Reference manual for the language a program file is written in: sorts, grammar, primitive vocabulary, static constraints, conformance checking, and a full grammar appendix. |
+| [`Cost-Modelling-Protocol.md`](Cost-Modelling-Protocol.md) | `Arlib.Computation` | The protocol an author follows: currency, algorithm, seal, model and bridge, accounting, and the CI checks. |
+| [`Cost-Seal-Blueprint.md`](Cost-Seal-Blueprint.md) | `Arlib.Computation` | The blueprint the seal was built from, with the alternatives that were rejected. |
+| [`Space-Modelling-Design.md`](Space-Modelling-Design.md) | `Arlib.Computation` | Why space is a `(net, peak)` pair rather than a monoid under `+`, and what that costs downstream. |
+| [`NFA-Computation-Requirements.md`](NFA-Computation-Requirements.md) | `Arlib.Computation` | What the `#NFA` development needs from the area, as a requirements list. |
 | [`OPEN-PROBLEMS.md`](OPEN-PROBLEMS.md) | several | The mathematical gaps that are known and open, with current status. |
 | [`PAPER-ERRATA.md`](PAPER-ERRATA.md) | several | Errors, gaps and deviations found in the source papers during formalization, attributed to the paper each belongs to. |
 
@@ -45,3 +52,5 @@ Several Lean module docstrings refer to these files by their old locations —
 `ROADMAP.md`, `KnowledgeCompilation/ROADMAP.md`, `PAPER-INVENTORY.md`,
 `ROUTE_A_PLAN.md`. Those all mean the correspondingly-named file in this
 directory.
+
+- [Charged algorithm authoring](Charged-Algorithm-Authoring.md): sealed source operations, exact RAM costs, review evidence and remaining algorithm-specific work.

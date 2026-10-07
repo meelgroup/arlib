@@ -15,13 +15,29 @@ constructors, `Word`'s field is private, and `Word.toNat` is `noncomputable`, so
 a program that inspects a word fails to compile. `ArlibTest/Computation.lean` §3
 checks each of those by writing the cheat and confirming it is rejected.
 
-Two routes are *not* closed by the compiler, and this script is what closes them.
+Three routes are *not* closed by the compiler, and this script is what closes
+them.
 
-**`Word.casesOn` and friends.** A structure's `casesOn` is generated public even
+**`Roster.casesOn` and friends.** A structure's `casesOn` is generated public even
 when its constructor is private, and unlike `rec` it is compiled. So
-`Word.casesOn x (fun v => v)` extracts the field. No algorithm has any reason to
-mention it. The same applies to `Roster` and `Charged`, whose fields are private for
-the same reason.
+`Roster.casesOn d (fun l _ => l)` extracts the field. No algorithm has any reason
+to mention it. The same applies to `Charged`, whose field is private for the same
+reason.
+
+`Word` is no longer on that list. It is a public alias for a `private` structure,
+so the elaborator generates no eliminator a client can name and the compiler
+rejects every route to the field. `ArlibTest/Computation.lean` §3 records the
+four rejections. Doing the same to `Roster` and `Charged` would retire this half
+of the script; see `docs/dev/Program-Language.md` §5.3.
+
+**`open private`.** Batteries provides `open private a from M in`, which brings a
+name that `private` mangled back into scope. The declaration it produces is
+ordinary Lean and depends on no axioms, so `#print axioms` reports nothing and the
+only thing to grep for is the one line of syntax. What the cheat cannot hide is
+the mangled name, which stays in the elaborated term. `usesForeignPrivate` reads
+it there: a declaration may use a private constant only from the module that
+declared it. `ArlibTest/Computation.lean` §3 records the cheat itself, in a
+namespace this script does not scan.
 
 **An explicit `noncomputable def`.** Marking a program `noncomputable` silences
 the compiler error that stops it from reading a word. A specification may be
@@ -33,8 +49,14 @@ Run it with
 lake env lean scripts/ComputationAudit.lean
 ```
 
-which exits non-zero if either invariant is broken. CI runs exactly this
-alongside `AxiomAudit.lean`.
+which exits non-zero if any of the three invariants is broken. CI runs exactly
+this alongside `AxiomAudit.lean`.
+
+Each check has been made to fail on a planted breach, which Phase 2 of
+`docs/dev/Cost-Modelling-Protocol.md` requires before an audit is believed. For
+`usesForeignPrivate` the breach was a declaration in `Arlib.Computation` built by
+`open private WordRep.val from Arlib.Computation.Machine`; the script reported it
+by name and named the constant it reached.
 
 The audit is deliberately narrow. It does not try to decide whether a definition
 "is an algorithm"; it checks the two syntactic facts that are actually
@@ -45,12 +67,14 @@ open Lean Elab Command
 
 namespace Arlib.ComputationAudit
 
-/-- The eliminators that would project a `Word`'s private field back out.  None
-of them belongs in an algorithm. -/
+/-- The eliminators that would project a sealed type's private field back out.
+None of them belongs in an algorithm.
+
+`Word.casesOn`, `Word.rec` and `Word.recOn` were the first three entries and are
+gone: `Word` is a public alias for a `private` structure, so those constants no
+longer exist and naming them here would not elaborate. -/
 def forbidden : List Name :=
-  [``Arlib.Computation.Word.casesOn, ``Arlib.Computation.Word.rec,
-   ``Arlib.Computation.Word.recOn,
-   ``Arlib.Computation.Roster.casesOn, ``Arlib.Computation.Roster.rec,
+  [``Arlib.Computation.Roster.casesOn, ``Arlib.Computation.Roster.rec,
    ``Arlib.Computation.Roster.recOn,
    ``Arlib.Computation.Charged.casesOn, ``Arlib.Computation.Charged.rec,
    ``Arlib.Computation.Charged.recOn,
@@ -123,6 +147,25 @@ are specification vocabulary rather than programs.
 program cannot use it; the rest are predicates and cost accounting. -/
 def specOnly : List Name :=
   [``Arlib.Computation.Word.toNat,
+   ``Arlib.Computation.ChargedVector.words, ``Arlib.Computation.ChargedVector.contents,
+   ``Arlib.Computation.ChargedVector.input,
+   -- Exact specification-only views of certified RAM buffer inputs and loops.
+   ``Arlib.Computation.RecordBuffer.capacityNat,
+   ``Arlib.Computation.Buffer.baseNat, ``Arlib.Computation.Buffer.lengthNat,
+   ``Arlib.Computation.Buffer.encodedState, ``Arlib.Computation.Buffer.encodedHandle,
+   ``Arlib.Computation.wordLoopSpec,
+   ``Arlib.Computation.Matrix.rowsNat, ``Arlib.Computation.Matrix.colsNat,
+   ``Arlib.Computation.Matrix.encodedHandle,
+   ``Arlib.Computation.SignedWord.value, ``Arlib.Computation.SignedWord.magnitudeNat,
+   ``Arlib.Computation.RAMQueue.baseNat, ``Arlib.Computation.RAMQueue.headNat,
+   ``Arlib.Computation.RAMQueue.countNat, ``Arlib.Computation.RAMQueue.capacityNat,
+   ``Arlib.Computation.RAMRoster.countNat, ``Arlib.Computation.RAMRoster.capacityNat,
+   ``Arlib.Computation.RAMDict.capacityNat,
+   ``Arlib.Computation.ProbRAM.outputs, ``Arlib.Computation.ProbRAM.decodedOutputs,
+   ``Arlib.Computation.ProbRAM.states, ``Arlib.Computation.ProbRAM.worstSteps,
+   ``Arlib.Computation.chargedBind,
+   ``Arlib.Computation.ProbabilityRealization.fairBit,
+   ``Arlib.Computation.ProbabilityRealization.twoBits,
    -- the value a charged computation produced; noncomputable so that `pure p.val`
    -- cannot copy a program at zero cost
    ``Arlib.Computation.Charged.val,
@@ -203,17 +246,26 @@ def areaByPermission : List (Name × Name) :=
    (``Arlib.Computation.Heap.push, ``Arlib.Computation.Charged.opUpdate),
    (``Arlib.Computation.Heap.pop, ``Arlib.Computation.Charged.opUpdate),
    (``Arlib.Computation.worstSteps, ``Arlib.Computation.Charged.steps),
-   -- **the four standard naming instances.**  `RosterOps.mk` and friends are
+   -- **the twelve standard naming instances.**  `RosterOps.mk` and friends are
    -- forbidden because declaring a rival instance is how an operation gets filed
    -- under a name nobody is counting.  `Computation/Std.lean` declares the
-   -- canonical ones — injections into `StdOp`, with nothing to choose — so that a
-   -- development need not declare any.  These four entries are the whole of what
-   -- that costs: four permissions, in this list, rather than an eleven-line
-   -- translation table in every development that uses the library.
+   -- canonical ones — injections into `StdOp` and into `Cell`, with nothing to
+   -- choose — so that a development need not declare any.  These twelve entries
+   -- are the whole of what that costs: twelve permissions, in this list, rather
+   -- than a thirty-six-line translation table in every development that uses the
+   -- library.
    (``Arlib.Computation.stdRosterOps, ``Arlib.Computation.RosterOps.mk),
+   (``Arlib.Computation.stdDictOps, ``Arlib.Computation.DictOps.mk),
+   (``Arlib.Computation.stdHeapOps, ``Arlib.Computation.HeapOps.mk),
+   (``Arlib.Computation.stdQueueOps, ``Arlib.Computation.QueueOps.mk),
    (``Arlib.Computation.stdRandOps, ``Arlib.Computation.RandOps.mk),
+   (``Arlib.Computation.stdDrawOps, ``Arlib.Computation.DrawOps.mk),
    (``Arlib.Computation.stdSlotOps, ``Arlib.Computation.SlotOps.mk),
-   (``Arlib.Computation.stdRosterCells, ``Arlib.Computation.RosterCells.mk)]
+   (``Arlib.Computation.stdNumOps, ``Arlib.Computation.NumOps.mk),
+   (``Arlib.Computation.stdRosterCells, ``Arlib.Computation.RosterCells.mk),
+   (``Arlib.Computation.stdDictCells, ``Arlib.Computation.DictCells.mk),
+   (``Arlib.Computation.stdHeapCells, ``Arlib.Computation.HeapCells.mk),
+   (``Arlib.Computation.stdQueueCells, ``Arlib.Computation.QueueCells.mk)]
 
 /-- Declarations the elaborator generates for every inductive type.  They are
 nobody's algorithm, and `noConfusion` in particular necessarily mentions the
@@ -244,6 +296,38 @@ def usesForbidden (env : Environment) (n : Name) : Bool := Id.run do
         if forbidden.contains c && !areaByPermission.contains (n, c) then return true
       return false
 
+/-- Whether `n`'s value reaches a `private` constant belonging to another module,
+and the first such constant if it does.
+
+**This is the check that closes `open private`.**  `private` mangles a name with
+the module that declared it, so a client cannot write it — but Batteries'
+`open private a from M in` brings the mangled name back into scope, and the
+declaration that results is ordinary Lean with no axioms and nothing to grep for
+beyond that one line.  What it cannot hide is the mangled name itself, which
+stays in the elaborated term.
+
+The rule is therefore stated over the environment rather than over the source: a
+declaration may use a private constant only from the module that declared it.
+That is what `private` means, so the rule needs no exemption list, and a sweep of
+`Arlib.Computation` finds no declaration that breaks it. -/
+def usesForeignPrivate (env : Environment) (n : Name) : Option Name := Id.run do
+  let some ci := env.find? n | return none
+  let some v := ci.value? | return none
+  let home := env.getModuleFor? n
+  for c in v.getUsedConstants do
+    if isPrivateName c && env.getModuleFor? c != home then return some c
+  return none
+
+/-- Exact trusted constructors for the mathematical stochastic-machine driver.
+PMF sequencing is noncomputable; these names implement its declared semantics,
+not native entropy sampling. This is deliberately separate from specOnly and
+never exempts arbitrary client ProbRAM programs or runtime word observations. -/
+def probabilisticSemantics : List Name :=
+  [``Arlib.Computation.ProbRAM.pure, ``Arlib.Computation.ProbRAM.bind,
+   ``Arlib.Computation.ProbRAM.lift, ``Arlib.Computation.ProbRAM.instMonad,
+   ``Arlib.Computation.ProbRAM.fair, ``Arlib.Computation.ProbRAM.randBit,
+   ``Arlib.Computation.ProbRAM.twoBits]
+
 end Arlib.ComputationAudit
 
 open Arlib.ComputationAudit in
@@ -252,10 +336,12 @@ run_cmd do
   let decls := areaDecls env
   let mut leaks : Array Name := #[]
   let mut nonComp : Array Name := #[]
+  let mut stolen : Array (Name × Name) := #[]
   for n in decls do
     if forbidden.contains n then continue
     if usesForbidden env n then leaks := leaks.push n
-    if Lean.isNoncomputable env n && !(specOnly.contains n) then
+    if let some c := usesForeignPrivate env n then stolen := stolen.push (n, c)
+    if Lean.isNoncomputable env n && !(specOnly.contains n) && !(probabilisticSemantics.contains n) then
       -- theorems and other propositions carry no executable content
       match env.find? n with
       | some ci =>
@@ -266,11 +352,15 @@ run_cmd do
   unless leaks.isEmpty do
     logError m!"Seal breach: {leaks.size} declaration(s) project a Word's field \
       through an eliminator: {leaks.toList}"
+  unless stolen.isEmpty do
+    logError m!"Seal breach: {stolen.size} declaration(s) reach a `private` \
+      constant of another module, which is what `open private` does: \
+      {stolen.toList.map (fun (n, c) => (n, privateToUserName c))}"
   unless nonComp.isEmpty do
     logError m!"Seal breach: {nonComp.size} noncomputable definition(s) outside \
-      the specification vocabulary: {nonComp.toList}.  A noncomputable program \
+      the specification vocabulary and reviewed stochastic semantics: {nonComp.toList}.  A noncomputable program \
       can read a word without charging for it; add it to `specOnly` only if it \
       is genuinely specification-only."
-  if leaks.isEmpty && nonComp.isEmpty then
+  if leaks.isEmpty && nonComp.isEmpty && stolen.isEmpty then
     logInfo m!"Computation audit clean: {decls.size} declarations, \
-      no eliminator leak, no noncomputable program."
+      no eliminator leak, no unapproved noncomputable definition, no borrowed private constant."

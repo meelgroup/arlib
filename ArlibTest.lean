@@ -32,3 +32,18 @@ import ArlibTest.Communication
 import ArlibTest.Computation
 import ArlibTest.Computation.AppUnion
 import ArlibTest.Computation.Structures
+import ArlibTest.Computation.Standard
+import ArlibTest.Computation.Realization
+import ArlibTest.Computation.MutableLoop
+import ArlibTest.Computation.Matrix
+import ArlibTest.Computation.Signed
+import ArlibTest.Computation.RAMQueue
+import ArlibTest.Computation.RAMRoster
+import ArlibTest.Computation.RAMDict
+import ArlibTest.Computation.DirectAddressStd
+import ArlibTest.Computation.Probability
+import ArlibTest.Computation.Lowering
+
+import ArlibTest.Computation.ReductionStorage
+
+import ArlibTest.Computation.ChargedAuthoring

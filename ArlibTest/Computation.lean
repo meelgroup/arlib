@@ -10,6 +10,7 @@ import Arlib.Computation.Lib.Arr
 import Arlib.Computation.Charged
 import Arlib.Computation.Roster
 import Arlib.Computation.Rand
+import Batteries.Tactic.OpenPrivate
 import Arlib.Computation.Slot
 
 /-!
@@ -192,31 +193,59 @@ error: failed to compile definition, consider marking it as 'noncomputable' beca
 #guard_msgs in
 def peekViaToNat (x : Word 16) : Nat := x.toNat
 
-/-! Projecting the field directly: rejected, because the field is private. -/
+/-! Projecting the field directly: rejected, because the field belongs to a
+`private` structure. The error names `WordRep`, which is the representation
+`Word` is an alias for; a client cannot write that name either. -/
 /--
-error: Field `val` from structure `Arlib.Computation.Word` is private
+error: Field `val` from structure `_private.Arlib.Computation.Machine.0.Arlib.Computation.WordRep` is private
 -/
 #guard_msgs in
 def peekViaField (x : Word 16) : BitVec 16 := x.val
 
-/-! Going through the recursor: rejected by the code generator, so it cannot
-appear in a program that runs. -/
+/-! Going through the recursor: rejected because there is no such constant.
+`Word` is a `def`, so the elaborator generates no eliminator under that name, and
+the eliminator it did generate belongs to a `private` structure. -/
 /--
-error: code generator does not support recursor `Arlib.Computation.Word.rec` yet, consider using 'match ... with' and/or structural recursion
+error: Unknown constant `Arlib.Computation.Word.rec`
 -/
 #guard_msgs in
 def peekViaRec (x : Word 16) : BitVec 16 :=
   Word.rec (motive := fun _ => BitVec 16) (fun v => v) x
 
-/-- **The one route that is open.** `Word.casesOn` is generated public and is
-compiled, so a client can project the field out after all.
+/-! **The route that used to be open, and is now closed.** `Word.casesOn` was
+generated public and was compiled, so a client could project the field out. That
+is why `Word` is now a public alias for a `private` structure: a structure with
+private *fields* still has a public `casesOn`, while a `private` *structure* has
+no name a client can write. -/
+/--
+error: Unknown constant `Arlib.Computation.Word.casesOn`
+-/
+#guard_msgs in
+def peekViaCasesOn (x : Word 16) : BitVec 16 := Word.casesOn x (fun v => v)
+
+/-! Naming the representation directly does not help: `private` mangles the name
+with the module it was declared in, so no client can write it. -/
+/--
+error: Unknown identifier `Arlib.Computation.WordRep.casesOn`
+-/
+#guard_msgs in
+def peekViaRep (x : Word 16) : BitVec 16 :=
+  Arlib.Computation.WordRep.casesOn x (fun v => v)
+
+/-! **The route that remains open.** Batteries' `open private` brings a mangled
+name back into scope, so a determined author can still reach the field.
 
 This is not a failing test; it is the honest record of what the seal does not
-cover, and `scripts/ComputationAudit.lean` is what catches it. Its worst case is
-a constant factor: what leaks is the contents of words already in hand, on which
-the primitives are unit-cost anyway, and memory stays unreachable without
-`load`. -/
-def peekViaCasesOn (x : Word 16) : BitVec 16 := Word.casesOn x (fun v => v)
+cover, replacing the `Word.casesOn` note that the private representation retired.
+The difference is worth the change: `Word.casesOn x (fun v => v)` reads like
+ordinary code, while this cheat must name the module it is stealing from and
+announce itself in a syntax that `grep -r "open private"` finds. Its worst case
+is a constant factor, because what leaks is the contents of words already in
+hand, on which the primitives are unit-cost anyway, and memory stays unreachable
+without `load`. -/
+open private WordRep.val from Arlib.Computation.Machine in
+/-- The cheat itself, recorded rather than hidden. -/
+def peekViaOpenPrivate (x : Word 16) : BitVec 16 := WordRep.val x
 
 end Seal
 

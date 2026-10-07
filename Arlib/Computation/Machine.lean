@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kuldeep S. Meel
 -/
 import Arlib.Computation.Cost
+import Arlib.Computation.Charged
 import Mathlib.Data.BitVec
 
 /-!
@@ -36,11 +37,18 @@ compiler rather than by review.
    'noncomputable'`.  The only way past it is to write `noncomputable def`
    explicitly, which `scripts/ComputationAudit.lean` rejects.
 
-What the seal does *not* cover is recorded in `docs/dev/Computation-ROADMAP.md`:
-`Word.rec` is generated public, so a determined author can still project the
-field out.  That is a greppable cheat, it is what the audit script looks for, and
-its worst case is a constant factor — memory is unreachable without `load`, so
-nothing asymptotic can be stolen this way.
+A fourth thing closes the route the first three leave open.  A structure with
+private *fields* still has a public `casesOn`, and `Word.casesOn x (fun v => v)`
+projected the field out.  `Word` is therefore a public alias for a `private`
+structure, `WordRep`: the elaborator generates the eliminators under a name that
+`private` mangles with this module, so no client can write one.
+`ArlibTest/Computation.lean` §3 checks all four rejections.
+
+The cost is that `Word` is a `def` rather than a `structure`, so its own module
+names the representation through the file-scoped `Word.val` and `Word.mk` below,
+and `Word.ext` proves what a structure would have given for free.  `Word` is
+deliberately not an `abbrev`: an `abbrev` is reducible, dot notation would see
+through it to the private field, and the seal would be a formality.
 
 ## Main definitions
 
@@ -57,16 +65,40 @@ universe u
 
 /-! ## Words -/
 
+/-- INTERNAL: the representation of a machine word.
+
+`private` at the *structure* level rather than at the field level, which is what
+closes the `casesOn` route.  A structure with private fields still has a public
+`casesOn`, and `Word.casesOn x (fun v => v)` projects the field back out; a
+private structure has no name a client can write.  `Word` below is a public alias
+for it, so the type is usable everywhere and its representation is reachable only
+from this file. -/
+private structure WordRep (w : ℕ) where
+  mk :: val : BitVec w
+
 /-- A `w`-bit machine word.
 
-The constructor and the field are `private`, and there are deliberately no
+A public alias for a `private` representation, and deliberately carrying no
 arithmetic, order or decidability instances: outside this module a `Word` can be
-produced and consumed only by a charged primitive. -/
-structure Word (w : ℕ) where
-  private mk ::
-  private val : BitVec w
+produced and consumed only by a charged primitive.
+
+`Word` is a `def` and not an `abbrev`.  An `abbrev` is reducible, so dot notation
+would see through it to the private field, and the seal would be a formality. -/
+def Word (w : ℕ) := WordRep w
 
 namespace Word
+
+/-- INTERNAL: the representation of a word.  File-scoped, so it names the field
+for this module's primitives and for nobody else. -/
+private def val {w : ℕ} (x : Word w) : BitVec w := WordRep.val x
+
+/-- INTERNAL: a word from its representation. -/
+private def mk {w : ℕ} (b : BitVec w) : Word w := WordRep.mk b
+
+/-- INTERNAL: reading back what was just written.  A structure projection reduced
+by `rfl` on its own; `val` is now a function, so the primitives' specification
+proofs need this lemma to see through it. -/
+@[simp] private theorem val_mk {w : ℕ} (b : BitVec w) : val (⟨b⟩ : Word w) = b := rfl
 
 /-- The natural number a word denotes.  **Specification-only.**
 
@@ -79,7 +111,9 @@ noncomputable def toNat {w : ℕ} (x : Word w) : ℕ := x.val.toNat
 theorem toNat_lt {w : ℕ} (x : Word w) : x.toNat < 2 ^ w := x.val.isLt
 
 @[ext] theorem ext {w : ℕ} {x y : Word w} (h : x.val = y.val) : x = y := by
-  cases x; cases y; simpa using h
+  show (x : WordRep w) = y
+  cases x; cases y
+  exact congrArg WordRep.mk h
 
 theorem toNat_injective {w : ℕ} : Function.Injective (toNat (w := w)) := by
   intro x y h
@@ -358,6 +392,12 @@ variable {w : ℕ} (σ : RamState w) (x y : Word w)
 @[simp] theorem cost_sub : (sub x y).cost σ = CostVec.one .sub := rfl
 @[simp] theorem state_sub : (sub x y).state σ = σ := rfl
 
+/-- Unsigned subtraction agrees with natural subtraction when no borrow occurs. -/
+theorem toNat_sub_of_le (h : y.toNat ≤ x.toNat) :
+    ((sub x y).val σ).toNat = x.toNat - y.toNat := by
+  simp only [sub, RAM.val, Word.toNat]
+  exact BitVec.toNat_sub_of_le (by simpa only [BitVec.le_def, Word.toNat] using h)
+
 @[simp] theorem cost_mul : (mul x y).cost σ = CostVec.one .mul := rfl
 @[simp] theorem state_mul : (mul x y).state σ = σ := rfl
 
@@ -376,6 +416,11 @@ variable {w : ℕ} (σ : RamState w) (x y : Word w)
 
 @[simp] theorem cost_eq : (eq x y).cost σ = CostVec.one .eq := rfl
 @[simp] theorem state_eq : (eq x y).state σ = σ := rfl
+
+/-- Equality of sealed words is equality of their represented natural values. -/
+@[simp] theorem val_eq : (eq x y).val σ = decide (x.toNat = y.toNat) := by
+  simp only [eq, RAM.val, Word.toNat, ← BitVec.toNat_inj]
+  rfl
 
 @[simp] theorem cost_load : (load x).cost σ = CostVec.one .load := rfl
 @[simp] theorem state_load : (load x).state σ = σ := rfl
@@ -449,6 +494,14 @@ theorem steps_lit_pos (C : CostModel) (k : ℕ) : 0 < RAM.steps C (lit k : RAM w
 @[simp] theorem steps_alloc (C : CostModel) (n : Word w) :
     RAM.steps C (alloc n) σ = C.cost .alloc * n.toNat := by simp [RAM.steps]
 
+/-- Unsigned division agrees with natural division, including divisor zero. -/
+@[simp] theorem toNat_udiv : ((udiv x y).val σ).toNat = x.toNat / y.toNat := by
+  simp [udiv, RAM.val, Word.toNat, BitVec.toNat_udiv]
+
+/-- Unsigned remainder agrees with natural remainder. -/
+@[simp] theorem toNat_umod : ((umod x y).val σ).toNat = x.toNat % y.toNat := by
+  simp [umod, RAM.val, Word.toNat, BitVec.toNat_umod]
+
 @[simp] theorem cost_udiv : (udiv x y).cost σ = CostVec.one .udiv := rfl
 @[simp] theorem state_udiv : (udiv x y).state σ = σ := rfl
 @[simp] theorem steps_udiv (C : CostModel) : RAM.steps C (udiv x y) σ = C.cost .udiv := by
@@ -495,5 +548,175 @@ theorem steps_lit_pos (C : CostModel) (k : ℕ) : 0 < RAM.steps C (lit k : RAM w
   simp [RAM.steps]
 
 end Spec
+
+/-! ## Charged authoring primitives over the same sealed words
+These trusted primitives live with the word seal. Their exact correspondence
+lemmas allow clients to author with Charged while executing RAM counterparts.
+-/
+theorem val_add_empty (x y : Word w) (σ : RamState w) :
+    (add x y).val σ = (add x y).val (RamState.empty w) := rfl
+theorem val_lit_empty (n : Nat) (σ : RamState w) :
+    (lit n : RAM w (Word w)).val σ = (lit n).val (RamState.empty w) := rfl
+
+namespace ChargedWord
+variable {w : Nat} {κₛ : Type}
+def literal (n : Nat) : Charged Op κₛ (Word w) := Charged.op .lit (⟨BitVec.ofNat w n⟩ : Word w)
+def add (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .add (⟨x.val+y.val⟩ : Word w)
+def sub (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .sub ⟨x.val-y.val⟩
+def mul (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .mul ⟨x.val*y.val⟩
+def div (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .udiv ⟨x.val/y.val⟩
+def mod (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .umod ⟨x.val%y.val⟩
+def lt (x y : Word w) : Charged Op κₛ Bool := Charged.op .lt (x.val.toNat<y.val.toNat)
+def le (x y : Word w) : Charged Op κₛ Bool := Charged.op .le (x.val.toNat≤y.val.toNat)
+def eq (x y : Word w) : Charged Op κₛ Bool := Charged.op .eq (x.val=y.val)
+@[simp] theorem val_literal (n : Nat) (σ : RamState w) :
+    (literal n : Charged Op κₛ (Word w)).val = (lit n).val σ := rfl
+@[simp] theorem val_add (x y : Word w) (σ : RamState w) :
+    (add x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.add x y).val σ := rfl
+@[simp] theorem val_sub (x y : Word w) (σ : RamState w) :
+    (sub x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.sub x y).val σ := rfl
+@[simp] theorem val_mul (x y : Word w) (σ : RamState w) :
+    (mul x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.mul x y).val σ := rfl
+@[simp] theorem val_div (x y : Word w) (σ : RamState w) :
+    (div x y : Charged Op κₛ (Word w)).val = (udiv x y).val σ := rfl
+@[simp] theorem val_mod (x y : Word w) (σ : RamState w) :
+    (mod x y : Charged Op κₛ (Word w)).val = (umod x y).val σ := rfl
+@[simp] theorem val_lt (x y : Word w) (σ : RamState w) :
+    (lt x y : Charged Op κₛ Bool).val = (Arlib.Computation.lt x y).val σ := rfl
+@[simp] theorem val_le (x y : Word w) (σ : RamState w) :
+    (le x y : Charged Op κₛ Bool).val = (Arlib.Computation.le x y).val σ := rfl
+@[simp] theorem val_eq (x y : Word w) (σ : RamState w) :
+    (eq x y : Charged Op κₛ Bool).val = (Arlib.Computation.eq x y).val σ := rfl
+@[simp] theorem val_lt_nat (x y : Word w) :
+    (lt x y : Charged Op κₛ Bool).val = decide (x.toNat < y.toNat) := rfl
+@[simp] theorem cost_literal (n : Nat) :
+    (literal n : Charged Op κₛ (Word w)).cost = CostVec.one .lit := rfl
+@[simp] theorem cost_add (x y : Word w) :
+    (add x y : Charged Op κₛ (Word w)).cost = CostVec.one .add := rfl
+@[simp] theorem cost_lt (x y : Word w) :
+    (lt x y : Charged Op κₛ Bool).cost = CostVec.one .lt := rfl
+@[simp] theorem cost_sub (x y : Word w) :
+    (sub x y : Charged Op κₛ (Word w)).cost = CostVec.one .sub := rfl
+@[simp] theorem cost_mul (x y : Word w) :
+    (mul x y : Charged Op κₛ (Word w)).cost = CostVec.one .mul := rfl
+@[simp] theorem cost_div (x y : Word w) :
+    (div x y : Charged Op κₛ (Word w)).cost = CostVec.one .udiv := rfl
+@[simp] theorem cost_mod (x y : Word w) :
+    (mod x y : Charged Op κₛ (Word w)).cost = CostVec.one .umod := rfl
+@[simp] theorem cost_le (x y : Word w) :
+    (le x y : Charged Op κₛ (Bool)).cost = CostVec.one .le := rfl
+@[simp] theorem cost_eq (x y : Word w) :
+    (eq x y : Charged Op κₛ (Bool)).cost = CostVec.one .eq := rfl
+
+def mulHi (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .mulHi (⟨BitVec.ofNat w ((x.val.toNat*y.val.toNat)/2^w)⟩ : Word w)
+@[simp] theorem cost_mulHi (x y : Word w) :
+    (mulHi x y : Charged Op κₛ (Word w)).cost = CostVec.one .mulHi := rfl
+theorem val_mulHi (x y : Word w) (σ : RamState w) :
+    (mulHi x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.mulHi x y).val σ := rfl
+
+def band (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .band (⟨x.val &&& y.val⟩ : Word w)
+@[simp] theorem cost_band (x y : Word w) :
+    (band x y : Charged Op κₛ (Word w)).cost = CostVec.one .band := rfl
+theorem val_band (x y : Word w) (σ : RamState w) :
+    (band x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.band x y).val σ := rfl
+
+def bor (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .bor (⟨x.val ||| y.val⟩ : Word w)
+@[simp] theorem cost_bor (x y : Word w) :
+    (bor x y : Charged Op κₛ (Word w)).cost = CostVec.one .bor := rfl
+theorem val_bor (x y : Word w) (σ : RamState w) :
+    (bor x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.bor x y).val σ := rfl
+
+def bxor (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .bxor (⟨x.val ^^^ y.val⟩ : Word w)
+@[simp] theorem cost_bxor (x y : Word w) :
+    (bxor x y : Charged Op κₛ (Word w)).cost = CostVec.one .bxor := rfl
+theorem val_bxor (x y : Word w) (σ : RamState w) :
+    (bxor x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.bxor x y).val σ := rfl
+
+def shl (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .shl (⟨x.val <<< y.val.toNat⟩ : Word w)
+@[simp] theorem cost_shl (x y : Word w) :
+    (shl x y : Charged Op κₛ (Word w)).cost = CostVec.one .shl := rfl
+theorem val_shl (x y : Word w) (σ : RamState w) :
+    (shl x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.shl x y).val σ := rfl
+
+def shr (x y : Word w) : Charged Op κₛ (Word w) := Charged.op .shr (⟨x.val >>> y.val.toNat⟩ : Word w)
+@[simp] theorem cost_shr (x y : Word w) :
+    (shr x y : Charged Op κₛ (Word w)).cost = CostVec.one .shr := rfl
+theorem val_shr (x y : Word w) (σ : RamState w) :
+    (shr x y : Charged Op κₛ (Word w)).val = (Arlib.Computation.shr x y).val σ := rfl
+
+def clz (x : Word w) : Charged Op κₛ (Word w) := Charged.op .clz (⟨BitVec.ofNat w (if x.val.toNat=0 then w else w-(Nat.log2 x.val.toNat+1))⟩ : Word w)
+@[simp] theorem cost_clz (x : Word w) :
+    (clz x : Charged Op κₛ (Word w)).cost = CostVec.one .clz := rfl
+theorem val_clz (x : Word w) (σ : RamState w) :
+    (clz x : Charged Op κₛ (Word w)).val = (Arlib.Computation.clz x).val σ := rfl
+end ChargedWord
+
+private structure ChargedVectorRep (w : Nat) where
+  cells : List (Word w)
+  length : Word w
+/-- Sealed functional source contents; a RAM buffer realizes each current version. -/
+def ChargedVector (w : Nat) := ChargedVectorRep w
+namespace ChargedVector
+variable {w : Nat} {κₛ : Type}
+def length (v : ChargedVector w) : Word w := ChargedVectorRep.length v
+noncomputable def words (v : ChargedVector w) : List (Word w) := ChargedVectorRep.cells v
+noncomputable def contents (v : ChargedVector w) : List Nat := v.words.map Word.toNat
+/-- A proof-side input encoding, not free runtime construction. -/
+noncomputable def input (xs : List Nat) : ChargedVector w :=
+  ⟨xs.map (fun n => (lit n : RAM w (Word w)).val (RamState.empty w)),
+    (lit xs.length : RAM w (Word w)).val (RamState.empty w)⟩
+private def allocateGo (n : Nat) : Charged Op κₛ Unit :=
+  match n with
+  | 0 => pure ()
+  | n+1 => do
+    let _ ← Charged.op .alloc ()
+    allocateGo n
+def allocate (n : Word w) : Charged Op κₛ (ChargedVector w) := do
+  let _ ← allocateGo n.val.toNat
+  pure ⟨List.replicate n.val.toNat ⟨BitVec.ofNat w 0⟩, n⟩
+def read (v : ChargedVector w) (i : Word w) : Charged Op κₛ (Word w) := do
+  let _ ← Charged.op .add ()
+  Charged.op .load (v.cells[i.val.toNat]?.getD ⟨BitVec.ofNat w 0⟩)
+def write (v : ChargedVector w) (i x : Word w) : Charged Op κₛ (ChargedVector w) := do
+  let _ ← Charged.op .add ()
+  Charged.op .store ⟨v.cells.set i.val.toNat x, v.length⟩
+@[simp] theorem length_input (xs : List Nat) :
+    (input (w := w) xs).length.toNat = xs.length%2^w := by simp [input, length]
+@[simp] theorem contents_input (xs : List Nat) :
+    (input (w := w) xs).contents = xs.map (fun n => n%2^w) := by simp [input, contents, words]
+@[simp] theorem length_allocate (n : Word w) :
+    (allocate n : Charged Op κₛ (ChargedVector w)).val.length = n := by
+  simp only [allocate, Charged.val_bind]; rfl
+@[simp] theorem contents_allocate (n : Word w) :
+    (allocate n : Charged Op κₛ (ChargedVector w)).val.contents = List.replicate n.toNat 0 := by
+  change (List.replicate n.val.toNat (⟨BitVec.ofNat w 0⟩ : WordRep w)).map (fun x => x.val.toNat) = _
+  simp; rfl
+@[simp] theorem cost_allocate (n : Word w) :
+    (allocate n : Charged Op κₛ (ChargedVector w)).cost = CostVec.many .alloc n.toNat := by
+  have h : ∀ k, (allocateGo k : Charged Op κₛ Unit).cost = CostVec.many .alloc k := by
+    intro k; induction k with
+    | zero => simp [allocateGo]
+    | succ k ih =>
+      simp only [allocateGo, Charged.cost_bind, Charged.cost_op, ih]
+      exact (CostVec.many_succ Op.alloc k).symm
+  change (allocateGo n.toNat : Charged Op κₛ Unit).cost + 0 = _
+  rw [h, add_zero]
+@[simp] theorem cost_read (v : ChargedVector w) (i : Word w) :
+    (read v i : Charged Op κₛ (Word w)).cost = CostVec.one .add + CostVec.one .load := rfl
+@[simp] theorem cost_write (v : ChargedVector w) (i x : Word w) :
+    (write v i x : Charged Op κₛ (ChargedVector w)).cost = CostVec.one .add + CostVec.one .store := rfl
+@[simp] theorem length_write (v : ChargedVector w) (i x : Word w) :
+    (write v i x : Charged Op κₛ (ChargedVector w)).val.length = v.length := rfl
+@[simp] theorem contents_write (v : ChargedVector w) (i x : Word w) :
+    (write v i x : Charged Op κₛ (ChargedVector w)).val.contents = v.contents.set i.toNat x.toNat := by
+  change (v.words.set i.toNat x).map Word.toNat = _
+  exact List.map_set ..
+theorem read_spec (v : ChargedVector w) (i : Word w) (hi : i.toNat<v.contents.length) :
+    (read v i : Charged Op κₛ (Word w)).val.toNat = v.contents[i.toNat] := by
+  have hlen : i.toNat<v.words.length := by simpa [contents] using hi
+  simp only [read, Charged.val_bind, Charged.val_op, contents, List.getElem_map]
+  change (v.words[i.toNat]?.getD ⟨BitVec.ofNat w 0⟩).toNat = _
+  rw [List.getElem?_eq_getElem hlen]; rfl
+end ChargedVector
 
 end Arlib.Computation

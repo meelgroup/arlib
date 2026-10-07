@@ -23,6 +23,42 @@ import Arlib.Computation.Lib.Reduce
 import Arlib.Computation.Lib.Search
 import Arlib.Computation.Lib.Sort
 import Arlib.Computation.Footprint
+import Arlib.Computation.Realization
+import Arlib.Computation.StdRealization
+import Arlib.Computation.Buffer
+import Arlib.Computation.WordLoop
+import Arlib.Computation.Realization.Num
+import Arlib.Computation.Realization.Loop
+import Arlib.Computation.Realization.Scan
+import Arlib.Computation.CertifiedStd
+import Arlib.Computation.Realization.MutableLoop
+import Arlib.Computation.Matrix
+import Arlib.Computation.SignedWord
+import Arlib.Computation.Realization.Signed
+import Arlib.Computation.RAMQueue
+import Arlib.Computation.RAMRoster
+import Arlib.Computation.RAMDict
+import Arlib.Computation.DirectAddressStd
+import Arlib.Computation.ProbRAM
+import Arlib.Computation.Realization.Probability
+import Arlib.Computation.Lowering
+
+import Arlib.Computation.Modular
+import Arlib.Computation.RecordBuffer
+import Arlib.Computation.SignedBuffer
+import Arlib.Computation.BucketBuffer
+import Arlib.Computation.WitnessScan
+
+import Arlib.Computation.ExactRealization
+import Arlib.Computation.ChargedStorage
+import Arlib.Computation.ChargedLoop
+import Arlib.Computation.ChargedView
+import Arlib.Computation.ChargedSigned
+import Arlib.Computation.ChargedRecord
+import Arlib.Computation.ChargedModular
+import Arlib.Computation.ChargedCopy
+import Arlib.Computation.ChargedArithmetic
+import Arlib.Computation.ChargedString
 
 /-!
 # Arlib.Computation
@@ -81,6 +117,26 @@ algorithm's cost from its text rather than accepting it from its author.
 * `Computation/Queue.lean` — `Queue ι`, a sealed FIFO with a destructive charged
   `dequeue`. A `Roster` is a set: no order, no consumption, and no way to say that
   a sample list ran out.
+* `Computation/Std.lean` — `StdOp`, the coproduct of all eight sealed carriers'
+  currencies, so that a development whose every operation is already arlib's
+  declares no naming table at all; `Cell`, one storage kind per carrier; and
+  `StdImpl`, what one standard operation costs in word operations **as a function
+  of how much the carrier holds**. The size parameter is the content: a thinning
+  pass performs `2·|d|` honestly-counted dictionary operations, but each of those
+  is itself `Θ(|d|)` word operations on a list and `Θ(log |d|)` on a tree, and
+  `StdImpl.listBacked` and `StdImpl.balanced` are inhabitants that say so.
+* `Computation/Realization.lean` and `StdRealization.lean` — correctness and
+  actual RAM cost certificates for unchanged `Charged` computations, with
+  relational sequencing and size-sensitive pricing bounds.
+* `Computation/Buffer.lean`, `WordLoop.lean`, and `Realization/` — sealed indexed
+  buffers, word-counter loops with charged control, bounded numeric realizations,
+  and an early-exit scan with a complete correctness and cost certificate.
+* `Matrix.lean`, `SignedWord.lean`, `RAMRoster.lean`, `RAMDict.lean`, and
+  `RAMQueue.lean` add concrete bounded storage and arithmetic realizations.
+  `Realization/MutableLoop.lean` transports representation through memory effects.
+* `ProbRAM.lean` and `Realization/Probability.lean` give stochastic-machine
+  distributions and support-wise certificates, separately from native execution.
+  `Lowering.lean` translates a restricted numeric Charged source fragment.
 * `Computation/Cost.lean` — `Op`, the primitive operations; `CostVec κ`, a tally
   of work in a currency `κ`; `Rate κ`, a charge per operation with every entry at
   least one; and `CostVec.steps`, which turns a tally into a number. Costs are
@@ -127,20 +183,28 @@ machine does; there is no machine underneath them and no compilation theorem.
 This is a smaller debt than the one the area exists to close — a caller supplies
 `RandAlg`'s number once per algorithm, while this table is fixed, small and
 inspectable, and every bound in the library is derived from it — but it is a
-debt.
+debt. `StdImpl` is a second declared table on top of it: `StdImpl.listBacked` and
+`StdImpl.balanced` say what a list-backed and a tree-backed carrier would cost,
+and neither exhibits a program. `RAMRoster` and `RAMDict` now exhibit bounded direct-address implementations,
+with different storage tradeoffs. Their certificates do not establish that the
+list-backed or balanced pricing tables have implementations. `CertifiedStdOperation`
+requires an actual implementation certificate for each selected operation.
 
 **Adequacy is not proved.** That this model's polynomial time is Turing-machine
 polynomial time is what licenses reading a bound here as a complexity claim in
 the usual sense. It is stated, not proved, and no theorem depends on it.
 
-**One route past the seal is open.** `Word.casesOn` — and likewise `Roster.casesOn`
-and `Charged.casesOn` — is generated public and is compiled, so a determined
-author can project the field out. It is greppable, it is what
-`scripts/ComputationAudit.lean` looks for, and for `Word` its worst case is a
-constant factor: what leaks is the contents of words already in hand, on which
-the primitives are unit-cost anyway, while memory stays unreachable without
-`load`. For `Roster` it is not bounded that way, which is why the audit is the
-answer rather than a shrug.
+**One route past the seal is open for two of the three sealed types.**
+`Roster.casesOn` and `Charged.casesOn` are generated public and are compiled, so
+a determined author can project the field out. It is greppable and it is what
+`scripts/ComputationAudit.lean` looks for. For `Roster` the leak is not bounded
+by a constant factor, which is why the audit is the answer rather than a shrug.
+
+`Word` no longer has this route. It is a public alias for a `private` structure,
+so the eliminators exist only under a name `private` mangles with the module that
+declared them, and the compiler rejects the field projection, the anonymous
+constructor pattern, `Word.rec` and `Word.casesOn` alike. The same change would
+close it for `Roster` and `Charged`; see `docs/dev/Program-Language.md` §5.3.
 
 **`#print axioms` gives no signal here** once the randomised layer lands, because
 `PMF` pulls `Classical.choice`. A clean audit is not evidence.
