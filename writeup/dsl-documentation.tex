@@ -1,0 +1,916 @@
+\documentclass[acmsmall,nonacm]{acmart}
+
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\lstdefinelanguage{Lean}{
+  morekeywords={def,theorem,structure,inductive,where,private,protected,noncomputable,abbrev,let,if,then,else,do,pure,deriving,instance,namespace,end,import,universe,variable,section,fun,match,with},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]",
+  extendedchars=true,
+  inputencoding=utf8,
+  literate={→}{{$\to$}}1 {←}{{$\gets$}}1 {≤}{{$\leq$}}1 {≥}{{$\geq$}}1
+           {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∧}{{$\wedge$}}1 {∨}{{$\vee$}}1
+           {×}{{$\times$}}1
+           {ℕ∞}{{$\mathbb{N}_\infty$}}2
+           {ℕ}{{$\mathbb{N}$}}1 {ℤ}{{$\mathbb{Z}$}}1 {ℝ}{{$\mathbb{R}$}}1
+           {κ}{{$\kappa$}}1 {κₛ}{{$\kappa_s$}}2
+           {α}{{$\alpha$}}1 {β}{{$\beta$}}1 {ι}{{$\iota$}}1 {δ}{{$\delta$}}1
+           {σ}{{$\sigma$}}1 {μ}{{$\mu$}}1
+           {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1
+           {⨆}{{$\bigsqcup$}}1 {∑}{{$\sum$}}1 {∈}{{$\in$}}1
+           {d₀}{{$d_0$}}2
+           {∞}{{$\infty$}}1
+           {:=}{{$:=$}}2
+           {>>=}{{$\mathbin{>\!\!>\!\!=}$}}3,
+}
+
+\lstset{
+  language=Lean,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\bfseries,
+  commentstyle=\color{gray},
+  breaklines=true,
+  columns=flexible,
+  keepspaces=true,
+  xleftmargin=1em,
+  aboveskip=0.5\baselineskip,
+  belowskip=0.5\baselineskip,
+}
+
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+
+\begin{document}
+
+\title{A Cost-Sealed DSL for Verified Complexity Analysis in Lean~4}
+
+\author{Kuldeep S. Meel}
+\affiliation{
+  \institution{Georgia Institute of Technology}
+  \city{Atlanta}
+  \state{Georgia}
+  \country{USA}
+}
+\email{meel@gatech.edu}
+
+\begin{abstract}
+When we verify the running time of a program, the stated cost should come from the program itself.
+The common method attaches a cost tag to every operation, but the author writes the tag, and nothing stops the author from writing \lstinline{stepCost := 0}.
+We present \textsc{Arlib.Computation}, a small DSL in Lean~4 in which the cost is structural: the cost tally is computed from the program term, and there is no separate syntax in which the user could state it.
+The DSL rests on a \emph{charged monad}, which stores the value, cost, and space profile together, and on \emph{sealed data carriers}, which can be read only through charged operations.
+A Lean audit closes the escape routes that Lean's type system leaves open.
+Abstract costs are connected to a sealed word~RAM in two ways: an exchange-rate interface \lstinline{StdImpl} prices each abstract operation, and kernel-checked \emph{realization certificates} relate an unchanged charged program to an executable RAM program, proving both correctness and an actual machine-step bound.
+We apply the framework to the CVM distinct-elements estimator (ESA~2022), and prove machine-checked accuracy, exact worst-case time ($m(2t+8)+3$ operations), and worst-case space ($t$ cells), all from one program object.
+\end{abstract}
+
+\maketitle
+
+%% ============================================================
+\section{Introduction}\label{sec:intro}
+
+A formal proof of complexity raises a simple question.
+When we prove that a program runs in time $O(f(n))$, how do we know that the cost is the cost of the program, and not the cost of some separate annotation?
+Lean's \lstinline{TimeM} style of accounting attaches a cost tag to each operation, and the tag is written by the author.
+Nothing stops the author from writing \lstinline{stepCost := 0}: the program still typechecks, every later theorem can still be proved, but the time theorem no longer says what we want.
+
+\textsc{Arlib.Computation} avoids this problem by making the cost part of the program object.
+The library provides a sealed word~RAM model and a set of sealed abstract data carriers, and the cost of a program is computed from its text.
+There is no separate syntax in which the algorithm writer could state the cost.
+
+The DSL has two main parts.
+First, a \emph{charged monad} stores the result, the cost tally, and the space profile together.
+Second, \emph{sealed data carriers} hide their representation, so a program can interact with them only through charged operations.
+Together, these two parts ensure that every data access is paid for, and that the price is fixed by the library rather than by the algorithm writer.
+Lean's type system still leaves three escape routes: public eliminators, the \lstinline{noncomputable} keyword, and Batteries' \lstinline{open private}.
+Section~\ref{sec:audit} describes the audit that closes them.
+
+An abstract operation count is only as meaningful as the machine it is priced on.
+Earlier versions of the library connected the two only through a pricing hypothesis.
+It is worth emphasizing that the library now also supplies actual RAM programs for a growing set of operations, together with kernel-checked certificates that relate them to the charged programs they implement.
+These certificates are additive: the charged monad, its interface, and its accounting are unchanged, so an algorithm keeps the type it had.
+
+We contribute:
+\begin{enumerate}
+  \item \textbf{The \lstinline{Charged} monad}. Its constructor is private and its value accessor is noncomputable, so the cost tally is forced by the program text rather than written separately (Section~\ref{sec:term-language}).
+  \item \textbf{Sealed data carriers}, such as \lstinline{Roster}, \lstinline{Sampler}, \lstinline{Block}, \lstinline{Coins}, and \lstinline{Slot}. Their representations are private, so a program cannot read them without calling a charged operation (Section~\ref{sec:carriers}).
+  \item \textbf{Certified RAM realizations}. A relational certificate \lstinline{Realizes} proves that a RAM program computes what a charged program computes, within a stated number of machine steps. Compositional rules, loops that pay for their control, sealed buffers, direct-address containers, signed and modular arithmetic, a probabilistic RAM, and a restricted lowering frontend are built on it (Section~\ref{sec:realizations}).
+  \item \textbf{A Lean audit}. It closes the routes left open by Lean's compiler, runs on every build, and is tested by planted bad examples (Section~\ref{sec:audit}).
+  \item \textbf{A case study}. We verify the CVM distinct-elements estimator (ESA~2022), including accuracy, exact worst-case time ($m(2t + 8) + 3$ operations), and worst-case space ($t$ cells), all from one program object (Section~\ref{sec:case-study}).
+\end{enumerate}
+
+The paper is organized as follows.
+Section~\ref{sec:algebras} defines the cost and space objects, and Section~\ref{sec:term-language} gives the term language built on them.
+Section~\ref{sec:realizations} connects charged programs to the word~RAM.
+Section~\ref{sec:carriers} describes sealed carriers, and Section~\ref{sec:audit} gives the audit.
+Section~\ref{sec:case-study} presents the CVM case study, and Section~\ref{sec:limitations} states the scope of the claims.
+
+
+%% ============================================================
+\section{Cost and Space Algebras}\label{sec:algebras}
+
+We first define the cost and space objects that the \lstinline{Charged} monad carries.
+
+\subsection{Cost Vectors and Rates}\label{sec:costvec}
+
+A \emph{cost vector} \lstinline{CostVec} $\kappa$ maps each operation kind to a count, where $\kappa$ is the type of operation names.
+When we need sums or comparisons, we assume \lstinline{Fintype} $\kappa$ and \lstinline{DecidableEq} $\kappa$.
+
+\begin{lstlisting}
+abbrev CostVec (κ : Type) := κ → ℕ
+\end{lstlisting}
+
+\lstinline{CostVec.one o} is 1 at $o$ and 0 elsewhere, and \lstinline{CostVec.many o n} is $n$ at $o$ and 0 elsewhere.
+The cost of a program is therefore not a single number: it records how many times each kind of operation was used.
+
+To obtain a single running-time number, we apply a \emph{rate}:
+
+\begin{lstlisting}
+structure Rate (κ : Type) where
+  cost : κ → ℕ
+  one_le : ∀ o, 1 ≤ cost o
+\end{lstlisting}
+
+The scalar time is the weighted sum:
+
+\begin{lstlisting}
+def CostVec.steps [Fintype κ] (C : Rate κ) (c : CostVec κ) : ℕ := ∑ o, C.cost o * c o
+\end{lstlisting}
+
+\lstinline{Rate.unit} charges 1 for every operation, and the theorem \lstinline{steps_unit_le} proves that it is the cheapest rate.
+
+\subsection{Space Profiles}\label{sec:profiles}
+
+Space does not add up the way time does.
+A \lstinline{Profile} $\kappa_s$ records two values: the \emph{net} change in held cells, and the \emph{peak} number of extra cells used during the computation.
+The constructor is private, and the accessors are noncomputable:
+
+\begin{lstlisting}
+structure Profile (κₛ : Type) where
+  private mk ::
+  private netCells  : κₛ → ℤ
+  private peakCells : κₛ → ℤ
+  private peak_nonneg'  : ∀ k, 0 ≤ peakCells k
+  private net_le_peak'  : ∀ k, netCells k ≤ peakCells k
+\end{lstlisting}
+
+Profiles compose in order.
+If the first computation has profile $(n_1,p_1)$ and the second has profile $(n_2,p_2)$, then the combined profile is
+\[
+(n_1, p_1) \cdot (n_2, p_2) = (n_1 + n_2,\; \max(p_1,\; n_1 + p_2)).
+\]
+
+The main theorem for streaming algorithms is \lstinline{peak_foldProfiles_le}.
+Suppose the current state is below a fixed ceiling; if each loop iteration uses only the remaining headroom, then the whole loop stays below the same ceiling.
+The stream length does not appear in the final bound, which is exactly the shape of statement that streaming space needs.
+
+A \lstinline{Residency} $\kappa_s$ records how many cells of each kind are currently held.
+It too has a private constructor and a noncomputable accessor.
+
+\subsection{The ExactNet Obligation}\label{sec:exactnet}
+
+Lean is not a linear language: \lstinline{pure (x, x)} duplicates a value for free.
+Space therefore needs a proof obligation.
+\lstinline{ExactNet} says that the net profile of a computation is exactly the change in what it holds:
+
+\begin{lstlisting}
+def ExactNet (mR : R → Residency κₛ) (mS : S → Residency κₛ) (d : R)
+    (p : Charged κ κₛ S) : Prop :=
+  ∀ k, p.space.net k = ((mS p.val).at' k : ℤ) - ((mR d).at' k : ℤ)
+\end{lstlisting}
+
+\lstinline{opUpdate} satisfies \lstinline{ExactNet} by \lstinline{exactNet_opUpdate}, \lstinline{ExactNet.bind} composes it through bind, and \lstinline{exactNet_foldl} carries it through folds.
+A program that fails this obligation cannot have its space bound proved, and the failure appears at proof time.
+
+
+%% ============================================================
+\section{The Term Language}\label{sec:term-language}
+
+\subsection{The Charged Monad}\label{sec:charged}
+
+The main object is \lstinline{Charged} $\kappa$ $\kappa_s$ $\alpha$.
+It stores three things together: a value of type $\alpha$, a cost tally over operation names $\kappa$, and a space profile over storage names $\kappa_s$.
+
+\begin{lstlisting}
+structure Charged (κ κₛ : Type) (α : Type u) where
+  private mk ::
+  private value : α
+  private tally : CostVec κ
+  private prof  : Profile κₛ
+\end{lstlisting}
+
+The constructor is \lstinline{private}, so outside the defining module a \lstinline{Charged} value is built only through the monad operations:
+
+\begin{lstlisting}
+protected def pure (a : α) : Charged κ κₛ α := ⟨a, 0, 1⟩
+
+protected def bind (p : Charged κ κₛ α) (f : α → Charged κ κₛ β) : Charged κ κₛ β :=
+  ⟨(f p.value).value, p.tally + (f p.value).tally, p.prof * (f p.value).prof⟩
+\end{lstlisting}
+
+and through one charging primitive:
+
+\begin{lstlisting}
+def op [DecidableEq κ] (o : κ) (a : α) : Charged κ κₛ α := ⟨a, CostVec.one o, 1⟩
+\end{lstlisting}
+
+A fourth combinator, \lstinline{opUpdate}, is the only operation that changes what is held.
+It charges one operation and records the space change.
+Only sealed library operations call it; an algorithm may not call it directly, and the seal enforces this (Section~\ref{sec:audit}).
+
+\lstinline{Charged} is a \lstinline{LawfulMonad}: the laws \lstinline{pure_bind}, \lstinline{bind_pure}, and \lstinline{bind_assoc} hold.
+
+The result accessor is noncomputable:
+
+\begin{lstlisting}
+noncomputable def val (p : Charged κ κₛ α) : α := p.value
+\end{lstlisting}
+
+If \lstinline{val} were computable, then \lstinline{pure p.val} would copy the result of a computation at zero cost, and a program could erase its own charges.
+
+The cost accessor is computable, but the seal forbids algorithms from using it:
+
+\begin{lstlisting}
+def cost (p : Charged κ κₛ α) : CostVec κ := p.tally
+\end{lstlisting}
+
+\subsection{Formal Grammar of Admitted Programs}\label{sec:grammar}
+
+An \emph{admitted program} is a Lean expression of type \lstinline{Charged} $\kappa$ $\kappa_s$ $\alpha$ built from the following forms, where $\mathcal{O}$ is the set of charged operations exported by sealed carriers (Section~\ref{sec:carriers}).
+Lean's \lstinline{do}-notation is syntax for \lstinline{bind}.
+
+\begin{align*}
+e \;::=\;& \texttt{pure}\; v \\
+  \mid\;& e \mathbin{>\!\!>\!\!=} (\lambda x.\; e) \\
+  \mid\;& o\; \overline{v} &\text{where } o \in \mathcal{O} \\
+  \mid\;& \texttt{if}\; b\; \texttt{then}\; e_1\; \texttt{else}\; e_2 \\
+  \mid\;& \texttt{Charged.foldl}\; (\lambda s\; x.\; e)\; l\; s_0 \\
+  \mid\;& \texttt{Charged.foldlWhile}\; (\lambda s\; x.\; e)\; l\; s_0 \\
+  \mid\;& \texttt{Charged.repeatFor}\; (\lambda i\; s.\; e)\; n\; s_0 \\
+  \mid\;& \texttt{Charged.repeatWhile}\; (\lambda i\; s.\; e)\; n\; s_0
+\end{align*}
+
+Here $v$ is a pure value, $b$ is a \lstinline{Bool}, $l$ is a \lstinline{List}, and $n$ is a natural number.
+A conditional may branch on a value that the program has already computed, and the branch itself is free.
+General recursion is not a primitive of the DSL: iteration is bounded by a list or by a natural number.
+
+This grammar is not checked by a parser.
+It describes the expressions that survive the seal (Section~\ref{sec:audit}); every other expression either fails to typecheck or is rejected by \lstinline{#programSeal}.
+
+\subsection{Semantics}\label{sec:semantics}
+
+The meaning of a \lstinline{Charged} program is given by three projections:
+
+\begin{itemize}
+  \item \lstinline{Charged.val : Charged} $\kappa$ $\kappa_s$ $\alpha \to \alpha$ (the functional result; noncomputable),
+  \item \lstinline{Charged.cost : Charged} $\kappa$ $\kappa_s$ $\alpha \to$ \lstinline{CostVec} $\kappa$ (the cost tally; computable),
+  \item \lstinline{Charged.space : Charged} $\kappa$ $\kappa_s$ $\alpha \to$ \lstinline{Profile} $\kappa_s$ (the space profile; noncomputable).
+\end{itemize}
+
+These are not annotations.
+They are projections of one structure, and their values are fixed by the constructor calls used to build the term.
+The main equations are:
+
+\begin{align*}
+\texttt{cost}(\texttt{pure}\; a) &= 0 \\
+\texttt{cost}(p \mathbin{>\!\!>\!\!=} f) &= \texttt{cost}(p) + \texttt{cost}(f(\texttt{val}(p))) \\
+\texttt{cost}(\texttt{op}\; o\; a) &= \mathbf{1}_o
+\end{align*}
+
+\begin{align*}
+\texttt{space}(\texttt{pure}\; a) &= 1_{\text{Profile}} \\
+\texttt{space}(p \mathbin{>\!\!>\!\!=} f) &= \texttt{space}(p) \cdot \texttt{space}(f(\texttt{val}(p))) \\
+\texttt{space}(\texttt{opUpdate}\; o\; m\; g\; d) &= \texttt{between}(m(d),\; m(g(d)))
+\end{align*}
+
+Here $\mathbf{1}_o$ is the unit cost vector at $o$, $1_{\text{Profile}}$ is the identity profile, $\cdot$ is ordered profile composition, and $\texttt{between}$ records a change from one held-cell state to another.
+
+\subsection{Soundness}\label{sec:soundness}
+
+The cost model rests on three properties.
+
+\paragraph{Property 1 (Tally reflects operations).}
+For any admitted program $p$, $\texttt{cost}(p)(o)$ counts the operations of kind $o$ on the executed path.
+This follows from the private constructor of \lstinline{Charged}: admitted terms are built from \lstinline{pure}, \lstinline{bind}, and \lstinline{op}/\lstinline{opUpdate}, where \lstinline{pure} contributes 0, \lstinline{bind} adds costs, and \lstinline{op}/\lstinline{opUpdate} contributes $\mathbf{1}_o$.
+There is no fourth way to build a charged value.
+
+\paragraph{Property 2 (No forgery).}
+No admitted program can forge a \lstinline{Charged} value, extract a result for free, or change the cost currency to hide work.
+The private constructor and the noncomputable \lstinline{val} handle the first two; the audit in Section~\ref{sec:audit} handles the remaining routes, such as \lstinline{casesOn}, \lstinline{noncomputable def}, and \lstinline{exchange}.
+
+\paragraph{Property 3 (No free data access).}
+No admitted program can read a sealed data structure without a charged operation.
+Sealed carriers enforce this (Section~\ref{sec:carriers}): their constructors are private, their views are noncomputable, and the seal forbids the remaining escape routes.
+
+The guarantee is structural: it comes from the definitions and from the build-time audit, not from a review of the program.
+
+\subsection{Randomized Computations}\label{sec:randomised}
+
+A randomized algorithm is a probability distribution over charged computations,
+\lstinline{PMF (Charged} $\kappa$ $\kappa_s$ $\alpha$\lstinline{)}.
+Its worst-case time and space are suprema over the support:
+
+\begin{lstlisting}
+noncomputable def worstSteps [Fintype κ] (R : Rate κ)
+    (mu : PMF (Charged κ κₛ α)) : ℕ∞ :=
+  ⨆ p ∈ mu.support, (Charged.steps R p : ℕ∞)
+
+noncomputable def worstSpace (k : κₛ) (d₀ : ℕ)
+    (mu : PMF (Charged κ κₛ α)) : ℕ∞ :=
+  ⨆ p ∈ mu.support, ((((d₀ : ℤ) + (Charged.space p).peak k).toNat : ℕ) : ℕ∞)
+\end{lstlisting}
+
+The supremum is taken in $\mathbb{N}_\infty$ (\lstinline{WithTop} $\mathbb{N}$), so it is defined for every countably supported distribution.
+
+\subsection{The Machine Model and the Cost Pipeline}\label{sec:pipeline}
+
+The cost pipeline has three levels.
+At the bottom is a sealed word-RAM language, whose programs use a fixed set of primitive word operations and whose cost is again computed from the term (Section~\ref{sec:ram}).
+At the next level, algorithms use abstract operations on sealed carriers, such as finite sets, samplers, random tapes, and answer registers.
+At the top, an implementation hypothesis converts each abstract operation into a word-level cost.
+
+This conversion is handled by \lstinline{StdImpl}.
+The important point is that the cost of an abstract operation may depend on the current size of the carrier:
+
+\begin{lstlisting}
+structure StdImpl where
+  rate       : StdOp → ℕ → CostVec Op
+  bound      : StdOp → ℕ → ℕ
+  bound_ok   : ∀ o s, CostVec.steps CostModel.unitCost (rate o s) ≤ bound o s
+  bound_mono : ∀ o, Monotone (bound o)
+  one_le_bound : ∀ o s, 1 ≤ bound o s
+\end{lstlisting}
+
+\lstinline{rate o s} gives the word-operation vector for operation $o$ at size $s$, and \lstinline{bound o s} is a scalar upper bound on it.
+Monotonicity is what lets a proved space bound be used inside the time proof.
+For example, the same abstract thinning step has different word-level bounds for a list-backed set (\lstinline{StdImpl.listBacked}) and a balanced-tree set (\lstinline{StdImpl.balanced}), while the algorithm and its abstract cost proof stay the same.
+
+\lstinline{Charged.exchange (D.atSize n)} converts a tally of abstract operations into word operations, and the key theorem is:
+
+\begin{lstlisting}
+theorem StdImpl.wordSteps_le_of_le (n T : ℕ) (p : Charged StdOp κₛ α)
+    (hT : Charged.steps (Rate.unit StdOp) p ≤ T) :
+    Charged.steps CostModel.unitCost (Charged.exchange (D.atSize n) p)
+      ≤ D.ceiling n * T
+\end{lstlisting}
+
+If a program performs at most $T$ abstract operations and no carrier grows beyond $n$ elements, then the exchanged word-level cost is at most $D.\texttt{ceiling}\;n \cdot T$.
+The value $n$ is not guessed: it comes from the space proof, since \lstinline{size_le_of_peak_le} shows that the peak of the \lstinline{Profile} bounds the size of every prefix, not only the final size.
+
+\paragraph{End-to-end.}
+The full proof has four steps: write the algorithm in \lstinline{Charged StdOp}; prove an abstract bound $T$ on \lstinline{Charged.steps (Rate.unit StdOp) p}; prove a space bound that gives the size ceiling $n$; and apply the exchange theorem to obtain the word-level bound.
+
+It is worth noting what this theorem does and does not say.
+\lstinline{StdImpl} is a pricing table, a description of an implementation rather than an implementation, and the exchanged tally is a re-priced count rather than the cost of any machine program.
+Section~\ref{sec:realizations} discharges the hypothesis for individual operations with actual RAM code.
+
+
+%% ============================================================
+\section{Certified RAM Realizations}\label{sec:realizations}
+
+The exchange theorem leaves an obvious question open: is there a machine program behind the price?
+We seek to answer it without changing how algorithms are written.
+The definition of \lstinline{Charged}, its monad, and its accounting are unchanged, and an algorithm keeps its type.
+A RAM counterpart is written separately, and a kernel-checked certificate relates the two.
+
+One might ask why the library does not simply compile a \lstinline{Charged} value to a RAM program.
+The reason is that a \lstinline{Charged} value has already been evaluated: it retains its result, a commutative tally, and a profile, but it has lost the instruction order, the arguments, and the control flow.
+A program cannot be recovered from those fields in general, so the source program is kept and a realization is attached to it.
+
+\subsection{The Sealed Word RAM}\label{sec:ram}
+
+A $w$-bit machine word is sealed in the same way as a carrier:
+
+\begin{lstlisting}
+private structure WordRep (w : ℕ) where
+  mk :: val : BitVec w
+
+def Word (w : ℕ) := WordRep w
+\end{lstlisting}
+
+\lstinline{Word} carries no \lstinline{Add}, \lstinline{LT}, or \lstinline{DecidableEq} instance, so \lstinline{x + y} and \lstinline{if x < y then _} do not elaborate, and the specification view \lstinline{Word.toNat} is noncomputable.
+It is worth emphasizing why \lstinline{Word} is an alias of a \emph{private structure} rather than a structure with private fields.
+A structure with private fields still has a public \lstinline{casesOn}, through which \lstinline{Word.casesOn x (fun v => v)} would project the field out.
+A private structure has its eliminators generated under a module-mangled name that no client can write, so the compiler alone closes this route.
+\lstinline{Word} is deliberately a \lstinline{def} and not an \lstinline{abbrev}: an \lstinline{abbrev} is reducible, and dot notation would see through it to the private field.
+
+The machine state is a memory and an output log:
+
+\begin{lstlisting}
+structure RamState (w : ℕ) where
+  mem : Array (BitVec w)
+  out : Array (BitVec w) := #[]
+
+structure RAM (w : ℕ) (α : Type u) where
+  private mk ::
+  run : RamState w → α × RamState w × Cost
+\end{lstlisting}
+
+Memory is indexed by $\mathbb{N}$, so the address space is decoupled from the word width; a memory of $2^w$ cells at $w = \lceil \log_2 n\rceil$ would be too small to hold the working space of a polynomial-time computation.
+A \lstinline{RAM} program is a state transformer that also accumulates a cost vector over the primitive operations
+\lstinline{lit}, \lstinline{add}, \lstinline{sub}, \lstinline{mul}, \lstinline{mulHi}, \lstinline{udiv}, \lstinline{umod}, \lstinline{band}, \lstinline{bor}, \lstinline{bxor}, \lstinline{shl}, \lstinline{shr}, \lstinline{clz}, \lstinline{lt}, \lstinline{le}, \lstinline{eq}, \lstinline{load}, \lstinline{store}, and \lstinline{alloc}.
+Each primitive charges one operation of its kind, except \lstinline{alloc n}, which charges $n$.
+Its constructor is private and its \lstinline{run} field is public, since observing a program cannot make it cheaper.
+\lstinline{RAM.cost q σ} and \lstinline{RAM.steps C q σ} are the time operators; \lstinline{pure} costs nothing and \lstinline{bind} adds costs.
+Branching on a \lstinline{Bool} returned by a comparison is free, because the comparison paid for it, and forwarding a word held in a register is free.
+
+\subsection{Realization Certificates}\label{sec:realizes}
+
+The central definition relates an unchanged charged program \lstinline{p} to a RAM program \lstinline{q}:
+
+\begin{lstlisting}
+structure Realizes (p : Charged κ κₛ α) (q : RAM w β) (Pre : RamState w → Prop)
+    (Post : α → β → RamState w → Prop) (budget : ℕ) : Prop where
+  correct  : ∀ σ, Pre σ → Post p.val (q.val σ) (q.state σ)
+  steps_le : ∀ σ, Pre σ → RAM.steps CostModel.unitCost q σ ≤ budget
+\end{lstlisting}
+
+\lstinline{Pre} constrains the initial machine state, for example by saying that a buffer represents a list.
+\lstinline{Post} relates the abstract result to the concrete result \emph{and} the final state, so a container can be related to the memory that holds it.
+Memory preservation is an explicit part of \lstinline{Post}; it is never inferred from equal outputs.
+
+Certificates compose.
+\lstinline{Realizes.pure} forwards already represented values at budget 0.
+\lstinline{Realizes.bind} requires the first postcondition, evaluated in the updated state, to establish the continuation's precondition, and charges the sum of the two budgets.
+\lstinline{Realizes.branch} combines the two arms of a conditional at the maximum of their budgets, \lstinline{Realizes.consequence} strengthens the precondition, weakens the postcondition, or enlarges the budget, and \lstinline{Realizes.strengthenPost} attaches an invariant of the final state.
+
+Two caveats are worth stating rather than discovering.
+First, a certificate with an unsatisfiable precondition is a vacuous theorem, not evidence that an implementation exists.
+Concrete developments therefore exhibit admissible encodings: \lstinline{Buffer.encoded_holds}, for instance, shows that every list whose length fits in a word has a represented buffer.
+Second, a certificate states soundness inside the RAM semantics above; it does not bound the wall-clock time of the host Lean execution.
+
+\paragraph{Exact correspondence.}
+An algorithm may also be authored directly in the word currency, as a \lstinline{Charged Op} program over sealed words.
+The primitives \lstinline{ChargedWord.literal}, \lstinline{add}, \lstinline{sub}, \lstinline{mul}, \lstinline{div}, \lstinline{mod}, \lstinline{lt}, \lstinline{le}, and \lstinline{eq} live in the same module as \lstinline{Word}, and the sealed \lstinline{ChargedVector} and \lstinline{ChargedLoop.repeatWhile} supply indexed storage and loops.
+For such programs a stronger certificate is available:
+
+\begin{lstlisting}
+structure ExactRealizes (p : Charged Op κₛ α) (q : RAM w β)
+    (Pre : RamState w → Prop) (Post : α → β → RamState w → Prop) : Prop where
+  correct : ∀ σ, Pre σ → Post p.val (q.val σ) (q.state σ)
+  cost_eq : ∀ σ, Pre σ → p.cost = q.cost σ
+\end{lstlisting}
+
+Because the entire tally is equal, \lstinline{ExactRealizes.steps_eq} transfers every pricing \lstinline{C}: \lstinline{Charged.steps C p = RAM.steps C q σ}.
+Equality of tallies does not, however, identify the abstract residency profile with physical memory.
+
+\subsection{Loops Pay for Their Control}\label{sec:loops}
+
+\lstinline{Charged.foldl} charges only the bodies of its iterations, so a loop whose body is \lstinline{pure} has zero tally.
+A machine loop is never free.
+The executable loop \lstinline{wordRepeatWhile} keeps its index, limit, guard, and increment in words, and pays for each of them: two literals to initialize, one comparison per guard (including the final guard and the guard on fuel exhaustion), and one increment per continuing body.
+
+\begin{lstlisting}
+theorem steps_wordRepeatWhile_le (fuel : Nat) (limit : Word w)
+    (body : Word w → α → RAM w (Option α)) (acc : α) (σ : RamState w) (b : Nat)
+    (hb : ∀ index acc σ, RAM.steps CostModel.unitCost (body index acc) σ ≤ b) :
+    RAM.steps CostModel.unitCost (wordRepeatWhile fuel limit body acc) σ
+      ≤ 3 + fuel * (b + 2)
+\end{lstlisting}
+
+Two rules connect such loops to the abstract folds.
+\lstinline{readOnlyWordLoop} realizes a charged computation whose value follows a proved recurrence by a loop whose body does not change memory.
+\lstinline{mutableWordLoop} realizes \lstinline{Charged.foldlWhile} over \lstinline{List.range fuel} with different abstract and concrete accumulators: a relation \lstinline{R} ties them together in the current machine state, each executed body must reestablish it, and the resulting budget is \lstinline{3 + fuel * (bodyBound + 2)}.
+When a body returns \lstinline{none}, the previous accumulator is the result, so its representation must survive the body's effects.
+
+Fuel bounds the structural recursion, and exhausting it returns the current accumulator.
+A claim of complete traversal therefore needs fuel that covers the intended range and a counter that does not wrap.
+
+It follows that a whole-program word bound cannot be stated as \lstinline{ceiling * Charged.steps p} alone.
+Since an abstract loop may have zero tally while its machine counterpart does not, every whole-program transfer carries an explicit term for control, setup, and boundary overhead (Section~\ref{sec:certified-std}).
+
+\subsection{Representing Data}\label{sec:representations}
+
+Data in memory is described by sealed handles and representation predicates.
+A \lstinline{Buffer w} holds a base address and a length in registers; forwarding them is free and does not claim that a memory read took place.
+\lstinline{Buffer.Holds σ b xs} says that \lstinline{b} represents the list \lstinline{xs} in state \lstinline{σ}, including the allocation and width conditions that exclude wrapped addresses and discarded stores.
+An indexed read executes an address addition and a load, and an indexed write an address addition and a store; allocation is a separate charged operation.
+Frame lemmas prove that a write to one buffer preserves every disjoint buffer.
+These frame conditions are ownership premises of the certified call, not a linear type system: nothing stops a client from constructing an alias, and a stale handle is not the current representation after a mutation.
+
+The same pattern gives the representations in Table~\ref{tab:representations}.
+All costs are unit-cost RAM steps, and each entry has a kernel-checked certificate under the premises listed.
+
+\begin{table}[t]
+\caption{Certified representations and their unit-cost RAM bounds.}\label{tab:representations}
+\small
+\begin{tabular}{@{}p{0.22\linewidth}p{0.44\linewidth}p{0.26\linewidth}@{}}
+\toprule
+Module & Representation and premises & Cost \\
+\midrule
+\texttt{Realization.Num} & \texttt{Num Nat} as one word; explicit no-overflow premises for addition and multiplication & 1 per operation \\
+\texttt{SignedWord} & Sign plus bounded magnitude; both signs of zero; no-overflow premises & small constants \\
+\texttt{Modular} & Canonical residue under a positive word modulus; addition never forms the overflowing sum & add 3, mul 2, residue $\le 4$ \\
+\texttt{Matrix} & Row-major, dimensions stored as words; index and address bounds & valid read/write 4, checked access $\le 6$ \\
+\texttt{RecordBuffer}, \texttt{SignedBuffer} & Two cells per entry in disjoint buffers & read 4--6, write 4--5, allocation $2M$ \\
+\texttt{BucketBuffer} & Shared record/link pool plus bucket heads; no reclamation & push 14, allocation $3M+p+1$ \\
+\texttt{RAMRoster}, \texttt{RAMDict} & Direct addressing over a bounded key universe of size $U$ & see Section~\ref{sec:certified-std} \\
+\texttt{RAMQueue} & Head word over a retained region; enqueue needs $\mathit{head} + \mathit{len} < \mathit{capacity}$ & enqueue 5, dequeue 7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+It is perhaps worth emphasizing the storage cost of direct addressing.
+A roster over a key universe of capacity $U$ reserves $U$ occupancy cells, and a dictionary reserves $U$ further value cells, however few keys are live.
+Access is constant in the live size, but initialization costs $U+1$ steps for a roster or queue and $2U+1$ for a dictionary, and physical storage grows with $U$.
+A paper whose bounds need storage proportional to the live size needs a different implementation, and we keep that dependency as an explicit gap rather than hide it.
+Similarly, the queue never reuses its consumed prefix, so a circular queue is a separate implementation.
+
+\subsection{Certified Standard Operations}\label{sec:certified-std}
+
+A price in \lstinline{StdImpl} becomes a statement about real execution only when a certificate backs it.
+\lstinline{StdRealizes I o size p q Pre Post} abbreviates \lstinline{Realizes p q Pre Post (I.bound o size)}, and a certified standard operation packages it for all represented inputs:
+
+\begin{lstlisting}
+structure CertifiedStdOperation (I : StdImpl) (o : StdOp)
+    (source : A → Charged StdOp κₛ B) (code : C → RAM w D)
+    (inputRep : A → C → RamState w → Prop)
+    (outputRep : B → D → RamState w → Prop) (size : A → ℕ) : Prop where
+  charge      : ∀ a, (source a).cost = CostVec.one o
+  realization : ∀ a c, StdRealizes I o (size a) (source a) (code c)
+                  (inputRep a c) outputRep
+\end{lstlisting}
+
+The \lstinline{charge} field ties the price to the opcode the source actually charges, so a cheap price cannot be borrowed from a different operation.
+By monotonicity, \lstinline{CertifiedStdOperation.ceiling} moves the bound at the current size to the ceiling at any larger size.
+
+\lstinline{DirectAddressStd.pricing} is a concrete \lstinline{StdImpl} built from the direct-address containers.
+Its certified ceilings are 4 for roster membership, 8 for insertion, and 9 for erasure; 6, 10, and 9 for dictionary lookup, insertion, and erasure; and 5, 7, and 2 for queue enqueue, dequeue, and emptiness.
+Cardinality equality costs 1.
+Size forwarding costs 0, but \lstinline{StdImpl} requires positive bounds, so its price is conservatively 1.
+Every other entry of the table is a price without code, and a table entry alone never establishes that an implementation exists.
+
+A whole-program bound then combines the certified operations with the overhead of Section~\ref{sec:loops}:
+
+\begin{lstlisting}
+theorem StdImpl.realized_wordSteps_le (I : StdImpl) (n : ℕ)
+    (p : Charged StdOp κₛ α) (q : RAM w β) (Pre ...) (Post ...)
+    (budget overhead : ℕ) (h : Realizes p q Pre Post budget)
+    (hb : budget ≤ I.ceiling n * Charged.steps (Rate.unit StdOp) p + overhead)
+    (σ : RamState w) (hσ : Pre σ) :
+    RAM.steps CostModel.unitCost q σ
+      ≤ I.ceiling n * Charged.steps (Rate.unit StdOp) p + overhead
+\end{lstlisting}
+
+This is not an exact correspondence with \lstinline{Charged.exchange}.
+\lstinline{bound_ok} bounds the advertised rate from above, and both the actual code and that rate may lie below a larger bound.
+
+\subsection{Randomness}\label{sec:probram}
+
+A randomized algorithm is still authored as \lstinline{PMF (Charged κ κₛ α)}.
+Its machine counterpart runs on a probabilistic RAM:
+
+\begin{lstlisting}
+structure ProbRAM (w : ℕ) (α : Type u) where
+  private mk ::
+  run : RamState w → PMF (α × RamState w × Cost)
+\end{lstlisting}
+
+The only added randomness assumption is an intrinsic independent fair bit, \lstinline{ProbRAM.randBit}, charged as \lstinline{Op.randBit}.
+Deterministic programs lift unchanged through \lstinline{ProbRAM.lift}, and sequencing accumulates cost inside the distribution.
+\lstinline{ProbRAM} is a mathematical semantics, hence noncomputable; it describes the exact distribution of executions and is not an entropy source or a pseudorandom generator.
+A physical random source or a tape implementation would need its own contract.
+
+The certificate compares output laws exactly and bounds cost on every reachable execution:
+
+\begin{lstlisting}
+structure ProbRealizes (μ : PMF (Charged κ κₛ α)) (q : ProbRAM w β)
+    (Pre : RamState w → Prop) (decode : β → RamState w → α)
+    (Post : α → β → RamState w → Prop) (budget : ℕ) : Prop where
+  law       : ∀ σ, Pre σ → q.decodedOutputs decode σ = μ.map Charged.val
+  invariant : ∀ σ, Pre σ → ∀ result ∈ (q.run σ).support,
+                Post (decode result.1 result.2.1) result.1 result.2.1
+  steps_le  : ∀ σ, Pre σ → ∀ result ∈ (q.run σ).support,
+                CostVec.steps CostModel.unitCost result.2.2 ≤ budget
+\end{lstlisting}
+
+The decoder reads the final state as well as the returned value, so a program that returns a handle to a mutated structure can still represent a mathematical result.
+The decoder is specification-only and is never called by the program.
+\lstinline{ProbRealizes} composes through \lstinline{pure}, \lstinline{bind}, and the lifting of deterministic certificates, and \lstinline{ProbRealizes.worstSteps_le} turns its support-wise budget into a bound on \lstinline{ProbRAM.worstSteps}.
+
+\subsection{Restricted Lowering}\label{sec:lowering}
+
+Writing a RAM counterpart by hand is tedious for straight-line arithmetic, so the library provides a restricted frontend.
+\lstinline!lower_num% source! inspects an elaborated source definition and emits a RAM counterpart, preserving sequencing and branches.
+The supported fragment covers \lstinline{Num Nat} literals, addition, multiplication, and comparison, forwarding \lstinline{pure}, monadic bind, Boolean branches, products, and calls to nonrecursive supported procedures.
+The frontend checks that the natural-number literal, arithmetic, and order instances are the canonical ones, so a custom instance cannot silently change the meaning of a generated operation.
+Native computation whose result reaches the runtime, raw charged operations without a registered implementation, opaque procedures, and recursion are rejected.
+
+Code generation is not a proof.
+The tactic \lstinline{ram_refine} applies registered, kernel-checked realization rules to the generated program and leaves the representation, overflow, precondition, and budget obligations to the author.
+Loops, containers, signed arithmetic, and randomness currently compose through their certificates directly rather than through this frontend.
+
+\subsection{A Worked Example}\label{sec:scan}
+
+The first end-to-end realization is a linear scan with early exit.
+The source \lstinline{ScanRealization.scan xs key} is an ordinary \lstinline{Charged Op} program built with \lstinline{Charged.foldlWhile}: it reads each element, compares it with the key, and stops at the first match.
+Its counterpart \lstinline{scanRAM fuel b key} reads a sealed buffer inside \lstinline{wordRepeatWhile}.
+The certificate packages output agreement, preservation of the input, and the cost of every guard, address computation, load, comparison, and increment:
+
+\begin{lstlisting}
+theorem realizes (xs : List ℕ) (key fuel : ℕ) (b : Buffer w) (rkey : Word w) :
+    Realizes (scan xs key) (scanRAM fuel b rkey)
+      (fun σ => Buffer.Holds σ b xs ∧ rkey.toNat = key ∧
+                fuel = xs.length ∧ 1 < 2 ^ w)
+      (fun a answer σ => a = answer ∧ Buffer.Holds σ b xs) (3 + 5 * fuel)
+\end{lstlisting}
+
+The precondition requires fuel equal to the represented length.
+This is not a formality: the regression tests show that a shorter fuel misses a late match, and that a machine loop with an empty body still pays positive control cost.
+Interestingly, the abstract fold keeps its previous accumulator on \lstinline{none}, so after an early match the scan performs one more increment and guard before it stops, and the cost tests include that step.
+
+
+%% ============================================================
+\section{Sealed Data Carriers}\label{sec:carriers}
+
+The monad stops a program from inventing a false cost tally, but by itself it does not stop the program from reading data for free.
+Data structures are therefore exposed through \emph{sealed carriers}.
+Each carrier has a private representation, noncomputable views for proofs, and charged operations for programs; a program may call the operations but may not inspect the representation.
+
+The finite-set carrier used in the case study shows the pattern:
+
+\begin{lstlisting}
+structure Roster (ι : Type u) where
+  private mk ::
+  private elems : List ι
+  private nodupElems : elems.Nodup
+\end{lstlisting}
+
+\lstinline{Roster.toFinset} and \lstinline{Roster.card} are noncomputable.
+The program-facing operations include \lstinline{empty}, \lstinline{erase}, \lstinline{insert}, \lstinline{size}, \lstinline{cardEq}, \lstinline{mem}, and \lstinline{filterErase}, and each charges one \lstinline{RosterOp}.
+
+\lstinline{filterErase} folds over the elements, performing one charged test and possibly one deletion for each.
+Its cost is read off this fold rather than stated by the algorithm, and its space theorem says that thinning does not raise the peak.
+
+The sampler carrier hides the sampling rate:
+
+\begin{lstlisting}
+structure Sampler where
+  private mk ::
+  private lvl : ℕ
+\end{lstlisting}
+
+The level is sealed, since \lstinline{Sampler.levelOf} is noncomputable.
+The operations \lstinline{start}, \lstinline{accept}, \lstinline{halve}, and \lstinline{inflate} are exactly what the estimator needs: draw against the rate, halve the rate, and scale a count by the inverse rate.
+The level itself never leaves the structure.
+
+The case study also uses sealed randomness and a sealed answer register.
+\lstinline{Block} and \lstinline{Coins} expose random choices only through charged operations, and \lstinline{Slot} exposes the output flag only through a charged test and a charged fill.
+The other carriers in the library, \lstinline{Dict}, \lstinline{Heap}, \lstinline{Queue}, \lstinline{Draws}, and \lstinline{Num}, follow the same recipe, and \lstinline{StdOp} is the coproduct of all their operation types.
+An algorithm chooses which carriers to use; it does not declare what they cost.
+
+
+%% ============================================================
+\section{The Meta-Programmatic Audit}\label{sec:audit}
+
+Private constructors and noncomputable accessors close most easy ways to cheat, but Lean still leaves three routes open.
+First, a structure with private fields still has a public eliminator such as \lstinline{casesOn}, through which one can pattern-match and read the private fields.
+\lstinline{Word} no longer has this problem, since it is an alias of a private structure (Section~\ref{sec:ram}), but \lstinline{Roster} and \lstinline{Charged} still do.
+Second, the user can write \lstinline{noncomputable def}, after which Lean stops complaining about calls to noncomputable views such as \lstinline{Roster.card} or \lstinline{Charged.val}.
+Third, Batteries' \lstinline{open private a from M in} brings a module-mangled private name back into scope, and the resulting declaration depends on no axioms, so \lstinline{#print axioms} reports nothing.
+
+The audit closes these routes by checking which constants appear in definitions, at two granularities.
+The library-wide script \lstinline{scripts/ComputationAudit.lean}, run in CI alongside the axiom audit, checks every declaration in \lstinline{Arlib.Computation}.
+It rejects forbidden eliminators, rejects \lstinline{noncomputable} definitions other than an exact list of specification views, and rejects any use of a private constant outside the module that declared it.
+The last check closes \lstinline{open private}: the cheat cannot hide the mangled name, which stays in the elaborated term.
+The list of specification views names exact declarations, such as \lstinline{Buffer.baseNat}, \lstinline{RAMRoster.countNat}, and \lstinline{ProbRAM.outputs}, and contains no namespace-wide exemption.
+
+The development-level commands below check an individual algorithm and its driver.
+They are currently defined in the case-study development (\lstinline{Meta/CostSeal.lean} and \lstinline{Meta/ModelClosure.lean}) rather than in the library.
+They check two parts of a development.
+The first is the algorithm, which must be executable and may call only approved charged operations.
+The second is the driver, which builds distributions and states theorems; it may read specifications, but only at named boundaries where the program is connected to the mathematical model.
+
+\subsection{Inside the Algorithm: \texttt{\#programSeal}}\label{sec:programseal}
+
+The command \lstinline{#programSeal} checks the declarations inside the algorithm namespace.
+It rejects any declaration that reads a sealed carrier for free, observes its own cost or space, re-prices a tally, or is marked \lstinline{noncomputable}.
+The check is transitive, because a helper can call a forbidden accessor even when the main definition does not name it.
+
+The scan stops at an approved frontier of monadic combinators and charged carrier operations.
+So the algorithm may call \lstinline{Roster.erase} or \lstinline{Sampler.accept}, but not representation eliminators, specification views, cost accessors, or exchange operations.
+The library code behind the frontier is checked separately, by the library-wide script.
+
+\subsection{Outside the Algorithm: \texttt{\#driverSeal}}\label{sec:driverseal}
+
+The driver contains the probability distribution, the mathematical specification, and the final theorem statements.
+It is noncomputable, but it must not do algorithmic work outside the charged program.
+\lstinline{#driverSeal} therefore forbids the driver from creating charges, calling carrier operations, or re-pricing computations.
+Free reads are governed by a permission list: a read of the program result, the sample set, or the random tape is allowed only in the declaration named for that purpose.
+
+\begin{lstlisting}
+def driverByPermission : List (Name × Name) :=
+  [(estimatorOutput,     Charged.val),
+   (RunState.level,      Sampler.levelOf),
+   (RunState.answer,     Slot.get),
+   (freshCell,           Block.ofFun),
+   (freshCell,           Coins.ofFinset),
+   (RunState.toState,    Roster.toFinset)]
+\end{lstlisting}
+
+The list is small, and it marks exactly where the executable algorithm is read as a mathematical object.
+
+\subsection{Pinning the Trusted Surface}\label{sec:executable-surplus}
+
+Three more checks keep the audited part from growing silently.
+\lstinline{#executableModule} checks that the algorithm module contains only executable definitions, rejecting specifications and noncomputable helpers.
+\lstinline{#surplusIn} reports declarations that are not reached from the named theorem seeds.
+\lstinline{#modelClosureOfType}\label{sec:model-closure} checks the statement of a headline theorem, not its proof, and verifies that the statement unfolds only through the intended model and computation library.
+
+\subsection{Deployment}\label{sec:build-commands}
+
+The audit commands are written in the Lean files they check, so they run on every build.
+In the case study, the executable module is sealed as a program, and the theorem module is checked for model closure and driver rules:
+
+\begin{lstlisting}
+#programSeal Esa22Copy.Program
+#executableModule Esa22Copy.Model.Program
+#surplusIn Esa22Copy.Model.Program from Esa22Copy.Program.run Esa22Copy.Program.report
+#modelClosureOfType Esa22Copy.esa22Copy
+#modelClosureOfType Esa22Copy.esa22CopyTime
+#surplusIn Esa22Copy.Model from Esa22Copy.esa22Copy Esa22Copy.esa22CopyTime
+#driverSeal Esa22Copy.Program
+\end{lstlisting}
+
+Each command is regression-tested with planted bad examples, and such a test passes only when the forbidden route is rejected.
+These tests are not part of the proof object, but they keep the seal from going stale as the library changes.
+
+%% ============================================================
+\section{Case Study: The CVM Distinct-Elements Estimator}\label{sec:case-study}
+
+\subsection{The Problem}\label{sec:problem}
+
+Given a stream $A$ of $m$ elements from a universe $[n] = \text{Fin}\; n$, the goal is to estimate $F_0(A)$, the number of distinct elements, within a $(1 \pm \varepsilon)$ factor with probability at least $1 - \delta$.
+The parameters are:
+
+\begin{lstlisting}
+structure Params where
+  n m : Nat;  hn : 0 < n;  hm : 0 < m
+  eps delta : Real;  heps : eps ∈ Set.Ioo 0 1;  hdelta : delta ∈ Set.Ioo 0 1
+\end{lstlisting}
+
+An \lstinline{Answer} is \lstinline{Option} $\mathbb{N}$, where \lstinline{some c} is an estimate and \lstinline{none} means failure.
+The event \lstinline{accurateEvent P A : Set Answer} accepts an estimate only when it lies in the required relative-error range, and it rejects \lstinline{none}.
+
+\subsection{The Program}\label{sec:program}
+
+The algorithm is written against \lstinline{Roster}, \lstinline{Sampler}, \lstinline{Block}, \lstinline{Coins}, and \lstinline{Slot}:
+
+\begin{lstlisting}
+def arrival (s : Sampler) (b : Block (P.m + 1)) (a : Item P)
+    (d : Roster (Item P)) : Charged StdOp Cell (Roster (Item P)) := do
+  let erased ← Roster.erase a d
+  let accept ← Sampler.accept b s
+  if accept then Roster.insert a erased
+  else pure erased
+
+def thin (coins : Coins (Item P)) (d : Roster (Item P))
+    : Charged StdOp Cell (Roster (Item P)) :=
+  Roster.filterErase (fun x => Coins.flip x coins) d
+
+def step (thr : Nat) (a : Item P) (s : Sampler) (b : Block (P.m + 1))
+    (coins : Coins (Item P)) (res : Slot Answer)
+    (d : Roster (Item P)) : Charged StdOp Cell (RunState P) := do
+  let refreshed ← arrival s b a d
+  let full ← Roster.cardEq thr refreshed
+  if full then
+    let thinned ← thin coins refreshed
+    let halved ← Sampler.halve s
+    let stillFull ← Roster.cardEq thr thinned
+    let recorded ← if stillFull then Slot.fill none res else pure res
+    pure ⟨thinned, halved, recorded⟩
+  else pure ⟨refreshed, s, res⟩
+
+def run (thr : Nat) (A : Stream P) (tape : List (Randomness P))
+    : Charged StdOp Cell (RunState P) :=
+  Charged.foldl
+    (fun st ar => step thr ar.1 st.sampler ar.2.bits ar.2.coins
+                    st.result st.samples)
+    ((List.ofFn A).zip tape) (initialState P)
+
+def report (s : Sampler) (res : Slot Answer) (d : Roster (Item P))
+    : Charged StdOp Cell Answer := do
+  let running ← Slot.isEmpty res
+  if running then
+    let n ← Roster.size d
+    let estimate ← Sampler.inflate n s
+    pure (some estimate)
+  else pure none
+\end{lstlisting}
+
+\subsection{The Distributional Bridge}\label{sec:bridge}
+
+The program over sealed carriers is connected to a mathematical model over Mathlib \lstinline{Finset}s by an equality of distributions:
+
+\begin{lstlisting}
+theorem estimatorOutput_eq (P : Params) (A : Stream P) :
+    estimatorOutput P A = run P A
+\end{lstlisting}
+
+Here \lstinline{estimatorOutput} applies \lstinline{Charged.val} to the randomized charged program, and \lstinline{run} is the \lstinline{Finset}-based mathematical model.
+Because this is an equality of \lstinline{PMF} values, and not only a relation between supports, every probabilistic statement proved about the model is also a statement about the algorithm, with no further transfer argument.
+
+The direction matters.
+The program is the primary definition, and the model is derived from it: \lstinline{RunState.toState} reads the new sample set, the new level, and the answer from the program result instead of recomputing them.
+A program that stops doing the work therefore cannot still satisfy the bridge lemma.
+
+The bridge is the only free read of the sealed dictionary in the specification, and \lstinline{#modelClosureOfType} checks that the theorem statements stay within the intended model and computation library.
+
+\subsection{The Cost}\label{sec:cost}
+
+The program does not say what a line costs; the cost is obtained by applying \lstinline{Charged.cost} to the program.
+For example:
+
+\begin{lstlisting}
+theorem cost_arrival (s : Sampler) (bits : BitBlock P) (a : Item P)
+    (d : Roster (Item P)) :
+    (Program.arrival s (Block.ofFun bits) a d).cost =
+      CostVec.one (StdOp.roster .erase) + CostVec.one (StdOp.rand .accept)
+        + (if acceptsAt s.levelOf bits
+           then CostVec.one (StdOp.roster .insert) else 0)
+\end{lstlisting}
+
+If the program changes, this theorem has to be reproved, and there is no separate cost definition to keep in sync.
+The main time bound is exact:
+
+\begin{lstlisting}
+theorem esa22CopyTime (P : Params) (A : Stream P) :
+    worstSteps (Rate.unit StdOp) (estimator P A)
+      ≤ ((P.m * (2 * threshold P + 8) + 3 : Nat) : ℕ∞)
+\end{lstlisting}
+
+\subsection{The Space}\label{sec:space}
+
+\begin{lstlisting}
+theorem estimator_worstSpace_le (P : Params) (A : Stream P) :
+    worstSpace Cell.cell 0 (estimator P A) ≤ ((threshold P : ℕ) : ℕ∞)
+\end{lstlisting}
+
+The proof uses an invariant over the support of the \lstinline{PMF} fold.
+After each arrival the sample is compared with the threshold, and the algorithm thins it when it reaches the threshold, so the number of held cells after every arrival is at most \lstinline{threshold P}.
+The thinning step itself does not raise the peak.
+
+\subsection{The Headline}\label{sec:headline}
+
+\begin{lstlisting}
+theorem esa22Copy (hprior : Prior) (P : Params) (A : Stream P) :
+    1 - P.delta
+      ≤ Arlib.Approximation.outProbR (estimatorOutput P A) (accurateEvent P A) ∧
+    worstSpace Cell.cell 0 (estimator P A)
+      ≤ ((threshold P : Nat) : ℕ∞) ∧
+    PaperItemSpaceBigO
+\end{lstlisting}
+
+\lstinline{outProbR} is the probability that the output lies in the given event.
+The accuracy, space, and item-space claims all apply to the same object, \lstinline{estimator}, and the exact time theorem \lstinline{esa22CopyTime} is stated separately.
+
+\subsection{Explicit Assumptions}\label{sec:assumptions}
+
+The development uses five explicit modeling assumptions:
+
+\begin{enumerate}
+  \item A Bernoulli($2^{-\ell}$) draw is one operation, not $\ell$ bit-reads.
+  \item A stopped arrival costs its stop test and nothing more.
+  \item Storage is charged per sample item, one \lstinline{Cell} per element; the level counter and the stop flag are not charged.
+  \item Loop control is free: the cost of \lstinline{Charged.foldl} is the sum of the costs of its bodies. A machine realization would pay for this control (Section~\ref{sec:loops}).
+  \item \lstinline{accurateEvent} and \lstinline{PaperItemSpaceBigO} are specification choices that state the accuracy event and the displayed asymptotic item-space claim.
+\end{enumerate}
+
+\subsection{Word-Level Time Bound}\label{sec:word-time}
+
+The abstract bound is converted to word operations through the exchange theorem:
+
+\begin{lstlisting}
+theorem estimator_worstWordSteps_le (D : StdImpl) (P : Params) (A : Stream P) :
+    worstSteps CostModel.unitCost (wordEstimator D P A)
+      ≤ ((D.ceiling (threshold P) * (P.m * (2 * threshold P + 8) + 3) : Nat) : ℕ∞)
+\end{lstlisting}
+
+This bound holds for every \lstinline{StdImpl}, and it remains a re-priced count rather than the cost of a realized program.
+The certified operations of Section~\ref{sec:certified-std} cover the roster's membership, insertion, erasure, cardinality test, and size, but not \lstinline{filterErase} or the \lstinline{Sampler}, \lstinline{Coins}, and \lstinline{Slot} operations, and a realized estimator would also pay the loop overhead of Section~\ref{sec:loops}.
+A fully realized word-level bound for the estimator is therefore future work.
+
+
+%% ============================================================
+\section{Scope of the Claims}\label{sec:limitations}
+
+For programs admitted by the seal, the cost and space quantities used in the theorems come from the charged program; they are not annotations written by the author.
+This is the main claim of the DSL.
+The framework does not produce the final theorem automatically: the user still proves the loop invariants, cost inequalities, and distributional bridge in Lean.
+
+The word-level claims come in two strengths.
+The exchange theorem is conditional on the pricing table supplied through \lstinline{StdImpl}.
+A realization certificate is unconditional within the RAM semantics, but it exists only for the operations and representations of Section~\ref{sec:realizations}, under their stated premises on representation, word width, overflow, capacity, and fuel.
+There is no universal lowering from \lstinline{Charged} to \lstinline{RAM}, the lowering frontend covers only a numeric fragment, and the direct-address containers use storage proportional to the key universe rather than to the live size.
+A \lstinline{Charged} profile is not yet turned into a general physical-memory bound; the buffer predicates give concrete bounds for the certified representations only.
+The probabilistic RAM assumes an intrinsic fair bit, and the certificates do not bound the host Lean execution.
+
+Finally, the seal is specific to Lean.
+It relies on Lean's private constructors, noncomputability rules, and generated constants, which is why the audit commands and the planted-breach tests are part of the build checks: they detect changes that would reopen a forbidden route.
+
+\end{document}
