@@ -147,7 +147,7 @@ theorem sumMGF_le (μ : Fin n → X → ℝ) (h0 : ∀ k x, 0 ≤ μ k x)
   rw [hfact]
   have hprod : (∏ k, ∑ x, μ k x * Real.exp (θ * f k x))
       ≤ ∏ k, Real.exp ((2 / 3) * θ ^ 2 * (∑ x, μ k x * (f k x) ^ 2)) := by
-    apply Finset.prod_le_prod
+    apply Finset.prod_le_prod₀
     · intro k _
       exact Finset.sum_nonneg (fun x _ => mul_nonneg (h0 k x) (Real.exp_pos _).le)
     · intro k _

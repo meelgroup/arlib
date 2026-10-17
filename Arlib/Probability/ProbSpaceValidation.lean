@@ -106,7 +106,7 @@ theorem base_prod_bound (K : ℝ)
         intro ω
         calc ∏ b ∈ S.blocks, S.X b 0 ω
             ≤ ∏ _b ∈ S.blocks, K :=
-              Finset.prod_le_prod (fun b hb => (hbound b hb ω).1)
+              Finset.prod_le_prod₀ (fun b hb => (hbound b hb ω).1)
                 (fun b hb => (hbound b hb ω).2)
           _ = K ^ S.blocks.card := by rw [Finset.prod_const]
     _ = K ^ S.blocks.card := P.Ex_const _

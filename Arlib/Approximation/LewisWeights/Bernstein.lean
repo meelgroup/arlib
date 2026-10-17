@@ -155,7 +155,7 @@ theorem Ex_exp_sum_le (hpos : ∀ i c, 0 < C.coinMass i c) (hB : 0 < b)
     exact C.toFinProb.Ex_sum Finset.univ (fun i ω => g i (ω i))
   calc ∏ i, C.toFinProb.Ex (fun ω => Real.exp (lam * g i (ω i)))
       ≤ ∏ i, Real.exp ((C.toFinProb.Ex (fun ω => g i (ω i)) / b) * (Real.exp (lam * b) - 1)) := by
-        apply Finset.prod_le_prod
+        apply Finset.prod_le_prod₀
         · intro i _; exact C.toFinProb.Ex_nonneg (fun ω => (Real.exp_pos _).le)
         · intro i _
           exact Ex_exp_coord_le C g hpos hB hg0 hgb i lam

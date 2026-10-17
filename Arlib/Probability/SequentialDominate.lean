@@ -105,7 +105,7 @@ theorem seqWeight_le_of_step_le {S : Type} [Fintype S] {q : ℕ}
   unfold seqWeight
   calc ∏ i : Fin q, k i (histPrefix c i) (c i)
       ≤ ∏ i : Fin q, M i * Λ i (histPrefix c i) (c i) :=
-        Finset.prod_le_prod (fun i _ => hk0 i _ _) (fun i _ => hdom i _ _)
+        Finset.prod_le_prod₀ (fun i _ => hk0 i _ _) (fun i _ => hdom i _ _)
     _ = (∏ i : Fin q, M i) * ∏ i : Fin q, Λ i (histPrefix c i) (c i) :=
         Finset.prod_mul_distrib
 

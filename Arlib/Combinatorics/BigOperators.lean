@@ -91,7 +91,7 @@ theorem prod_le_prod_comp_of_surj {ι κ : Type*} [DecidableEq κ]
   have hone : (1 : ℝ) ≤ ∏ k ∈ (s.image f) \ t, g k := by
     calc (1 : ℝ) = ∏ _k ∈ (s.image f) \ t, (1 : ℝ) := (Finset.prod_const_one).symm
       _ ≤ ∏ k ∈ (s.image f) \ t, g k :=
-          Finset.prod_le_prod (fun _ _ => zero_le_one)
+          Finset.prod_le_prod₀ (fun _ _ => zero_le_one)
             (fun k hk => hg1img k (Finset.mem_sdiff.mp hk).1)
   have hprodt_nn : 0 ≤ ∏ k ∈ t, g k :=
     Finset.prod_nonneg (fun k hk => le_trans zero_le_one (hg1img k (hsub hk)))
@@ -103,7 +103,7 @@ theorem prod_le_prod_comp_of_surj {ι κ : Type*} [DecidableEq κ]
     Finset.prod_fiberwise_of_maps_to (fun i hi => Finset.mem_image_of_mem f hi) _
   have hstep2 : ∏ k ∈ s.image f, g k ≤ ∏ i ∈ s, g (f i) := by
     rw [← hfib]
-    refine Finset.prod_le_prod (fun k hk => le_trans zero_le_one (hg1img k hk)) (fun k hk => ?_)
+    refine Finset.prod_le_prod₀ (fun k hk => le_trans zero_le_one (hg1img k hk)) (fun k hk => ?_)
     have hconst : ∏ i ∈ s.filter (fun i => f i = k), g (f i)
         = (g k) ^ (s.filter (fun i => f i = k)).card := by
       rw [Finset.prod_congr rfl (fun i hi => by rw [(Finset.mem_filter.mp hi).2]),

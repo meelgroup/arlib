@@ -217,10 +217,10 @@ theorem prod {ι : Type*} (s : Finset ι) (f g : ι → ℝ) (hlo : 0 ≤ lo)
     rw [Finset.prod_mul_distrib, Finset.prod_const]
   refine ⟨?_, ?_⟩
   · rw [elo]
-    exact Finset.prod_le_prod (fun i hi' => mul_nonneg hlo (hg i hi'))
+    exact Finset.prod_le_prod₀ (fun i hi' => mul_nonneg hlo (hg i hi'))
       (fun i hi' => (h i hi').1)
   · rw [ehi]
-    exact Finset.prod_le_prod
+    exact Finset.prod_le_prod₀
       (fun i hi' => le_trans (mul_nonneg hlo (hg i hi')) (h i hi').1)
       (fun i hi' => (h i hi').2)
 

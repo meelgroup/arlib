@@ -2,7 +2,7 @@
 
 A curated, Mathlib-style Lean 4 library of reusable results in randomised algorithms,
 knowledge compilation, Markov chains, and the probability and information theory
-underneath them. Built against Lean and Mathlib `v4.33.0`.
+underneath them. Built against Lean and Mathlib `v4.35.0`.
 
 This document explains how the library is laid out and why. It is not a tutorial and not
 a result catalogue; for the actual mathematics, each area root file carries a long prose

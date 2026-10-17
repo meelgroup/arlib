@@ -485,7 +485,7 @@ theorem phi_le {x : Ω} (hx : x ∈ P.U P.root) :
     rw [Finset.mem_range] at hj
     obtain ⟨hmem, hrk⟩ := P.chainFrom_spec hx P.rank_root j (le_of_lt hj)
     exact P.childProb_le E (by omega) ⟨x, hmem⟩
-  have hprod := Finset.prod_le_prod (s := Finset.range P.depth)
+  have hprod := Finset.prod_le_prod₀ (s := Finset.range P.depth)
     (f := fun j => P.childProb E (P.chainFrom x P.root j) (P.chainFrom x P.root (j + 1)))
     (g := fun j => ((1 + E.err) / (1 - E.err)) *
       (((P.U (P.chainFrom x P.root (j + 1))).card : ℝ) /
@@ -523,7 +523,7 @@ theorem phi_ge {x : Ω} (hx : x ∈ P.U P.root) :
     intro j _
     have : (0:ℝ) ≤ (((1 + E.err) / (1 - E.err)))⁻¹ := le_of_lt (inv_pos.2 hR)
     positivity
-  have hprod := Finset.prod_le_prod (s := Finset.range P.depth) hnn hstep
+  have hprod := Finset.prod_le_prod₀ (s := Finset.range P.depth) hnn hstep
   rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_range,
     P.prod_card_ratio_chainFrom hx P.rank_root, inv_pow, mul_one_div] at hprod
   rw [phi, phiPath]

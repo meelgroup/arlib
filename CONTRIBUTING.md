@@ -109,7 +109,7 @@ To do the same locally, append to `lakefile.toml`:
 name = "doc-gen4"
 scope = "leanprover"
 git = "https://github.com/leanprover/doc-gen4"
-rev = "v4.33.0"
+rev = "v4.35.0"
 ```
 
 then:

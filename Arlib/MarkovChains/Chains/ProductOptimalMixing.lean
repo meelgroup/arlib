@@ -365,7 +365,7 @@ theorem gibbs_prodWeight_ge (hφ : ∀ v s, 0 ≤ φ v s) (hc : ∀ v, 0 < ∑ s
   calc (a / b) ^ Fintype.card V = ∏ _v : V, (a / b) := by
         rw [Finset.prod_const, Finset.card_univ]
     _ ≤ ∏ v, prodMarginal φ v (σ v) :=
-        Finset.prod_le_prod (fun v _ => by positivity) fun v _ => hstep v
+        Finset.prod_le_prod₀ (fun v _ => by positivity) fun v _ => hstep v
 
 /-- `log(1/(a/b)^n) = n · log(b/a)`: the logarithm of the reciprocal of the bound
 of `gibbs_prodWeight_ge`, which is what the mixing statement consumes. -/

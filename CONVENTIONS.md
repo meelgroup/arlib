@@ -249,7 +249,7 @@ Two failure modes to watch for, both of which have occurred here:
 Recorded because they cost time repeatedly. The library follows Mathlib rather
 than a fixed release (see [CONTRIBUTING.md](CONTRIBUTING.md)); these notes were
 last checked against the revision in `lake-manifest.json`, currently the one
-paired with Lean `v4.33.0`. Revisit the list at the next bump — some of these
+paired with Lean `v4.35.0`. Revisit the list at the next bump — some of these
 gaps get filled upstream.
 
 **Destructuring `ExistsUnique` needs three components.** `∃! x, p x` unfolds to

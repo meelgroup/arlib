@@ -234,7 +234,7 @@ private theorem prod_one_add_le_exp (s : Finset ι) (q : ι → ℝ) (r : ℝ)
     (hq0 : ∀ j ∈ s, 0 ≤ q j) (hq1 : ∀ j ∈ s, q j ≤ 1) :
     ∏ j ∈ s, (1 + (Real.exp r - 1) * q j) ≤ Real.exp ((Real.exp r - 1) * ∑ j ∈ s, q j) := by
   rw [Finset.mul_sum, Real.exp_sum]
-  refine Finset.prod_le_prod (fun j hj => ?_) (fun j hj => ?_)
+  refine Finset.prod_le_prod₀ (fun j hj => ?_) (fun j hj => ?_)
   · have ha : 0 ≤ q j := hq0 j hj
     have hb : q j ≤ 1 := hq1 j hj
     nlinarith [Real.exp_pos r, mul_nonneg ha (Real.exp_pos r).le]

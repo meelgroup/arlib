@@ -100,7 +100,7 @@ def proj (F : Finset ι) (ω : Space ι) : F → Circ := fun i => ω i
 
 omit [Countable ι] in
 theorem measurable_proj (F : Finset ι) : Measurable (proj F : Space ι → F → Circ) :=
-  measurable_pi_lambda _ fun _ => measurable_pi_apply _
+  Measurable.of_eval fun _ => measurable_pi_apply _
 
 /-! ## The finite-dimensional marginals are product measures
 
@@ -114,7 +114,7 @@ the product of circle Haar measures up to a scalar, which normalisation pins at
 theorem map_proj (F : Finset ι) :
     Measure.map (proj F) (mu ι) = Measure.pi (fun _ : F => (volume : Measure Circ)) := by
   set ν := Measure.map (proj F) (mu ι) with hν
-  have : IsProbabilityMeasure ν := isProbabilityMeasure_map (measurable_proj F).aemeasurable
+  have : IsProbabilityMeasure ν := by rw [hν]; infer_instance
   have : ν.IsAddLeftInvariant := by
     constructor
     intro g
@@ -141,7 +141,7 @@ theorem map_coord (i : ι) :
     Measure.map (fun ω : Space ι => ω i) (mu ι) = (volume : Measure Circ) := by
   set ν := Measure.map (fun ω : Space ι => ω i) (mu ι) with hν
   have hmi : Measurable (fun ω : Space ι => ω i) := measurable_pi_apply i
-  have : IsProbabilityMeasure ν := isProbabilityMeasure_map hmi.aemeasurable
+  have : IsProbabilityMeasure ν := by rw [hν]; infer_instance
   have : ν.IsAddLeftInvariant := by
     constructor
     intro g

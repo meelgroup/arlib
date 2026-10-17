@@ -387,7 +387,7 @@ theorem improvedFactor_one (i : ℕ) : improvedFactor (fun _ => (1 : ℝ)) i = 1
 /-- `Γ_i ≤ 1` as soon as every factor lies in `[0, 1]`. -/
 theorem improvedFactor_le_one {γ : ℕ → ℝ} (h0 : ∀ j, 0 ≤ 2 * γ j - 1)
     (h1 : ∀ j, 2 * γ j - 1 ≤ 1) (i : ℕ) : improvedFactor γ i ≤ 1 :=
-  Finset.prod_le_one (fun j _ => h0 j) (fun j _ => h1 j)
+  Finset.prod_le_one₀ (fun j _ => h0 j) (fun j _ => h1 j)
 
 end Gamma
 

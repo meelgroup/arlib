@@ -38,7 +38,7 @@ place a Lean version is written down is `lean-toolchain`, which must match
 Mathlib's own — today that is:
 
 ```
-leanprover/lean4:v4.33.0
+leanprover/lean4:v4.35.0
 ```
 
 Your project must use the same toolchain, so copy that line into its

@@ -71,7 +71,7 @@ theorem tendsto_prod_one_sub_atTop_nhds_zero (a : ℕ → ℝ)
   have hle : ∀ n, (∏ k ∈ range n, (1 - a k)) ≤ Real.exp (-∑ k ∈ range n, a k) := by
     intro n
     have hstep : (∏ k ∈ range n, (1 - a k)) ≤ ∏ k ∈ range n, Real.exp (-(a k)) := by
-      refine Finset.prod_le_prod (fun i _ => ?_) (fun i _ => ?_)
+      refine Finset.prod_le_prod₀ (fun i _ => ?_) (fun i _ => ?_)
       · have := (h01 i).2; linarith
       · have := Real.add_one_le_exp (-(a i)); linarith
     have hexp : (∏ k ∈ range n, Real.exp (-(a k))) = Real.exp (-∑ k ∈ range n, a k) := by

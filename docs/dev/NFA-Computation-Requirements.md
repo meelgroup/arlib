@@ -94,7 +94,7 @@ and sample queues only. `Num` reports `1` for every operation and says so.
 
 `pods24-nfa/lean` is pinned to `leanprover/lean4:v4.15.0` and to an `arlib`
 revision (`3038bde`) that predates `Arlib.Computation` entirely. This area is on
-v4.33.0. Nothing above can be built inside `pods24-nfa` until that project is
+v4.35.0. Nothing above can be built inside `pods24-nfa` until that project is
 ported, which is why the worked program lives in `ArlibTest/Computation/` — it
 compiles, its `#guard`s run, and it lifts across unchanged.
 

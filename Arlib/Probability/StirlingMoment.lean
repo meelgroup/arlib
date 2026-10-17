@@ -270,7 +270,7 @@ theorem KWiseIndep.abs_ex_prod_centre_tuple_le (hind : KWiseIndep P K Z)
     |P.Ex (fun ω => ∏ k, centre Z (p k) ω)|
       ≤ ∏ i ∈ Finset.univ.image p, P.Ex (fun ω => centre Z i ω ^ 2) := by
   rw [hind.ex_prod_centre_tuple hZ hn p, Finset.abs_prod]
-  exact Finset.prod_le_prod (fun i _ => abs_nonneg _) fun i hi =>
+  exact Finset.prod_le_prod₀ (fun i _ => abs_nonneg _) fun i hi =>
     abs_Ex_centre_pow_le hZ i (h2 i hi)
 
 end Tuple
@@ -378,7 +378,7 @@ the step that turns the expansion into a polynomial in `μ` of degree `⌊n/2⌋
 theorem prod_le_varSum_pow {s T : Finset ι} (hT : T ⊆ s) :
     ∏ i ∈ T, P.Ex (fun ω => centre Z i ω ^ 2) ≤ varSum P Z s ^ T.card := by
   conv_rhs => rw [← Finset.prod_const]
-  refine Finset.prod_le_prod (fun i _ => Ex_centre_sq_nonneg Z i) fun i hi => ?_
+  refine Finset.prod_le_prod₀ (fun i _ => Ex_centre_sq_nonneg Z i) fun i hi => ?_
   exact Finset.single_le_sum (fun j _ => Ex_centre_sq_nonneg Z j) (hT hi)
 
 end Expansion

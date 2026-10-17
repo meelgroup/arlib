@@ -88,7 +88,8 @@ theorem ae_exists_tendsto_of_nonneg_supermartingale
   have hbdd : ∀ n, eLpNorm ((-Z) n) 1 μ ≤ (R : ENNReal) := by
     intro n
     have h1 : eLpNorm ((-Z) n) 1 μ = ENNReal.ofReal (∫ ω, ‖Z n ω‖ ∂μ) := by
-      rw [eLpNorm_one_eq_lintegral_enorm]
+      change eLpNorm (-Z n) 1 μ = _
+      rw [eLpNorm_one_eq_lintegral_enorm (hint n).neg.1]
       simp only [Pi.neg_apply, enorm_neg]
       exact (ofReal_integral_norm_eq_lintegral_enorm (hint n)).symm
     have h2 : ∫ ω, ‖Z n ω‖ ∂μ = ∫ ω, Z n ω ∂μ := by

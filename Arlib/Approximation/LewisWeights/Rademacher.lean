@@ -123,7 +123,7 @@ theorem avg_exp_le (x : ι → ℝ) :
   rw [hstep]
   calc ∏ i, Real.cosh (x i)
       ≤ ∏ i, Real.exp (x i ^ 2 / 2) := by
-        apply Finset.prod_le_prod
+        apply Finset.prod_le_prod₀
         · intro i _; exact (Real.cosh_pos _).le
         · intro i _; exact Real.cosh_le_exp_half_sq _
     _ = Real.exp (∑ i, x i ^ 2 / 2) := by rw [← Real.exp_sum]

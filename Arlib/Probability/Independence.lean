@@ -48,7 +48,7 @@ theorem interEvent_le_of_indep {p : ℝ} (hindep : P.IndepEvents E)
   rw [hindep S]
   calc ∏ i ∈ S, P.Pr (E i)
       ≤ ∏ _i ∈ S, p := by
-        apply Finset.prod_le_prod
+        apply Finset.prod_le_prod₀
         · intro i _; exact P.Pr_nonneg _
         · intro i _; exact hpi i
     _ = p ^ S.card := by rw [Finset.prod_const]

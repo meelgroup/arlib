@@ -674,7 +674,7 @@ with no separate step collapsing a state-quantified bound into a function of `n`
 **Unfolding `cost` proves one bound and does not compose.** Every bound past
 `arrMax` is produced by a rule.
 
-Those rules should not be built. Lean core `v4.33.0` — arlib's own pinned
+Those rules should not be built. Lean core `v4.35.0` — arlib's own pinned
 toolchain — ships `Std.Do`: `Std.Do.Triple` with the notation `⦃P⦄ x ⦃Q⦄`,
 `wp⟦·⟧` predicate transformers, `@[spec]` compositional call-site
 specifications, `WP` instances for `StateT` and friends, and the `mvcgen`
@@ -1209,7 +1209,7 @@ commit; §13.1 is the part that changes what gets built.
 
 ### 13.1 What already exists in Lean
 
-**`Std.Do`** — Lean core since 4.22, present in `v4.33.0`. A Hoare logic with
+**`Std.Do`** — Lean core since 4.22, present in `v4.35.0`. A Hoare logic with
 weakest-precondition automation: `Triple`, `wp⟦·⟧`, `@[spec]`, `WP` instances for
 the standard transformers, and `mvcgen`. Its `while` rule is the
 invariant-plus-variant total-correctness rule §6 needs. No cost, resource or
